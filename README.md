@@ -100,6 +100,7 @@ npx degit example/agent-skills/dev/pr-handoff .cursor/skills/pr-handoff
 
 - `dev/backend-api-implementation`
 - `dev/characterization-testing`
+- `dev/doc-sync`
 - `dev/hypothesis-driven-debugging`
 - `dev/issue-kickoff`
 - `dev/pr-handoff`
