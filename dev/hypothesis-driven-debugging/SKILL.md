@@ -51,14 +51,14 @@ A fix is only made against a root cause confirmed by observation. A guess formed
 ### Step 3 — Form and test hypotheses by observation
 
 - List hypotheses grounded in the Step 2 evidence and order them by likelihood. For each, write down its prediction before testing it — what would be observed if it is true, what would be observed if it is false — then check it with instrumentation, a debugger, a minimal isolating test, or bisection.
-- Change one variable at a time. A hypothesis that is refuted goes into a ledger with its refuting observation and is not retried; return to the Step 2 evidence and move to the next hypothesis.
+- Change one variable at a time. Keep the hypothesis ledger in the investigation's working notes — a separate file only when the repo's conventions call for one. A refuted hypothesis goes into it with its refuting observation instead of being retried; return to the Step 2 evidence and move to the next hypothesis.
 - A hypothesis is confirmed only when an observation matches its prediction *and* explains the full path from cause to symptom — not merely a correlation. Any instrumentation added for this investigation is flagged for removal in Step 5.
 
 **Done when:** one hypothesis is confirmed by an observation that matches its prediction and explains the full path from cause to symptom, and every refuted hypothesis is in the ledger with its refuting observation.
 
 ### Step 4 — Fix the root cause minimally
 
-- Fix at the point the confirmed cause originates, not at the point the symptom appears. Keep the diff scoped to the confirmed cause — unrelated refactors and other suspicious-looking code go into separate work.
+- Fix at the point the confirmed cause originates, not at the point the symptom appears. Keep the diff scoped to the confirmed cause — every behaviour flowing from that same cause is in scope, while unrelated refactors and other suspicious-looking code go into separate work.
 - When the cause turns out to hinge on a behaviour or spec judgment call (for instance, whether the current behaviour was ever intended), get the user's answer before writing the fix.
 
 **Done when:** the diff addresses exactly the confirmed cause and any behaviour-level judgment call carries the user's answer.
