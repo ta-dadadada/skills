@@ -54,6 +54,7 @@ The documentation surface is inventoried by searching the repository, not recall
 
 - For every delta against every relevant document, reach a verdict: **contradicted** (the diff made the description wrong), **incomplete** (a new item of a kind the surface already documents is missing from it), or **unaffected**.
 - Search the documentation surface for the identifiers the diff touched — command names, flags, paths, keys — to catch mentions that a manual read would miss.
+- A delta that no document mentions anywhere resolves to unaffected across the whole surface; documenting it from scratch stays outside this skill.
 
 **Done when:** every delta has a verdict against every relevant document, backed by an identifier search across the surface.
 
@@ -61,6 +62,7 @@ The documentation surface is inventoried by searching the repository, not recall
 
 - Fix every contradicted or incomplete finding, matching the surrounding document's style, language, and level of detail.
 - Leave alone anything the diff cannot settle on its own — unclear document intent, user-facing announcement copy, a tone or judgment call — and route it to the report as a question instead of guessing.
+- A provable fix applies even when it sits beside an escalated item; note the resulting transient inconsistency in the escalation entry. A heading and its body take one shared verdict — update both or escalate both.
 - Stay inside the delta's scope: an unrelated section that could use a tidy-up is out of scope for this pass.
 
 **Done when:** every contradicted or incomplete finding is either an applied edit in the surrounding style or an escalated item with the reason it needs a judgment call.
