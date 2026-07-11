@@ -9,7 +9,8 @@ description: >-
   the confirmed root cause minimally, then verify by re-running the
   original reproduction and lock it in with a regression test. Use when
   investigating a failing test, wrong output, crash, or regression whose
-  cause is not yet established. Not for changes whose cause is already
+  cause is not yet established, or when a supposed fix did not hold and
+  the defect has resurfaced. Not for changes whose cause is already
   demonstrated, not for performance tuning, and not for live-incident
   mitigation where restoring service precedes diagnosis.
 license: MIT
