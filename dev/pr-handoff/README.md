@@ -15,6 +15,12 @@ every detected agent's skills directory):
 npx skills add tadaair/skills --skill pr-handoff
 ```
 
+Or with [apm](https://github.com/microsoft/apm):
+
+```bash
+apm install tadaair/skills/dev/pr-handoff
+```
+
 Or copy the folder in directly:
 
 ```bash

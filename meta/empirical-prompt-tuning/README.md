@@ -15,6 +15,12 @@ every detected agent's skills directory):
 npx skills add tadaair/skills --skill empirical-prompt-tuning
 ```
 
+Or with [apm](https://github.com/microsoft/apm):
+
+```bash
+apm install tadaair/skills/meta/empirical-prompt-tuning
+```
+
 Or copy the folder in directly:
 
 ```bash

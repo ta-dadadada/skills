@@ -15,6 +15,12 @@ every detected agent's skills directory):
 npx skills add tadaair/skills --skill purpose-driven-software-design
 ```
 
+Or with [apm](https://github.com/microsoft/apm):
+
+```bash
+apm install tadaair/skills/dev/purpose-driven-software-design
+```
+
 Or copy the folder in directly:
 
 ```bash

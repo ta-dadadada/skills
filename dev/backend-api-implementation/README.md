@@ -15,6 +15,12 @@ every detected agent's skills directory):
 npx skills add tadaair/skills --skill backend-api-implementation
 ```
 
+Or with [apm](https://github.com/microsoft/apm):
+
+```bash
+apm install tadaair/skills/dev/backend-api-implementation
+```
+
 Or copy the folder in directly:
 
 ```bash

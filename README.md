@@ -24,6 +24,32 @@ npx skills add <owner>/<repository> --skill <skill-name>
 npx skills add example/agent-skills --skill pr-handoff
 ```
 
+### apm
+
+[`apm`](https://github.com/microsoft/apm)（Agent Package Manager）でも、
+各スキルディレクトリを `SKILL.md` を含む "skill bundle" としてそのまま
+インストールできます。マニフェストの追加は不要です。
+
+```bash
+apm install <owner>/<repository>/<skill-path>
+```
+
+例:
+
+```bash
+apm install example/agent-skills/dev/pr-handoff
+```
+
+`apm.yml` で依存として宣言する場合:
+
+```yaml
+dependencies:
+  apm:
+    - example/agent-skills/dev/pr-handoff
+```
+
+その後 `apm install` を実行します。
+
 対象を明示したい場合や CLI を利用しない場合は、次のツール別の配置先へ
 スキルディレクトリをコピーします。GitHub のリポジトリをそのまま取得するには
 [`degit`](https://github.com/Rich-Harris/degit) を利用できます。

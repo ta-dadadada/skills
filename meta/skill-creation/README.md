@@ -15,6 +15,12 @@ every detected agent's skills directory):
 npx skills add tadaair/skills --skill skill-creation
 ```
 
+Or with [apm](https://github.com/microsoft/apm):
+
+```bash
+apm install tadaair/skills/meta/skill-creation
+```
+
 Or copy the folder in directly:
 
 ```bash

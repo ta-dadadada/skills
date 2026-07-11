@@ -15,6 +15,12 @@ every detected agent's skills directory):
 npx skills add tadaair/skills --skill terraform-implementation
 ```
 
+Or with [apm](https://github.com/microsoft/apm):
+
+```bash
+apm install tadaair/skills/dev/terraform-implementation
+```
+
 Or copy the folder in directly:
 
 ```bash
