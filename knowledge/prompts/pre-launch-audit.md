@@ -92,4 +92,8 @@ accessibility, and UI consistency — intended to run against an application
 > A list of issues requiring architectural changes or deeper investigation.
 > A concise release recommendation: Safe to ship, Ship with known risks, or Do not ship, with justification.
 >
+
+## Sources
+
+- X post by @shugarDadddy: https://x.com/shugarDadddy/status/2075148611680149656 — collected 2026-07.
 > Be adversarial in the security review, systematic in the accessibility review, and precise in the UI review. Do not limit the audit to obvious linting or styling issues. Trace actual user flows and failure scenarios, challenge assumptions, and identify problems that are likely to emerge under real users, unreliable networks, concurrent actions, and malicious input.

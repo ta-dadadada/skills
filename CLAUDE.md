@@ -4,8 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Language
 
-- Use English for all code, comments, and documentation.
+- Skill bodies (`SKILL.md`), `references/`, and `knowledge/` content are English — these are read by agents and by other maintainers, and are the material Agent Skills syndicates outside this repository.
 - ユーザとのやり取りは日本語で行うこと。
+- 例外: ユーザー向け運用文書（この `CLAUDE.md` 自身、リポジトリ直下 `README.md`）と、明示的なローカライズ版（`*-ja.md` などファイル名で示された翻訳）は日本語可。スキル本体の言語を変えるものではない。
 
 ## このリポジトリについて
 

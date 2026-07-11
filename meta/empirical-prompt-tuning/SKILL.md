@@ -13,7 +13,8 @@ The author of a prompt cannot judge its quality. The clearer the writer thinks s
 - When an agent does not behave as expected and you want to attribute the cause to ambiguity on the instruction side
 - When hardening high-importance instructions (frequently used skills, automation-core prompts)
 
-When not to use:
+## When not to use
+
 - One-off throwaway prompts (evaluation cost does not pay off)
 - When the goal is not to improve success rate but merely to reflect the writer's subjective preferences
 
@@ -25,12 +26,16 @@ When not to use:
    - If there is a gap, reconcile description or body before moving to iter 1
    - Example: description says "navigation / form filling / data extraction" but the body is only a CLI reference for `npx playwright test` — detect that kind of gap
    - If you skip this, the subagent will "reinterpret" the body to match the description, and accuracy will come out high even though the skill does not actually meet the requirements (false positive)
+   - **Done when:** every description trigger maps to body content and vice versa, or the gap is reconciled before iter 1.
 
 1. **Baseline preparation**: Fix the target prompt and prepare the following two things.
    - **Evaluation scenarios**, 2 to 3 kinds (1 median + 1 to 2 edge). Realistic tasks that assume actual situations where the target prompt would apply.
    - **Requirements checklist** (for computing accuracy). For each scenario, enumerate 3 to 7 items the deliverable must satisfy. Accuracy % = items satisfied / total items. Fix this in advance (do not move it afterward).
+   - **Done when:** scenarios and their checklists exist in writing and will not be edited after evaluation starts.
 2. **Bias-free read**: Have a "blank-slate" executor read the instruction. **Dispatch a new subagent** via the Task tool. Do not substitute with a self-reread (it is structurally impossible to view text you just wrote objectively). When running multiple scenarios in parallel, place multiple Agent invocations within a single message. For how to handle environments where dispatch is unavailable, see the "Environment constraints" section.
+   - **Done when:** every scenario has been dispatched to a fresh subagent that has never seen this prompt before.
 3. **Execution**: Hand the subagent a prompt that follows the **subagent invocation contract** described below, and have it execute the scenario. The executor produces an implementation or output and returns a self-report at the end.
+   - **Done when:** each dispatched subagent has returned a report in the contract's structure.
 4. **Two-sided evaluation**: Record the following from the returned results.
    - **Executor self-report** (extracted from the body of the subagent's report): unclear points / discretionary fill-ins / places where template application got stuck
    - **Trace interpretation**: each unclear point is tagged with the phase it originated in (Understanding / Planning / Execution / Formatting — see "Subagent invocation contract"). Phase-local fixes land better than global "the prompt was unclear" fixes; a single Understanding-phase ambiguity often looks like a chain of Execution-phase failures.
@@ -43,11 +48,15 @@ When not to use:
      - Retry count (how many times the subagent redid the same decision. Extract from the subagent's self-report; not measurable from the instruction side)
      - **On failure, add a one-line note to the "unclear points" section of the presentation format stating "which [critical] item dropped"** (for root cause tracing)
    - The requirements checklist must include **at least one** `[critical]`-tagged item (if there are zero, the success judgment becomes vacuous). Do not add or remove [critical] tags after the fact.
+   - **Done when:** every scenario has a filled evaluation-axis row and every unclear point carries Issue / Cause / General Fix Rule.
 5. **Apply the diff**: Put the minimum fix into the prompt to eliminate the unclear points. One theme per iteration (multiple related fixes are OK, unrelated fixes go to next time).
    - **Before applying the fix, explicitly state "which item in the requirements checklist / judgment wording this fix satisfies"** (fixes inferred from axis names often do not land. See the "Fix propagation patterns" section below.)
    - **Consult the failure pattern ledger first**. If the structured reflection's `General Fix Rule` already matches a known pattern, the first question is "why didn't the existing fix prevent it?" — the fix may need to move closer to the top of the prompt, or be re-worded, before a new ledger entry is added.
+   - **Done when:** the prompt is edited, the edit is stated to satisfy a named checklist item or judgment wording, and the ledger has been checked for a matching pattern.
 6. **Re-evaluate**: Run 2 → 5 again with a new subagent (do not reuse the same agent: it has learned the previous improvements). Increase parallelism if iterating further does not plateau improvements.
+   - **Done when:** a fresh subagent has evaluated the edited prompt against the same scenarios and checklists.
 7. **Convergence check**: The rough rule is "stop when 2 consecutive iterations have zero new unclear points AND metric improvements fall below the thresholds (below)". Make it 3 consecutive for high-importance prompts.
+   - **Done when:** the "Iteration stopping criteria" section below has been checked against the latest rounds and yields convergence, divergence, or an explicit resource-cutoff call.
 
 ## Evaluation axes
 
@@ -239,7 +248,8 @@ Record and present to the user with the following form at each iteration:
 
 ## Related
 
-- `superpowers:writing-skills` — the TDD approach for skill creation. Essentially the same as this skill's "baseline → fix → rerun with a subagent"
-- `retrospective-codify` — fixating learnings after a task. This skill is during prompt development, retrospective-codify is after a task ends; use them differently
-- `superpowers:dispatching-parallel-agents` — conventions for running multiple scenarios in parallel
-- `waxa-eval` — operating manual for the `waxa` CLI, which automates the eval / iterate loop into an external process with a YAML scenario format and persistent ledger. This skill (empirical-prompt-tuning) covers the **methodology and the in-session Task-tool subagent flow**; `waxa-eval` covers the **CLI operation and YAML authoring**. They are complementary — use empirical for the Iter 0 static check, the `[critical]`-tagged checklist, and `tool_uses`-based skill diagnosis (none of which are accessible to a CLI process); use waxa-eval when persistence, CI repeatability, or external adoption gates are needed.
+- `skill-creation` — the workflow this skill's Step 6 (Validation & verification) hands off to for a multi-iteration tuning loop; use `skill-creation` to build or restructure a skill, then this skill to harden it empirically.
+
+---
+
+Adapted from [mizchi/skills](https://github.com/mizchi/skills/tree/main/meta/empirical-prompt-tuning) by mizchi, MIT License (repository default). The "When not to use" heading, per-step `Done when:` criteria, and this Related section are original additions for this repository.

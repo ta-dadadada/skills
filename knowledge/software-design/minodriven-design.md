@@ -77,7 +77,7 @@ constraints, not visible physical attributes** ("Invisible Driven Design").
 - Alignment: debt explainable in speed/cost/profit terms?
 - AI use: purpose, quality attributes, context, contracts provided?
 
-## Key sources
+## Sources
 
 Primary sources concentrate in Qiita, note, X (`@MinoDriven`), Speaker Deck,
 the books, and READYFOR Tech Blog. No confirmed Zenn account; GitHub profile
