@@ -99,6 +99,7 @@ npx degit example/agent-skills/dev/pr-handoff .cursor/skills/pr-handoff
 ## 収録スキル
 
 - `dev/backend-api-implementation`
+- `dev/characterization-testing`
 - `dev/hypothesis-driven-debugging`
 - `dev/pr-handoff`
 - `dev/purpose-driven-software-design`
