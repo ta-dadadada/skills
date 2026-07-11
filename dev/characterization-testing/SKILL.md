@@ -39,13 +39,14 @@ A characterization test asserts what the code actually does, not what it should 
 
 - Enumerate the target code's observable behaviour surface: entry points, outputs, side effects (files, database, external calls), and known consumers.
 - Split the surface into two lists: behaviour that must be preserved, and behaviour that this change intentionally alters.
+- When the requested change states a property ("underscores survive") rather than a full input-to-output mapping, enumerate its interactions with each existing rule as intentionally-change entries, so every corner-case outcome is approved as intent rather than discovered as accident.
 
 **Done when:** a written list splits the observable behaviours into preserve and intentionally-change, with the entry points that exercise each.
 
 ### Step 2 — Find the seams
 
 - Find the least invasive seam that gets the target code under test: an existing harness, a function callable as-is, or an injectable dependency.
-- Any refactor performed only to create a seam is limited to mechanical, behaviour-preserving moves (extract, parameterize) and is recorded as such.
+- Any refactor performed only to create a seam is limited to mechanical, behaviour-preserving moves (extract, parameterize) and is recorded as such in the test file's header or the Step 5 report.
 
 **Done when:** the test harness runs against the target code, and any seam-creating refactor is recorded as mechanical and behaviour-preserving.
 
