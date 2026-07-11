@@ -78,7 +78,7 @@ A characterization test asserts what the code actually does, not what it should 
 | "This is obviously a bug, I'll just fix it" | mixing a fix into the safety net erases what the net was proving; report it and let the fix be a separate decision |
 | "Let me refactor first to make it testable" | a large refactor with no net in place is exactly what causes accidents; seam creation stays mechanical |
 | "Aim for 80% line coverage" | the bar is the Step 1 behaviour list, not a coverage number |
-| "The test failed, just update the expected value" | a failure outside the intentionally-change list is a caught accident, not a stale expectation |
+| "The test failed, just update the expected value" | a failure outside the intentionally-change list is a caught accident; aligning the expectation would make the net lie |
 | "No time for a safety net, just make the change" | a change without a net costs more time later, in the investigation it forces |
 
 ## Related
