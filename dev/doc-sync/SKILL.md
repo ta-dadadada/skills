@@ -68,6 +68,7 @@ The documentation surface is inventoried by searching the repository, not recall
 ### Step 5 — Report the reconciliation
 
 - Report in three categories: documentation updated (what and why), documentation checked and found unaffected, and items left for the user's judgment.
+- This report becomes the input to `pr-handoff`.
 
 **Done when:** the report lists updated, checked-and-unaffected, and escalated items — all three categories, even when empty.
 
@@ -79,7 +80,7 @@ The documentation surface is inventoried by searching the repository, not recall
 | "This doc probably isn't related" | unaffected is a verdict earned by an identifier search, not an assumption |
 | "While I'm here, this old section could use a rewrite" | anything outside the delta's scope is separate work |
 | "The intent here is unclear but I'll take a guess" | a rewrite the diff cannot prove is a guess; escalate it as a question instead |
-| "Only write a CHANGELOG entry if asked" | write one whenever the repo's own convention requires it — confirmed in Step 2 |
+| "The CHANGELOG gets an entry every time" | only when the repo's own convention requires one — confirmed in Step 2 |
 | "Nothing needed changing, so nothing to report" | checked-and-unaffected is a real finding, distinct from a silent skip; report all three categories |
 
 ## Related
