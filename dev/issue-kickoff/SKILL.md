@@ -42,7 +42,8 @@ What counts as done is agreed before any code is written. Ambiguity is never fil
 
 ### Step 1 — Read the source of work
 
-- Read the issue body, any linked discussion, and referenced code — `gh issue view` for a GitHub issue, or the conversation itself for a verbal request.
+- Read the issue body, any linked discussion, and referenced code — `gh issue view` for a GitHub issue, or the conversation itself for a verbal request — plus the minimal look at the code needed to phrase the Step 3 questions; the full landing-zone survey stays in Step 4.
+- A linked reference that cannot be read (no gh, nothing pasted) is recorded as unread; when the work's independence from it cannot be established, it joins the question gate.
 - Restate the requirement in your own words. Record the issue's metadata: number, labels, related issues or PRs — or note explicitly that no tracked issue exists.
 - Separate the actual requirement from background noise in the source material.
 
@@ -57,7 +58,7 @@ What counts as done is agreed before any code is written. Ambiguity is never fil
 
 ### Step 3 — Question gate
 
-- Batch every ambiguity that would change the implementation, plus every proposed-label criterion, into questions for the user — and do not proceed until they answer. A plan that already looks finished invites rubber-stamping guesses instead of correcting them, so nothing plan-shaped is produced yet.
+- Batch every ambiguity that would change the implementation into individually numbered questions for the user, put the proposed-label criteria to them as one consolidated confirm-or-amend item alongside, and stop until the answers arrive. A plan that already looks finished invites rubber-stamping guesses instead of correcting them, so nothing plan-shaped is produced yet.
 - Non-blocking questions get noted in the plan instead of asked.
 
 **Done when:** every blocking ambiguity has a user answer, or none existed.
