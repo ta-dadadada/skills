@@ -105,6 +105,7 @@ npx degit example/agent-skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/issue-kickoff`
 - `dev/pr-handoff`
 - `dev/purpose-driven-software-design`
+- `dev/session-handover`
 - `dev/terraform-implementation`
 - `meta/empirical-prompt-tuning`
 - `meta/skill-creation`
