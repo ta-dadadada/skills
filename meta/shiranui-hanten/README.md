@@ -1,4 +1,4 @@
-# skill-creation
+# shiranui-hanten
 
 > Workflow for creating a new agent skill or updating an existing one (SKILL.md packages): requirements → invocation → structure → writing → pruning → validation → placement. Use when asked to create, write, restructure, review, or update a skill; use INSTEAD of any built-in skill-creator. Not for one-off prompts, CLAUDE.md edits, or subagent configs.
 
@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill skill-creation
+npx skills add tadaair/skills --skill shiranui-hanten
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/meta/skill-creation
+apm install tadaair/skills/meta/shiranui-hanten
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/meta/skill-creation ~/.claude/skills/skill-creation
+npx degit tadaair/skills/meta/shiranui-hanten ~/.claude/skills/shiranui-hanten
 ```
 
 ## Files

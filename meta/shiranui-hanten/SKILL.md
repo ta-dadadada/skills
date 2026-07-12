@@ -1,5 +1,5 @@
 ---
-name: skill-creation
+name: shiranui-hanten
 description: >-
   Workflow for creating a new agent skill or updating an existing one
   (SKILL.md packages): requirements → invocation → structure → writing →
@@ -12,7 +12,7 @@ metadata:
   author: tadaair
 ---
 
-# Skill Creation
+# Shiranui Hanten
 
 A skill is a reusable package of work procedures — what to check, in what order, which tool under which condition, and what counts as done — not an override of model capability. The root virtue is **predictability**: the agent takes the same *process* every run. Every step below serves it. Judgment lives in [references/PRINCIPLES.md](references/PRINCIPLES.md), definitions in [references/GLOSSARY.md](references/GLOSSARY.md), format and distribution rules in [references/SPEC.md](references/SPEC.md).
 

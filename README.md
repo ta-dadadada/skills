@@ -108,4 +108,4 @@ npx degit example/agent-skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/session-handover`
 - `dev/terraform-implementation`
 - `meta/empirical-prompt-tuning`
-- `meta/skill-creation`
+- `meta/shiranui-hanten`

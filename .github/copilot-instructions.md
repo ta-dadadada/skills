@@ -8,7 +8,7 @@ content itself is English.
 Agent skills, subagent configs, and prompt files for coding agents (Claude
 Code, Codex, GitHub Copilot, Cursor). Every deliverable is Markdown; there
 is no build step. The authority for skill structure and style is
-`meta/skill-creation/SKILL.md` and its `references/` (SPEC, PRINCIPLES,
+`meta/shiranui-hanten/SKILL.md` and its `references/` (SPEC, PRINCIPLES,
 GLOSSARY).
 
 ## Layout
@@ -36,7 +36,7 @@ GLOSSARY).
 - The `README.md` blockquote equals the frontmatter description verbatim.
 - No secrets, tokens, or internal endpoints anywhere in a skill — skill
   contents leave the environment.
-- `python3 meta/skill-creation/scripts/validate_skill.py <skill-dir>`
+- `python3 meta/shiranui-hanten/scripts/validate_skill.py <skill-dir>`
   must pass for every touched skill.
 
 ## Rules to check when reviewing knowledge files

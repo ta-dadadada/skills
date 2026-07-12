@@ -248,7 +248,7 @@ Record and present to the user with the following form at each iteration:
 
 ## Related
 
-- `skill-creation` — the workflow this skill's Step 6 (Validation & verification) hands off to for a multi-iteration tuning loop; use `skill-creation` to build or restructure a skill, then this skill to harden it empirically.
+- `shiranui-hanten` — the workflow this skill's Step 6 (Validation & verification) hands off to for a multi-iteration tuning loop; use `shiranui-hanten` to build or restructure a skill, then this skill to harden it empirically.
 
 ---
 
