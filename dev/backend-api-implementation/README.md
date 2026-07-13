@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill backend-api-implementation
+npx skills add ta-dadadada/skills --skill backend-api-implementation
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/dev/backend-api-implementation
+apm install ta-dadadada/skills/dev/backend-api-implementation
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/dev/backend-api-implementation ~/.claude/skills/backend-api-implementation
+npx degit ta-dadadada/skills/dev/backend-api-implementation ~/.claude/skills/backend-api-implementation
 ```
 
 ## Files

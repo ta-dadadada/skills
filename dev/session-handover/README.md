@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill session-handover
+npx skills add ta-dadadada/skills --skill session-handover
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/dev/session-handover
+apm install ta-dadadada/skills/dev/session-handover
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/dev/session-handover ~/.claude/skills/session-handover
+npx degit ta-dadadada/skills/dev/session-handover ~/.claude/skills/session-handover
 ```
 
 ## Files

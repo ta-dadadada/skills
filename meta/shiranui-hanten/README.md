@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill shiranui-hanten
+npx skills add ta-dadadada/skills --skill shiranui-hanten
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/meta/shiranui-hanten
+apm install ta-dadadada/skills/meta/shiranui-hanten
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/meta/shiranui-hanten ~/.claude/skills/shiranui-hanten
+npx degit ta-dadadada/skills/meta/shiranui-hanten ~/.claude/skills/shiranui-hanten
 ```
 
 ## Files

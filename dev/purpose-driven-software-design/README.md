@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill purpose-driven-software-design
+npx skills add ta-dadadada/skills --skill purpose-driven-software-design
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/dev/purpose-driven-software-design
+apm install ta-dadadada/skills/dev/purpose-driven-software-design
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/dev/purpose-driven-software-design ~/.claude/skills/purpose-driven-software-design
+npx degit ta-dadadada/skills/dev/purpose-driven-software-design ~/.claude/skills/purpose-driven-software-design
 ```
 
 ## Files

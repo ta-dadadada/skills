@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill hypothesis-driven-debugging
+npx skills add ta-dadadada/skills --skill hypothesis-driven-debugging
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/dev/hypothesis-driven-debugging
+apm install ta-dadadada/skills/dev/hypothesis-driven-debugging
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/dev/hypothesis-driven-debugging ~/.claude/skills/hypothesis-driven-debugging
+npx degit ta-dadadada/skills/dev/hypothesis-driven-debugging ~/.claude/skills/hypothesis-driven-debugging
 ```
 
 ## Files

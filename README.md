@@ -21,7 +21,7 @@ npx skills add <owner>/<repository> --skill <skill-name>
 例:
 
 ```bash
-npx skills add example/agent-skills --skill pr-handoff
+npx skills add ta-dadadada/skills --skill pr-handoff
 ```
 
 ### apm
@@ -37,7 +37,7 @@ apm install <owner>/<repository>/<skill-path>
 例:
 
 ```bash
-apm install example/agent-skills/dev/pr-handoff
+apm install ta-dadadada/skills/dev/pr-handoff
 ```
 
 `apm.yml` で依存として宣言する場合:
@@ -45,7 +45,7 @@ apm install example/agent-skills/dev/pr-handoff
 ```yaml
 dependencies:
   apm:
-    - example/agent-skills/dev/pr-handoff
+    - ta-dadadada/skills/dev/pr-handoff
 ```
 
 その後 `apm install` を実行します。
@@ -74,16 +74,16 @@ npx degit <owner>/<repository>/<skill-path> <destination>
 
 ```bash
 # Codex CLI
-npx degit example/agent-skills/dev/pr-handoff ~/.codex/skills/pr-handoff
+npx degit ta-dadadada/skills/dev/pr-handoff ~/.codex/skills/pr-handoff
 
 # Claude Code
-npx degit example/agent-skills/dev/pr-handoff ~/.claude/skills/pr-handoff
+npx degit ta-dadadada/skills/dev/pr-handoff ~/.claude/skills/pr-handoff
 
 # GitHub Copilot（個人用）
-npx degit example/agent-skills/dev/pr-handoff ~/.copilot/skills/pr-handoff
+npx degit ta-dadadada/skills/dev/pr-handoff ~/.copilot/skills/pr-handoff
 
 # Cursor（プロジェクト用。実行場所は対象プロジェクトのルート）
-npx degit example/agent-skills/dev/pr-handoff .cursor/skills/pr-handoff
+npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 ```
 
 プロジェクト用スキルは、コピー後に `.agents/skills/` などの対象ディレクトリを

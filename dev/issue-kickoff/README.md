@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill issue-kickoff
+npx skills add ta-dadadada/skills --skill issue-kickoff
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/dev/issue-kickoff
+apm install ta-dadadada/skills/dev/issue-kickoff
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/dev/issue-kickoff ~/.claude/skills/issue-kickoff
+npx degit ta-dadadada/skills/dev/issue-kickoff ~/.claude/skills/issue-kickoff
 ```
 
 ## Files

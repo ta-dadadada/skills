@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill doc-sync
+npx skills add ta-dadadada/skills --skill doc-sync
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/dev/doc-sync
+apm install ta-dadadada/skills/dev/doc-sync
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/dev/doc-sync ~/.claude/skills/doc-sync
+npx degit ta-dadadada/skills/dev/doc-sync ~/.claude/skills/doc-sync
 ```
 
 ## Files

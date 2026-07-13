@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill pr-handoff
+npx skills add ta-dadadada/skills --skill pr-handoff
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/dev/pr-handoff
+apm install ta-dadadada/skills/dev/pr-handoff
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/dev/pr-handoff ~/.claude/skills/pr-handoff
+npx degit ta-dadadada/skills/dev/pr-handoff ~/.claude/skills/pr-handoff
 ```
 
 ## Files

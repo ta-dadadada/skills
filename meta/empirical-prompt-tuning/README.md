@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill empirical-prompt-tuning
+npx skills add ta-dadadada/skills --skill empirical-prompt-tuning
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/meta/empirical-prompt-tuning
+apm install ta-dadadada/skills/meta/empirical-prompt-tuning
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/meta/empirical-prompt-tuning ~/.claude/skills/empirical-prompt-tuning
+npx degit ta-dadadada/skills/meta/empirical-prompt-tuning ~/.claude/skills/empirical-prompt-tuning
 ```
 
 ## Files

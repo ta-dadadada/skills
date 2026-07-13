@@ -12,19 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill characterization-testing
+npx skills add ta-dadadada/skills --skill characterization-testing
 ```
 
 Or with [apm](https://github.com/microsoft/apm):
 
 ```bash
-apm install tadaair/skills/dev/characterization-testing
+apm install ta-dadadada/skills/dev/characterization-testing
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/dev/characterization-testing ~/.claude/skills/characterization-testing
+npx degit ta-dadadada/skills/dev/characterization-testing ~/.claude/skills/characterization-testing
 ```
 
 ## Files
