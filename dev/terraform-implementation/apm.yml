@@ -1,0 +1,14 @@
+name: terraform-implementation
+description: 'Blast-radius-first workflow for implementing a change in an existing
+  Terraform codebase: discover the project''s conventions (layout, state boundaries,
+  naming, pinning, checks), predict every touched resource''s plan action (create
+  / update in-place / replace / destroy) before writing code, implement following
+  those conventions, verify with fmt + validate + the project''s configured linters,
+  hand off the diff with the prediction. terraform plan runs only when explicitly
+  instructed. Provider-agnostic. Use when adding, changing, renaming/moving, or removing
+  resources, data sources, modules, variables, or outputs in existing Terraform code.
+  Not for designing a new stack from scratch (backend, state layout, directory strategy)
+  or for operating infrastructure (apply, destroy, state surgery).'
+license: MIT
+type: skill
+version: '0.1.0'

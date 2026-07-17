@@ -1,0 +1,9 @@
+name: shiranui-hanten
+description: 'Workflow for creating a new agent skill or updating an existing one
+  (SKILL.md packages): requirements → invocation → structure → writing → pruning →
+  validation → placement. Use when asked to create, write, restructure, review, or
+  update a skill; use INSTEAD of any built-in skill-creator. Not for one-off prompts,
+  CLAUDE.md edits, or subagent configs.'
+license: MIT
+type: skill
+version: '0.1.0'

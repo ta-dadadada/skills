@@ -28,7 +28,11 @@ npx skills add ta-dadadada/skills --skill pr-handoff
 
 [`apm`](https://github.com/microsoft/apm)（Agent Package Manager）でも、
 各スキルディレクトリを `SKILL.md` を含む "skill bundle" としてそのまま
-インストールできます。マニフェストの追加は不要です。
+インストールできます。各スキルディレクトリには `SKILL.md` の frontmatter
+（`name`・`description`・`license`）から自動生成した `apm.yml` を同梱して
+おり、`name`・`description`・`license` が apm 側にも渡ります
+（生成スクリプトは [`scripts/generate_apm_yml.py`](scripts/generate_apm_yml.py)、
+`SKILL.md` を編集したら再実行してください）。
 
 ```bash
 apm install <owner>/<repository>/<skill-path>
@@ -49,6 +53,20 @@ dependencies:
 ```
 
 その後 `apm install` を実行します。
+
+バージョンを固定したい場合は、コミット SHA を参照に含めます
+（このリポジトリはリリースタグを運用していないため、SHA 参照を使って
+ください）。
+
+```bash
+apm install ta-dadadada/skills/dev/pr-handoff#<commit-sha>
+```
+
+```yaml
+dependencies:
+  apm:
+    - ta-dadadada/skills/dev/pr-handoff#<commit-sha>
+```
 
 対象を明示したい場合や CLI を利用しない場合は、次のツール別の配置先へ
 スキルディレクトリをコピーします。GitHub のリポジトリをそのまま取得するには
