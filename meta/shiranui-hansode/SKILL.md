@@ -1,9 +1,12 @@
 ---
-name: empirical-prompt-tuning
+name: shiranui-hansode
 description: Methodology for iteratively improving agent-facing instructions (skills / slash commands / CLAUDE.md / code-gen prompts) via bias-free executor + two-sided evaluation (self-report + instruction-side metrics). Meta-skill, invoke ONLY when the user explicitly asks for an "empirical" eval of a prompt or skill, or for the Iter-0 description / body consistency check. Do NOT auto-invoke after every skill edit; this loop is operator-triggered by name.
+license: MIT
 ---
 
 # Empirical Prompt Tuning
+
+Forked from [mizchi/skills: meta/empirical-prompt-tuning](https://github.com/mizchi/skills/tree/main/meta/empirical-prompt-tuning); substantially modified for this repository's conventions (added per-step `Done when:` criteria, reworked the `Related` section, and other changes below) and treated here as an independent skill.
 
 The author of a prompt cannot judge its quality. The clearer the writer thinks something is, the more likely another agent will stumble on it. The core of this skill is to **have a bias-free executor actually run the instruction, evaluate it two-sidedly, and iterate**. Do not stop until improvements plateau.
 
@@ -171,7 +174,7 @@ Entry format:
 Rules:
 - Before generating a fix in Workflow step 5, scan the ledger. If the current `General Fix Rule` matches an existing entry, update `Seen in` and investigate why the existing fix did not prevent recurrence (wording ambiguity? position too late in the prompt? missing example?) before creating a new entry.
 - A pattern that recurs 3+ times despite targeted fixes is a structural signal — escalate to the "Divergence" criterion above rather than continuing to patch.
-- The ledger is per-target-prompt, not global across all empirical-prompt-tuning runs.
+- The ledger is per-target-prompt, not global across all shiranui-hansode runs.
 
 ## Variant exploration (optional, plateau-breaking)
 
@@ -249,7 +252,3 @@ Record and present to the user with the following form at each iteration:
 ## Related
 
 - `shiranui-hanten` — the workflow this skill's Step 6 (Validation & verification) hands off to for a multi-iteration tuning loop; use `shiranui-hanten` to build or restructure a skill, then this skill to harden it empirically.
-
----
-
-Adapted from [mizchi/skills](https://github.com/mizchi/skills/tree/main/meta/empirical-prompt-tuning) by mizchi, MIT License (repository default). The "When not to use" heading, per-step `Done when:` criteria, and this Related section are original additions for this repository.

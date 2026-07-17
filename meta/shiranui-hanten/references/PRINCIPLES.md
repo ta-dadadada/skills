@@ -100,7 +100,7 @@ Proofreading is not verification — the author reads intent into their own text
 2. **Trajectory** — did the agent take the intended process? This is where a skill's predictability lives or dies.
 3. **Single step** — at each decision point, did the skill's wording produce the intended choice?
 
-Split **offline evaluation** (prepared regression scenarios, before release) from **online evaluation** (observing real use, after). The minimum bar for any new or changed skill: one **representative task** run by a fresh executor — an agent with no authorial context — while you watch the trajectory. Every stumble or discretionary fill-in marks a wording or structure defect; feed it back into writing and pruning. For a multi-iteration loop with instruction-side metrics, hand off to the `empirical-prompt-tuning` skill.
+Split **offline evaluation** (prepared regression scenarios, before release) from **online evaluation** (observing real use, after). The minimum bar for any new or changed skill: one **representative task** run by a fresh executor — an agent with no authorial context — while you watch the trajectory. Every stumble or discretionary fill-in marks a wording or structure defect; feed it back into writing and pruning. For a multi-iteration loop with instruction-side metrics, hand off to the `shiranui-hansode` skill.
 
 ## Safety
 

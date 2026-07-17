@@ -125,5 +125,5 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/purpose-driven-software-design`
 - `dev/session-handover`
 - `dev/terraform-implementation`
-- `meta/empirical-prompt-tuning`
+- `meta/shiranui-hansode`
 - `meta/shiranui-hanten`
