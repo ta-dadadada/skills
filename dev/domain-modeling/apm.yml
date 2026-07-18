@@ -1,0 +1,17 @@
+name: domain-modeling
+description: 'Evidence-first domain modeling workflow: fix the modeling purpose and
+  scope, extract graded domain facts and vocabulary from the available sources, reconstruct
+  behaviour as scenarios, commands, and domain events, capture business rules and
+  invariants, derive candidate concepts and bounded-context candidates, challenge
+  the model, and deliver a domain-model report that keeps evidence, inference, hypothesis,
+  and open question distinct. Behaviour before structure; tactical DDD patterns only
+  where they sharpen the model. Use when exploring an unfamiliar business domain,
+  extracting a domain model from requirements or an existing codebase, defining ubiquitous
+  language or resolving terminology conflicts, identifying business rules and invariants,
+  discovering bounded contexts and their relationships, distilling the core domain,
+  or reviewing an existing domain model. Not for deciding code structure — hand that
+  to purpose-driven-software-design — and not for one-off diagram generation from
+  an already-documented model.'
+license: MIT
+type: skill
+version: '0.1.0'
