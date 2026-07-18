@@ -32,7 +32,20 @@ npx skills add ta-dadadada/skills --skill pr-handoff
 （`name`・`description`・`license`）から自動生成した `apm.yml` を同梱して
 おり、`name`・`description`・`license` が apm 側にも渡ります
 （生成スクリプトは [`scripts/generate_apm_yml.py`](scripts/generate_apm_yml.py)、
-`SKILL.md` を編集したら再実行してください）。
+`SKILL.md` を編集したら再実行してください。リポジトリ直下の `apm.yml`
+も同スクリプトが再生成します）。
+
+#### 全スキルをまとめてインストールする
+
+リポジトリ直下の [`apm.yml`](apm.yml) が全スキルを依存として列挙した
+集約パッケージになっているため、リポジトリを 1 つ指定するだけで収録
+スキルすべてがインストールされます。
+
+```bash
+apm install ta-dadadada/skills
+```
+
+#### 個別のスキルをインストールする
 
 ```bash
 apm install <owner>/<repository>/<skill-path>
@@ -119,6 +132,7 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/backend-api-implementation`
 - `dev/characterization-testing`
 - `dev/doc-sync`
+- `dev/domain-modeling`
 - `dev/hypothesis-driven-debugging`
 - `dev/issue-kickoff`
 - `dev/pr-handoff`

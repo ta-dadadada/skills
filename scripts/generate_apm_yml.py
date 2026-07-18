@@ -11,6 +11,11 @@ Walks the repository (respecting git tracking / .gitignore), finds every
 SKILL.md, parses its YAML frontmatter, and writes a sibling apm.yml derived
 from the `name`, `description`, and `license` fields. SKILL.md itself is
 never modified.
+
+Also writes a root apm.yml that aggregates every skill as an APM dependency
+(`<owner>/<repo>/<skill-path>`), so `apm install <owner>/<repo>` installs the
+whole collection in one command. The repo slug is derived from `git remote
+get-url origin`.
 """
 
 from __future__ import annotations
@@ -93,6 +98,43 @@ def build_apm_yml(frontmatter: dict) -> str:
     )
 
 
+def repo_slug(repo_root: Path) -> str:
+    """Derive `owner/repo` from the origin remote URL (SSH or HTTPS)."""
+    result = subprocess.run(
+        ["git", "remote", "get-url", "origin"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    url = result.stdout.strip()
+    # git@github.com:owner/repo.git / https://github.com/owner/repo(.git)
+    tail = url.split(":", 1)[-1] if url.startswith("git@") else "/".join(url.split("/")[-2:])
+    return tail.removesuffix(".git")
+
+
+def build_root_apm_yml(slug: str, skill_paths: list[Path], repo_root: Path) -> str:
+    ordered = {
+        "name": slug.split("/")[-1],
+        "description": "Agent skill collection; installing this package installs every skill below as a dependency.",
+        "license": "MIT",
+        "version": QuotedString("0.1.0"),
+        "dependencies": {
+            "apm": [
+                f"{slug}/{skill.parent.relative_to(repo_root).as_posix()}"
+                for skill in skill_paths
+            ]
+        },
+    }
+    return yaml.dump(
+        ordered,
+        sort_keys=False,
+        allow_unicode=True,
+        default_flow_style=False,
+        width=120,
+    )
+
+
 def main() -> int:
     skill_files = find_skill_files(REPO_ROOT)
 
@@ -129,6 +171,15 @@ def main() -> int:
 
     total = generated + skipped
     print(f"Processed {total} SKILL.md file(s): {generated} apm.yml generated, {skipped} skipped.")
+
+    if skipped == 0 and skill_files:
+        slug = repo_slug(REPO_ROOT)
+        root_path = REPO_ROOT / "apm.yml"
+        root_path.write_text(build_root_apm_yml(slug, skill_files, REPO_ROOT), encoding="utf-8")
+        print(f"Root apm.yml generated with {len(skill_files)} skill dependencies ({slug}).")
+    elif skipped:
+        print("Root apm.yml not regenerated because some SKILL.md files were skipped.", file=sys.stderr)
+        return 1
     return 0
 
 
