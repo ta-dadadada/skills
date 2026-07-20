@@ -3,7 +3,7 @@
 Distributing one canonical skill to Codex, Claude Code, GitHub Copilot, and
 Cursor. **The basics — frontmatter spec, directory layout, placement paths,
 portability rules — are maintained in
-[`meta/skill-creation/references/SPEC.md`](../../meta/skill-creation/references/SPEC.md);
+[`meta/shiranui-hanten/references/SPEC.md`](../../meta/shiranui-hanten/references/SPEC.md);
 read that first.** This file keeps what SPEC.md doesn't: per-tool extension
 details, the support comparison, and a build-pipeline design for when copies
 and overlays need automation.

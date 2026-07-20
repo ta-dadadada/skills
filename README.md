@@ -21,7 +21,64 @@ npx skills add <owner>/<repository> --skill <skill-name>
 例:
 
 ```bash
-npx skills add example/agent-skills --skill pr-handoff
+npx skills add ta-dadadada/skills --skill pr-handoff
+```
+
+### apm
+
+[`apm`](https://github.com/microsoft/apm)（Agent Package Manager）でも、
+各スキルディレクトリを `SKILL.md` を含む "skill bundle" としてそのまま
+インストールできます。各スキルディレクトリには `SKILL.md` の frontmatter
+（`name`・`description`・`license`）から自動生成した `apm.yml` を同梱して
+おり、`name`・`description`・`license` が apm 側にも渡ります
+（生成スクリプトは [`scripts/generate_apm_yml.py`](scripts/generate_apm_yml.py)、
+`SKILL.md` を編集したら再実行してください。リポジトリ直下の `apm.yml`
+も同スクリプトが再生成します）。
+
+#### 全スキルをまとめてインストールする
+
+リポジトリ直下の [`apm.yml`](apm.yml) が全スキルを依存として列挙した
+集約パッケージになっているため、リポジトリを 1 つ指定するだけで収録
+スキルすべてがインストールされます。
+
+```bash
+apm install ta-dadadada/skills
+```
+
+#### 個別のスキルをインストールする
+
+```bash
+apm install <owner>/<repository>/<skill-path>
+```
+
+例:
+
+```bash
+apm install ta-dadadada/skills/dev/pr-handoff
+```
+
+`apm.yml` で依存として宣言する場合:
+
+```yaml
+dependencies:
+  apm:
+    - ta-dadadada/skills/dev/pr-handoff
+```
+
+その後 `apm install` を実行します。
+
+バージョンを固定したい場合は、コミット SHA を参照に含めます
+（このリポジトリはリリースタグを運用していないため、SHA 参照を使って
+ください）。
+
+```bash
+apm install ta-dadadada/skills/dev/pr-handoff#<commit-sha>
+```
+
+```yaml
+dependencies:
+  apm:
+    - ta-dadadada/skills/dev/pr-handoff#<commit-sha>
 ```
 
 対象を明示したい場合や CLI を利用しない場合は、次のツール別の配置先へ
@@ -48,16 +105,16 @@ npx degit <owner>/<repository>/<skill-path> <destination>
 
 ```bash
 # Codex CLI
-npx degit example/agent-skills/dev/pr-handoff ~/.codex/skills/pr-handoff
+npx degit ta-dadadada/skills/dev/pr-handoff ~/.codex/skills/pr-handoff
 
 # Claude Code
-npx degit example/agent-skills/dev/pr-handoff ~/.claude/skills/pr-handoff
+npx degit ta-dadadada/skills/dev/pr-handoff ~/.claude/skills/pr-handoff
 
 # GitHub Copilot（個人用）
-npx degit example/agent-skills/dev/pr-handoff ~/.copilot/skills/pr-handoff
+npx degit ta-dadadada/skills/dev/pr-handoff ~/.copilot/skills/pr-handoff
 
 # Cursor（プロジェクト用。実行場所は対象プロジェクトのルート）
-npx degit example/agent-skills/dev/pr-handoff .cursor/skills/pr-handoff
+npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 ```
 
 プロジェクト用スキルは、コピー後に `.agents/skills/` などの対象ディレクトリを
@@ -73,8 +130,15 @@ npx degit example/agent-skills/dev/pr-handoff .cursor/skills/pr-handoff
 ## 収録スキル
 
 - `dev/backend-api-implementation`
+- `dev/characterization-testing`
+- `dev/doc-sync`
+- `dev/domain-modeling`
+- `dev/hypothesis-driven-debugging`
+- `dev/issue-kickoff`
 - `dev/pr-handoff`
 - `dev/purpose-driven-software-design`
+- `dev/session-goal`
+- `dev/session-handover`
 - `dev/terraform-implementation`
-- `meta/empirical-prompt-tuning`
-- `meta/skill-creation`
+- `meta/shiranui-hansode`
+- `meta/shiranui-hanten`

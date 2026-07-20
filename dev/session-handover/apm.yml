@@ -1,0 +1,15 @@
+name: session-handover
+description: 'Session-handover snapshot for interrupted work: extract what only this
+  session''s conversation and work can supply — the goal, observable status, verified
+  checks with commands and results, the intent behind uncommitted changes, agreed
+  decisions, failed attempts, hard-won findings, and the next concrete actions — and
+  overwrite .agent-session.md at the project root (gitignored) so the next worker,
+  human or AI, resumes from that file alone without redoing the session''s investigation.
+  Use when pausing or ending a session with work still in flight, when handing in-progress
+  work to another person or agent, or when session context is about to be lost. Not
+  for wrapping up a finished change for review (that is pr-handoff), not for permanent
+  documentation, and not for continuous note-taking — it runs once, at the point of
+  interruption.'
+license: MIT
+type: skill
+version: '0.1.0'

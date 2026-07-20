@@ -12,13 +12,19 @@ With the [`skills`](https://github.com/vercel-labs/skills) CLI (installs into
 every detected agent's skills directory):
 
 ```bash
-npx skills add tadaair/skills --skill terraform-implementation
+npx skills add ta-dadadada/skills --skill terraform-implementation
+```
+
+Or with [apm](https://github.com/microsoft/apm):
+
+```bash
+apm install ta-dadadada/skills/dev/terraform-implementation
 ```
 
 Or copy the folder in directly:
 
 ```bash
-npx degit tadaair/skills/dev/terraform-implementation ~/.claude/skills/terraform-implementation
+npx degit ta-dadadada/skills/dev/terraform-implementation ~/.claude/skills/terraform-implementation
 ```
 
 ## Files

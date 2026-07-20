@@ -52,6 +52,7 @@ A handoff mixes two kinds of knowledge that must never blur: the diff is the onl
 ### Step 2 — Recover the intent
 
 - From the current session's conversation, plans, working notes, memory, and recorded test/verification runs, collect: why the change was made, which alternatives were weighed and rejected, what was deliberately left out, which tests actually ran and with what results, and related issue/ticket numbers.
+- Search for issue/ticket numbers in: (a) the current branch name (e.g., `feature/123-add-login` yields `#123`), and (b) mentions in this session's conversation or work record (issue/ticket URLs or numbers explicitly stated by the user).
 - Label every item with its source: fact-from-diff, intent-from-session, or repo-record. The label decides where the item may appear later.
 - A session that holds no such record — a fresh session, a compacted context — yields a shorter list, not an invented one.
 - Discard stale session items that predate the current diff: they describe other work and do not attach to these changes.
@@ -61,13 +62,15 @@ A handoff mixes two kinds of knowledge that must never blur: the diff is the onl
 ### Step 3 — Close the gaps (question gate)
 
 - Check the Step 2 gaps against what an accurate handoff needs: the change's purpose, why the chosen approach won, rejected alternatives, compatibility/migration decisions, deliberate non-goals, known limitations, issue numbers, and test results not witnessed in the session.
-- If any of these is missing, ask the user those questions now, batched, and stop: no draft PR description or commit plan is shown until the answers arrive — a finished-looking draft invites rubber-stamping the guesses inside it.
+- When searching for an issue number: first check the branch name and session record (as described in Step 2). If neither yields a number, ask the user if an issue/ticket number exists for this work. Issue numbers are not required — if the user confirms none exists, proceed with the standard Conventional Commits format without a number.
+- If any other blocking gap is missing, ask the user those questions now, batched, and stop: no draft PR description or commit plan is shown until the answers arrive — a finished-looking draft invites rubber-stamping the guesses inside it.
 - Ask only what blocks accuracy; with no blocking gaps, proceed without asking.
 
 **Done when:** either every blocking gap has a user answer, or no blocking gaps existed.
 
 ### Step 4 — Compose the PR description
 
+- Write the PR description body in Japanese.
 - Use the repo's PR template when Step 1 found one. Otherwise use this structure:
 
 ```markdown
@@ -95,7 +98,8 @@ reviewer attention points. Omit the whole section when nothing applies.
 
 - Partition the change set into commits by purpose and dependency: each commit reviewable alone, the sequence buildable in order, tests and docs travelling with the change they verify or describe, no unrelated changes sharing a commit, no mechanical file-per-commit split.
 - Every authored change lands in exactly one commit — intra-file splits are the only exception. Generated artifacts in the work tree (build output, caches, bytecode) stay out of the plan and get a Note instead.
-- Messages follow the repo's convention from Step 1 when one exists, else Conventional Commits: `type(scope): subject`, with the body in a second `-m`. Issue numbers appear only when confirmed in Step 2 or 3.
+- Commit messages (subject and body) are written in Japanese.
+- Messages follow the repo's convention from Step 1 when one exists, else Conventional Commits: `type(scope): subject`, with the body in a second `-m`. When an issue number is confirmed in Step 2 or 3, use the format `type(scope): <No.>: subject` (e.g., `feat(client): #123: 指数バックオフ付きリトライポリシーを追加`). If no issue number is confirmed after checking the branch name and session record, ask the user; commit with the standard format when no issue number exists.
 - Commands use explicit paths — `git add <paths>`, never `git add .` or `-A`. When one file genuinely belongs to two commits, prefer redrawing the commit boundary to whole files when the history reads as well; otherwise emit `git add -p <file>`, name which hunks to take, and flag that it needs interactive selection.
 - Present each commit in this shape:
 
@@ -105,7 +109,7 @@ Add the retry policy to the HTTP client.
 
 ```sh
 git add src/client/retry.ts src/client/http.ts
-git commit -m "feat(client): add exponential-backoff retry policy" -m "Retries idempotent requests up to three times; callers opt out via RetryPolicy.none."
+git commit -m "feat(client): 指数バックオフ付きリトライポリシーを追加" -m "冪等なリクエストを最大3回までリトライします。RetryPolicy.noneでオプトアウト可能。"
 ```
 ````
 
@@ -114,6 +118,7 @@ git commit -m "feat(client): add exponential-backoff retry policy" -m "Retries i
 ### Step 6 — Deliver in chat
 
 - Put the PR description and the commit plan into one chat message, verbatim and complete.
+- Wrap the PR description in a markdown code block and each git command sequence in an sh code block, each independently copy-runnable.
 - Create no files for the deliverable, unless the repo's own conventions require an artifact file.
 - Execute no git command: `git status` after the skill equals `git status` before it.
 

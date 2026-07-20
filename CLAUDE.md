@@ -24,5 +24,5 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 作業上の注意
 
-- スキルの新規作成・更新時は、このリポジトリの `meta/skill-creation` スキル（`meta/skill-creation/SKILL.md`）に従うこと。組み込みの skill-creator ではなくこちらを正とする。
+- スキルの新規作成・更新時は、このリポジトリの `meta/shiranui-hanten` スキル（`meta/shiranui-hanten/SKILL.md`）に従うこと。組み込みの skill-creator ではなくこちらを正とする。
 - 各ファイルは特定のツールに配置（コピー/シンボリックリンク）されて初めて機能する。ファイルを追加・改名した場合、配置方法や参照元への影響を確認すること。

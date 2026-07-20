@@ -1,0 +1,19 @@
+name: skills
+description: Agent skill collection; installing this package installs every skill below as a dependency.
+license: MIT
+version: '0.1.0'
+dependencies:
+  apm:
+  - ta-dadadada/skills/dev/backend-api-implementation
+  - ta-dadadada/skills/dev/characterization-testing
+  - ta-dadadada/skills/dev/doc-sync
+  - ta-dadadada/skills/dev/domain-modeling
+  - ta-dadadada/skills/dev/hypothesis-driven-debugging
+  - ta-dadadada/skills/dev/issue-kickoff
+  - ta-dadadada/skills/dev/pr-handoff
+  - ta-dadadada/skills/dev/purpose-driven-software-design
+  - ta-dadadada/skills/dev/session-goal
+  - ta-dadadada/skills/dev/session-handover
+  - ta-dadadada/skills/dev/terraform-implementation
+  - ta-dadadada/skills/meta/shiranui-hansode
+  - ta-dadadada/skills/meta/shiranui-hanten

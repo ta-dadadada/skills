@@ -1,5 +1,5 @@
 ---
-name: skill-creation
+name: shiranui-hanten
 description: >-
   Workflow for creating a new agent skill or updating an existing one
   (SKILL.md packages): requirements → invocation → structure → writing →
@@ -12,7 +12,7 @@ metadata:
   author: tadaair
 ---
 
-# Skill Creation
+# Shiranui Hanten
 
 A skill is a reusable package of work procedures — what to check, in what order, which tool under which condition, and what counts as done — not an override of model capability. The root virtue is **predictability**: the agent takes the same *process* every run. Every step below serves it. Judgment lives in [references/PRINCIPLES.md](references/PRINCIPLES.md), definitions in [references/GLOSSARY.md](references/GLOSSARY.md), format and distribution rules in [references/SPEC.md](references/SPEC.md).
 
@@ -25,7 +25,7 @@ A skill is a reusable package of work procedures — what to check, in what orde
 
 - One-off prompts — nothing reusable to standardize.
 - CLAUDE.md, subagent, or rules files — different formats with different loading semantics.
-- Running a multi-iteration tuning loop by itself — hand off to `empirical-prompt-tuning`.
+- Running a multi-iteration tuning loop by itself — hand off to `shiranui-hansode`.
 
 ## Workflow
 
@@ -80,7 +80,7 @@ A skill is a reusable package of work procedures — what to check, in what orde
 
 - Mechanical: run `python3 scripts/validate_skill.py <skill-dir>` — all checks green.
 - Static: every trigger in the description has a matching branch in the body, and vice versa.
-- Empirical: have a fresh executor — an agent with no authorial context — run one representative task, and watch the trajectory, not just the final answer (judgment: [PRINCIPLES.md § Verification](references/PRINCIPLES.md#verification)). Feed each stumble back into Step 4 or 5. For a multi-iteration loop, hand off to `empirical-prompt-tuning`.
+- Empirical: have a fresh executor — an agent with no authorial context — run one representative task, and watch the trajectory, not just the final answer (judgment: [PRINCIPLES.md § Verification](references/PRINCIPLES.md#verification)). Feed each stumble back into Step 4 or 5. For a multi-iteration loop, hand off to `shiranui-hansode`.
 
 **Done when:** the validator passes, description and body agree, and one representative run follows the intended process without discretionary fill-ins.
 
@@ -105,4 +105,4 @@ A skill is a reusable package of work procedures — what to check, in what orde
 ## Related
 
 - [references/PRINCIPLES.md](references/PRINCIPLES.md) — the judgment; [references/GLOSSARY.md](references/GLOSSARY.md) — the definitions; [references/SPEC.md](references/SPEC.md) — the format, portability, placement, and security rules. This file only orders the work.
-- `empirical-prompt-tuning` — the multi-iteration version of Step 6.
+- `shiranui-hansode` — the multi-iteration version of Step 6.

@@ -15,7 +15,7 @@ for example as source material when authoring skills in this repository.
   dates, tool support matrices) carry an as-of date — re-verify before
   relying on them.
 - Do not duplicate what a skill in this repository already documents; link to
-  it instead (e.g. `meta/skill-creation/references/SPEC.md` for the Agent
+  it instead (e.g. `meta/shiranui-hanten/references/SPEC.md` for the Agent
   Skills format).
 
 ## Index
