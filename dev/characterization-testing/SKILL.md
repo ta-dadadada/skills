@@ -15,7 +15,7 @@ description: >-
   behaviour is correct — that decision belongs to the user.
 license: MIT
 metadata:
-  author: tadaair
+  author: ta-dadadada
 ---
 
 # Characterization Testing

@@ -15,7 +15,7 @@ description: >-
   mitigation where restoring service precedes diagnosis.
 license: MIT
 metadata:
-  author: tadaair
+  author: ta-dadadada
 ---
 
 # Hypothesis-Driven Debugging

@@ -18,7 +18,7 @@ description: >-
   local changes that fit the existing design as is.
 license: MIT
 metadata:
-  author: tadaair
+  author: ta-dadadada
 ---
 
 # Purpose-Driven Software Design

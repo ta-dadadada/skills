@@ -9,7 +9,7 @@ description: >-
   configs.
 license: MIT
 metadata:
-  author: tadaair
+  author: ta-dadadada
 ---
 
 # Shiranui Hanten

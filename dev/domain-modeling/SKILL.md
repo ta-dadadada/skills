@@ -19,7 +19,7 @@ description: >-
   generation from an already-documented model.
 license: MIT
 metadata:
-  author: tadaair
+  author: ta-dadadada
 ---
 
 # Domain Modeling

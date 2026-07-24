@@ -19,7 +19,7 @@ compatibility: >-
   Step 1 may use the gh CLI when the work source is a GitHub issue;
   absent gh, paste the issue content into the conversation.
 metadata:
-  author: tadaair
+  author: ta-dadadada
 ---
 
 # Issue Kickoff
