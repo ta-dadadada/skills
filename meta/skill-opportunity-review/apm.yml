@@ -1,0 +1,17 @@
+name: skill-opportunity-review
+description: 'Propose-only, four-verdict audit of a finished work session for durable
+  skill opportunities: reconstruct the session''s goal, decisions, corrections, failures,
+  and verification; keep only lessons carrying reusable execution value, not mere
+  knowledge; walk a preservation ladder that prefers improving an existing skill over
+  creating a new one, and documentation over a new skill; then deliver in chat exactly
+  one verdict per candidate — improve an existing skill, new skill candidate, document
+  or memo, or no proposal — each backed by session evidence, creating and modifying
+  nothing. Use near the end of a session that involved long trial-and-error, a novel
+  problem solved, a significant design decision, or friction with an existing skill,
+  or when the user asks whether the session yielded anything worth preserving. Not
+  for routine sessions without such a signal, not for writing the PR story (pr-handoff),
+  not for snapshotting in-flight work (session-handover), and not for creating or
+  editing skills (shiranui-hanten).'
+license: MIT
+type: skill
+version: '0.1.0'
