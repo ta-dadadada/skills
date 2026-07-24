@@ -17,7 +17,7 @@ description: >-
   generation beyond what the repo's own conventions require.
 license: MIT
 metadata:
-  author: tadaair
+  author: ta-dadadada
 ---
 
 # Doc Sync

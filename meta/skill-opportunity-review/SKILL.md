@@ -19,7 +19,7 @@ description: >-
   (shiranui-hanten).
 license: MIT
 metadata:
-  author: tadaair
+  author: ta-dadadada
 ---
 
 # Skill Opportunity Review

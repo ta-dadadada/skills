@@ -23,7 +23,7 @@ compatibility: >-
   commands and edits .gitignore; in a directory git does not manage, the
   git-dependent parts are skipped.
 metadata:
-  author: tadaair
+  author: ta-dadadada
 ---
 
 # Session Goal
