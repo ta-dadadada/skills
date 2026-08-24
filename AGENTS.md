@@ -13,14 +13,15 @@ When adding or renaming a skill, keep its directory name identical to the `name`
 
 ## Build, Test, and Development Commands
 
-There is no build system or application runtime. Validate changed skill packages directly:
+There is no compiled build. Validate skill packages and test runtime utilities directly:
 
 ```bash
 python3 meta/shiranui-hanten/scripts/validate_skill.py dev/pr-handoff
 python3 meta/shiranui-hanten/scripts/validate_skill.py dev/* meta/*
+python3 -m unittest discover -s dev/local-intake/tests -v
 ```
 
-The validator checks frontmatter, names, description limits, relative links, portability warnings, and script executable bits. Use `git diff --check` before committing to catch whitespace errors.
+The validator checks frontmatter, names, description limits, relative links, portability warnings, and script executable bits. The `CI` workflow runs the full validator and runtime tests on `ubuntu-slim` with Python 3.10. Use `git diff --check` before committing to catch whitespace errors.
 
 ## Coding Style & Naming Conventions
 
@@ -28,7 +29,7 @@ Write skill bodies, references, and `knowledge/` content in concise English. Roo
 
 ## Testing Guidelines
 
-Run the validator for every modified skill and resolve all `FAIL` results; review `WARN` output for intentional tool-specific behavior. If a script changes, exercise its success and failure paths manually and preserve executable permissions. Confirm every documented command and relative link from the directory where contributors will run it.
+Run the validator for every modified skill and resolve all `FAIL` results; review `WARN` output for intentional tool-specific behavior. If a script changes, run its automated tests, exercise uncovered success and failure paths manually, and preserve executable permissions. Confirm every documented command and relative link from the directory where contributors will run it.
 
 ## Commit & Pull Request Guidelines
 

@@ -1,0 +1,11 @@
+name: local-intake
+description: Form-first local intake that turns an ambiguous request into an agreed
+  brief through two or three browser questionnaires while keeping the full working
+  state in one temporary Markdown file. Use when the user asks for a local questionnaire,
+  or propose it when clarification is likely to become a repeated back-and-forth;
+  also use at session end to remove a completed intake's temporary file. Not for a
+  single small clarification, permanent documentation, detailed specification, or
+  implementation.
+license: MIT
+type: skill
+version: '0.1.0'

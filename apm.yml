@@ -10,6 +10,7 @@ dependencies:
   - ta-dadadada/skills/dev/domain-modeling
   - ta-dadadada/skills/dev/hypothesis-driven-debugging
   - ta-dadadada/skills/dev/issue-kickoff
+  - ta-dadadada/skills/dev/local-intake
   - ta-dadadada/skills/dev/pr-handoff
   - ta-dadadada/skills/dev/purpose-driven-software-design
   - ta-dadadada/skills/dev/session-goal
