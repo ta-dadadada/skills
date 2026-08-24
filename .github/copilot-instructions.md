@@ -6,8 +6,9 @@ content itself is English.
 ## What this repository is
 
 Agent skills, subagent configs, and prompt files for coding agents (Claude
-Code, Codex, GitHub Copilot, Cursor). Every deliverable is Markdown; there
-is no build step. The authority for skill structure and style is
+Code, Codex, GitHub Copilot, Cursor). Distributed content is primarily
+Markdown, with focused runtime scripts and tests where a skill needs them;
+there is no compiled build step. The authority for skill structure and style is
 `meta/shiranui-hanten/SKILL.md` and its `references/` (SPEC, PRINCIPLES,
 GLOSSARY).
 
@@ -38,6 +39,9 @@ GLOSSARY).
   contents leave the environment.
 - `python3 meta/shiranui-hanten/scripts/validate_skill.py <skill-dir>`
   must pass for every touched skill.
+- Runtime script changes must keep their focused automated tests passing. The
+  CI workflow validates every skill and runs the `dev/local-intake` unittest
+  suite on Python 3.10.
 
 ## Rules to check when reviewing knowledge files
 
@@ -54,4 +58,5 @@ GLOSSARY).
   authoritative home.
 - Flag prose that merely restates a model's default behaviour (a no-op
   instruction) rather than changing it.
-- Do not propose adding build tooling, code CI, or non-Markdown artifacts.
+- Do not propose unrelated build tooling or non-Markdown artifacts; runtime
+  code and CI must stay scoped to a skill that demonstrably needs them.

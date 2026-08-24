@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## このリポジトリについて
 
-コーディングエージェント（Claude Code / Codex / GitHub Copilot / Cursor）向けの、エージェントスキル・サブエージェント設定・プロンプトファイルなどを管理するリポジトリ。ビルドやテストの仕組みはなく、成果物は Markdown ベースの設定・プロンプトファイル群。
+コーディングエージェント（Claude Code / Codex / GitHub Copilot / Cursor）向けの、エージェントスキル・サブエージェント設定・プロンプトファイルなどを管理するリポジトリ。コンパイル工程はなく、成果物は Markdown を中心としつつ、スキルが必要とする実行スクリプトとテストも同梱する。
 
 ## ディレクトリ規約
 
@@ -26,3 +26,4 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - スキルの新規作成・更新時は、このリポジトリの `meta/shiranui-hanten` スキル（`meta/shiranui-hanten/SKILL.md`）に従うこと。組み込みの skill-creator ではなくこちらを正とする。
 - 各ファイルは特定のツールに配置（コピー/シンボリックリンク）されて初めて機能する。ファイルを追加・改名した場合、配置方法や参照元への影響を確認すること。
+- スキル全体の validator と `dev/local-intake` の unittest は `.github/workflows/ci.yml` で実行する。スクリプト変更時は同じチェックをローカルでも実行すること。
