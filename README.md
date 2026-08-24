@@ -135,6 +135,7 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/domain-modeling`
 - `dev/hypothesis-driven-debugging`
 - `dev/issue-kickoff`
+- `dev/local-intake`
 - `dev/pr-handoff`
 - `dev/purpose-driven-software-design`
 - `dev/session-goal`
