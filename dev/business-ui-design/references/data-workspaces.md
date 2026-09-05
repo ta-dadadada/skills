@@ -41,5 +41,6 @@ aggregations are task-driven extensions, not a table's admission requirements.
 ## Frontend handoff
 
 Pass the chosen table/list/board representation and its interaction contract to
-`frontend-ui-design`. Table/grid semantics, responsive access, and keyboard/focus
-execution have their authoritative home in that companion skill.
+`frontend-ui-design` to complete responsive, keyboard/focus, and accessibility
+requirements. For working UI, its reviewed contract continues to
+`frontend-ui-implementation`, the home of table/grid code and runtime verification.

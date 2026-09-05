@@ -4,15 +4,14 @@ Use the primary scenario and failure cases from Step 1. For each applicable row,
 report **pass / defect / unverified**, the observation or artifact location, and
 any correction. Mark inapplicable checks with a reason. A design walkthrough
 validates specified behavior; runtime evidence validates implemented behavior.
-In implementation mode, review the proposed structure before coding, then check
-the running interface afterward. In design mode, inspect the produced
-specification/prototype before reporting results. A separate review document is
-optional; use the final response for observed evidence. Check contracts for
-contradictions before marking pass.
+Inspect the produced specification/prototype before reporting results. A separate
+review document is optional; use the final response for observed evidence.
+Check contracts for contradictions before marking pass. Here, pass means the
+design specifies a coherent behavior; it never means runtime accessibility passed.
 
 | Check | Evidence to seek |
 |---|---|
-| Task | Complete the main job from its entry point; every required action has a discoverable GUI path |
+| Task | Walk the specified scoped scenario through the standard GUI, including signposted menus or contextual affordances, without shortcut knowledge |
 | Hierarchy and density | Required simultaneous information remains legible with realistic data; decoration does not displace it |
 | Navigation | Page and detail transitions retain expected context; Back/direct entry work where applicable |
 | Action locality | Actions sit near their target and affect their advertised scope |
@@ -20,19 +19,14 @@ contradictions before marking pass.
 | Efficiency | Frequent operations have a justified efficient path; optional features stay within scope |
 | State visibility | Applicable loading, refreshing, saving, selection, and success states are distinguishable |
 | Recovery | Empty, no-match, validation, access, and error cases have honest next steps; failed edits retain input |
-| Keyboard and focus | Main task works without pointer input; focus is visible, ordered, and restored after transient UI |
-| Semantics | Controls have names, forms have labels, tables have headers/sort state, and updates are announced appropriately |
-| Contrast and targets | Applicable text/control contrast and target-size requirements are checked; color is supplemented by another cue |
-| Responsive and zoom | Wide/narrow layouts and 200% zoom preserve the actual task, including simultaneous comparison where required; mere access to hidden data is insufficient |
+| Keyboard and focus | Main task has a complete keyboard contract; focus visibility, order, and return after transient UI are specified |
+| Semantics | Control names, field labels, table headers/sort state, and update announcements are specified |
+| Contrast and targets | Applicable text/control contrast and target-size requirements are specified; color is supplemented by another cue |
+| Responsive and zoom | Wide/narrow and 200% zoom requirements preserve the task, including simultaneous comparison where required; mere access to hidden data is insufficient |
 | Consistency | Shared components/tokens and user-facing terms match the surrounding product |
-| Implementation integrity | Controls work, data scope is truthful, permissions are respected, and relevant repository checks pass |
+| Handoff completeness | Required behavior, system constraints, acceptance cases, and unresolved assumptions are available to implementation |
 
-For implementation, exercise a normal path, a relevant empty/error path, and
-the main keyboard path in the running UI. Exercise mutation failure when writes
-are in scope. Exercise additional domain acceptance cases supplied by the task.
-Screenshots support visual findings, not claims about interactive behavior.
-
-Use repository-approved browser/accessibility tools when available. Report the
-actual viewport, zoom, and check results. If runtime or assistive-technology
-testing is unavailable, retain that limitation and specify the pending check;
-avoid converting code inspection into a runtime or accessibility-compliance claim.
+Carry applicable runtime checks forward as acceptance cases in the handoff.
+Design inspection can assess specified contrast targets, focus order, and zoom
+transitions; measured contrast, actual key operation, and assistive-technology
+behavior require implementation evidence. Name those pending checks explicitly.

@@ -1,16 +1,16 @@
-# Table and grid controls
+# Table and grid requirements
 
-Use these semantics when the task or domain has selected a table. Representation
-choice and dataset-specific action contracts remain inputs to the frontend work.
+Use when the task or domain has selected tabular presentation. Representation
+choice and dataset-specific action contracts remain inputs.
 
-Start with native table semantics and named column/row headers. Use buttons for
-sortable headers with an exposed sort state (for example, `aria-sort`); provide
-labels for selection controls and announce significant result/selection updates.
-Keep horizontal scroll regions keyboard reachable when required. At narrow
-widths, preserve essential comparisons through deliberate column priority or
-accessible horizontal scrolling, with access to remaining values.
+Specify identifiable column/row headers, accessible active sort column/direction,
+selection labels and feedback, and any significant result updates to announce.
+At narrow widths, preserve required simultaneous comparisons through deliberate
+column priority or horizontal scrolling, with access to remaining values.
 
-Use an established accessible grid component only when cell navigation/editing
-requires a grid interaction model. A grid needs managed focus and defined arrow,
-Enter, and Escape behavior; attaching a grid role alone does not implement it.
-Keep optional cell-navigation and clipboard capabilities within task scope.
+Ordinary tables may contain interactive controls without becoming a cell-navigation
+grid. Choose a grid interaction contract only when the task needs managed cell
+navigation or editing. Define entry/exit, movement, edit/commit/cancel, and selection
+behavior needed by that task; clipboard operations remain scope-driven.
+Concrete table semantics, grid implementation, and runtime checks belong to
+`frontend-ui-implementation`.

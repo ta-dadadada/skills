@@ -1,0 +1,10 @@
+name: frontend-ui-implementation
+description: 'Contract-first frontend UI implementation: realize a reviewed UI design
+  with native HTML, appropriate ARIA, keyboard/focus behavior, responsive code, and
+  runtime evidence. Use when coding a supplied UI design, completing a frontend-ui-design
+  handoff, or fixing implementation against a settled interaction contract. If the
+  design is missing, obtain it through frontend-ui-design first. Not for standalone
+  UI design or backend-only work.'
+license: MIT
+type: skill
+version: '0.1.0'

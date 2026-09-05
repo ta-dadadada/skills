@@ -30,8 +30,10 @@ explicit close/back path. Preserve unsaved work across transitions.
 
 ## Actions and escape paths
 
-Place actions near their affected object or content region. Keep primary and
-frequent actions visible; use labeled, discoverable menus for secondary actions.
+Place actions near their affected object or content region. Favor direct access
+for primary and frequent actions; use clearly signposted menus or contextual
+affordances for secondary actions. Discoverability concerns the whole standard
+GUI path, rather than permanent visibility of every command.
 Make the effect and scope clear in the label where ambiguity is possible.
 Confirm consequential irreversible actions with target and consequence; offer
 undo when safely reversible. Provide cancel/back paths for temporary work.
@@ -46,5 +48,5 @@ Preserve the task by changing presentation: simultaneous panes can become
 sequential views, navigation can become a menu/index, and auxiliary content can
 stack or move into a sheet. Preserve user state and a reliable return path.
 Define meaningful reading/focus order and usable pointer/touch targets in each
-structure. Verify access to primary content at narrow widths and zoom; merely
-scaling the desktop layout is insufficient evidence.
+structure. Specify access to primary content at narrow widths and zoom; preserve the task
+through deliberate transitions rather than simply shrinking the desktop layout.

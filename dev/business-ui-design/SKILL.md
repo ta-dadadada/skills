@@ -3,9 +3,10 @@ name: business-ui-design
 description: >-
   Task-first business UI structure: identify operational jobs and records,
   choose page archetypes, tables, views, detail context, and scoped actions,
-  then compose with frontend-ui-design for design or implementation and
-  verification. Use when designing or reshaping a business application such
-  as an admin console, CRM, operations queue, or data-heavy internal tool.
+  then hand off to frontend-ui-design and, for requested code,
+  frontend-ui-implementation. Use when designing or reshaping a business
+  application such as an admin console, CRM, operations queue, or data-heavy
+  internal tool.
   Not for general frontend interaction work or isolated styling fixes.
 license: MIT
 metadata:
@@ -17,7 +18,9 @@ metadata:
 Preserve the information operators need while reducing search, comparison, and
 operation costs. This domain skill owns business information structure and
 record-workflow decisions. The companion `frontend-ui-design` skill owns common
-frontend design, implementation, and verification; install both for this workflow.
+frontend design contracts; `frontend-ui-implementation` owns code and runtime
+verification. Install the design companion, and the implementation companion
+when working UI is requested.
 
 ## When to use
 
@@ -59,38 +62,42 @@ For collections, comparison, or repeated editing, read
 Record consequential choices as **task evidence → pattern → tradeoff**. Choose
 representation, collection/detail relationship, views versus separate workflows,
 and action locations from the job. Reuse existing product patterns when known.
-Keep optional data-workspace capabilities conditional on frequency and scope.
+Use Step 1's frequency evidence: frequent repeated operations are candidates for
+batch actions, inline editing, saved views, or accelerators. Select the candidate
+that reduces the observed repetition, and adopt it only when its benefit and task
+scope justify it; frequency is a reason to evaluate, not to add every capability.
 
 For data-heavy operational surfaces, favor a restrained visual treatment that
 preserves comparison and scanning. The product design system supplies concrete
-values; the companion skill handles visual and accessibility execution.
+values; the design companion specifies visual and accessibility requirements.
 
 **Done when:** the primary scenario maps to a justified archetype, representation,
-view strategy, detail context, and action scopes, with acceptance cases for
+view strategy, detail context, and action scopes, with any efficiency choice tied
+to observed repetition and scope, and acceptance cases for
 applicable filtering, sorting, selection, editing, and permission behavior.
 
-### Step 3 — Produce the artifact through the frontend skill
+### Step 3 — Hand off for frontend design and requested implementation
 
-Locate and read the installed `frontend-ui-design` skill. Pass the existing
-record, domain decisions, acceptance cases, and delivery mode into its Steps 1–4.
-Reuse its single decision record. It supplies component/token inspection,
-interaction surfaces, forms/states, responsive and accessible behavior,
-artifact production, and a pre-code review when implementation is requested.
-The companion's Step 5 is executed in the next step below, together with domain
-acceptance. At this point the artifact exists and final review is still pending.
+Locate and read `frontend-ui-design`. Pass the existing record, domain decisions,
+business acceptance cases below, and delivery intent through its full workflow.
+It fills frontend details, reviews the design contract, and delivers design-only
+work or continues to `frontend-ui-implementation` when code is requested.
+Reuse the same record and acceptance cases across the chain. Let the design
+skill own the handoff format and the implementation skill own runtime checks.
 
-If the companion is unavailable, complete the domain decisions and identify the
-missing dependency and unfinished execution scope. Do not claim an implemented
-or verified UI from business structure alone.
+If a required companion is unavailable, preserve completed decisions and identify
+the dependency and unfinished scope. Business structure alone does not establish
+an implemented or verified UI.
 
-**Done when:** the requested artifact exists, the implementation-only pre-code
-review was performed if applicable, and final review is pending; or the missing dependency is explicitly reported
-with domain decisions preserved and execution marked incomplete.
+**Done when:** the companion returns the reviewed design or requested working UI
+with evidence and limitations, or the missing dependency and incomplete scope
+are explicit.
 
-### Step 4 — Check business acceptance and deliver
+### Step 4 — Reconcile business acceptance and deliver
 
-Now read or inspect the artifact produced in Step 3 and execute the companion's
-Step 5. Add these domain checks to that review, using the same evidence:
+Assess the returned artifact and evidence against these domain cases. Include
+them in the design/runtime reviews through Step 3, then reuse those observations
+here rather than repeating the frontend checks:
 
 - The entry surface supports the operational job; metrics serve actual decisions.
 - Representation supports simultaneous comparison or stage/visual work as intended.
@@ -99,15 +106,14 @@ Step 5. Add these domain checks to that review, using the same evidence:
 - Collection, record, field, and selection operations affect their advertised scope.
 - Server/client paging, filter, and sort behavior matches the advertised dataset.
 - Applicable selection and mutation failure cases have honest recovery behavior.
-- Optional saved views, bulk actions, grids, and accelerators stay within scope.
+- Optional efficiency features address observed repetition and stay within scope.
 
 After inspection, report actual findings and evidence in the final response.
 Fix observed defects and recheck affected cases. Deliver the interface artifact,
 key business decisions, verification evidence, and limitations together.
 
-**Done when:** the artifact was inspected and final findings report that evidence, every
-applicable domain check has evidence or an explicit
-unverified status; the requested task is verified at the delivery mode's level;
+**Done when:** the artifact was inspected and final findings report that evidence;
+every applicable domain check has evidence or an explicit unverified status; the requested task is verified at the delivery mode's level;
 remaining defects, dependencies, and unknown business rules are visible.
 
 ## Red flags
@@ -123,6 +129,7 @@ remaining defects, dependencies, and unknown business rules are visible.
 
 ## Related
 
-- `frontend-ui-design` — required companion; install alongside this skill.
+- `frontend-ui-design` — required design companion.
+- `frontend-ui-implementation` — also install when working UI is requested.
 - [sources.md](references/sources.md) — provenance and reading trail; consult for origins and limits.
 - `domain-modeling`, if available — unresolved business meaning before UI decisions.

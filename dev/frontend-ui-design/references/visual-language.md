@@ -12,8 +12,9 @@ concrete values. Use the following checks within that direction.
   legible text, usable targets, and focus indicators as rows become compact.
 - Reuse a small typographic hierarchy; distinguish titles, labels, values, and
   metadata through consistent roles rather than many unrelated sizes.
-- Use text for unfamiliar actions. Familiar icon controls still need accessible
-  names and, where useful, tooltips available on focus as well as hover.
+- Use text for unfamiliar actions. For icon controls, use the naming
+  requirements in [accessibility.md](accessibility.md); add tooltips where useful,
+  available on focus as well as hover.
 - Distinguish hover, focus, selection, pending, and inactive states. Ensure text,
   controls, and focus indicators meet the project's applicable contrast targets.
 - Use shared tokens for radius, borders, spacing, and elevation. If dark mode is
