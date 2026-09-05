@@ -1,0 +1,10 @@
+name: frontend-ui-design
+description: 'Task-first frontend UI design and implementation: reuse the design system,
+  choose interaction surfaces, specify forms and states, implement the task, and verify
+  responsive behavior, keyboard access, and recovery. Use when designing a frontend
+  interface or implementing or reshaping UI interactions in any domain, or when a
+  domain skill supplies UI decisions for execution. Not for brand exploration, isolated
+  styling fixes, or backend-only work.'
+license: MIT
+type: skill
+version: '0.1.0'

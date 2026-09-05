@@ -130,9 +130,11 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 ## 収録スキル
 
 - `dev/backend-api-implementation`
+- `dev/business-ui-design`
 - `dev/characterization-testing`
 - `dev/doc-sync`
 - `dev/domain-modeling`
+- `dev/frontend-ui-design`
 - `dev/hypothesis-driven-debugging`
 - `dev/issue-kickoff`
 - `dev/local-intake`
@@ -143,3 +145,8 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/terraform-implementation`
 - `meta/shiranui-hansode`
 - `meta/shiranui-hanten`
+
+UIの共通設計・実装には `frontend-ui-design` を単独で利用できます。
+業務ツールの情報構造やレコード操作も設計する場合は、`business-ui-design`
+と `frontend-ui-design` の両方を導入してください。業務固有の判断を前者で行い、
+共通の実装・検証手順を後者で実行します。

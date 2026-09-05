@@ -5,9 +5,11 @@ version: '0.1.0'
 dependencies:
   apm:
   - ta-dadadada/skills/dev/backend-api-implementation
+  - ta-dadadada/skills/dev/business-ui-design
   - ta-dadadada/skills/dev/characterization-testing
   - ta-dadadada/skills/dev/doc-sync
   - ta-dadadada/skills/dev/domain-modeling
+  - ta-dadadada/skills/dev/frontend-ui-design
   - ta-dadadada/skills/dev/hypothesis-driven-debugging
   - ta-dadadada/skills/dev/issue-kickoff
   - ta-dadadada/skills/dev/local-intake
