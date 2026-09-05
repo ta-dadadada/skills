@@ -1,0 +1,24 @@
+version: 2
+
+updates:
+  # Keep the SHA-pinned actions in .github/workflows/ up to date.
+  # Pinning by commit SHA is what makes the workflow supply-chain safe, but it
+  # also means a pin never moves on its own — Dependabot is what moves it, and
+  # it rewrites the trailing `# vX.Y.Z` comment along with the SHA.
+  #
+  # No other ecosystem is listed on purpose: the repository ships Markdown plus
+  # stdlib-only scripts, and the one script with dependencies
+  # (scripts/generate_apm_yml.py) declares them in a PEP 723 inline block,
+  # which Dependabot does not read.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+    groups:
+      # One PR per batch rather than one per action: these are few, low-risk,
+      # and verified by the same CI run.
+      actions:
+        patterns:
+          - "*"
