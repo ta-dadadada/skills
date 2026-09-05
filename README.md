@@ -130,9 +130,12 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 ## 収録スキル
 
 - `dev/backend-api-implementation`
+- `dev/business-ui-design`
 - `dev/characterization-testing`
 - `dev/doc-sync`
 - `dev/domain-modeling`
+- `dev/frontend-ui-design`
+- `dev/frontend-ui-implementation`
 - `dev/hypothesis-driven-debugging`
 - `dev/issue-kickoff`
 - `dev/local-intake`
@@ -143,3 +146,14 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/terraform-implementation`
 - `meta/shiranui-hansode`
 - `meta/shiranui-hanten`
+
+UI設計のみには `frontend-ui-design` を単独で利用できます。実装まで行う場合は
+`frontend-ui-implementation` も導入してください。前者が設計契約と
+アクセシビリティ要件を決め、後者がHTML・ARIA・CSS・JSで実現し、実UIを検証します。
+設計契約が確定している実装作業には実装スキルから入れます。
+
+業務ツールの情報構造やレコード操作も設計する場合は `business-ui-design` を追加します。
+業務UIの実装は `business-ui-design` → `frontend-ui-design` →
+`frontend-ui-implementation` の順に、同じ設計記録と受入ケースを引き継ぎます。
+個別インストールでは必要な各スキルを導入してください。ルートのAPMパッケージは
+3スキルを含む全収録スキルをインストールします。

@@ -1,0 +1,11 @@
+name: frontend-ui-design
+description: 'Task-first frontend UI design: define structure, surfaces, forms, states,
+  responsive transitions, keyboard/focus and accessibility requirements, then review
+  a design contract. Use when designing or reshaping UI behavior in any domain, including
+  the design phase of an implementation request or a domain-skill handoff. For requested
+  code, hand the reviewed contract to frontend-ui-implementation. Not for coding an
+  already settled design, brand exploration, isolated styling fixes, or backend-only
+  work.'
+license: MIT
+type: skill
+version: '0.1.0'

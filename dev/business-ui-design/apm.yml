@@ -1,0 +1,10 @@
+name: business-ui-design
+description: 'Task-first business UI structure: identify operational jobs and records,
+  choose page archetypes, tables, views, detail context, and scoped actions, then
+  hand off to frontend-ui-design and, for requested code, frontend-ui-implementation.
+  Use when designing or reshaping a business application such as an admin console,
+  CRM, operations queue, or data-heavy internal tool. Not for general frontend interaction
+  work or isolated styling fixes.'
+license: MIT
+type: skill
+version: '0.1.0'
