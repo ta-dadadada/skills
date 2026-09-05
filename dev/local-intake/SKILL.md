@@ -11,7 +11,7 @@ description: >-
   implementation.
 license: MIT
 compatibility: >-
-  Requires Python 3.10+ and a browser on the same computer. The bundled
+  Requires Python 3.11+ and a browser on the same computer. The bundled
   server binds only to 127.0.0.1 and uses no external services or Python
   packages. Git is optional and is used only for local exclude handling.
 metadata:

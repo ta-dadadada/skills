@@ -21,7 +21,7 @@ apm install ta-dadadada/skills/dev/local-intake
 
 ## Requirements
 
-- Python 3.10 or newer
+- Python 3.11 or newer
 - A browser on the same computer as the agent
 - Git is optional and is used only to hide the temporary intake document from
   `git status`

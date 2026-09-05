@@ -41,7 +41,7 @@ GLOSSARY).
   must pass for every touched skill.
 - Runtime script changes must keep their focused automated tests passing. The
   CI workflow validates every skill and runs the `dev/local-intake` unittest
-  suite on Python 3.10.
+  suite on Python 3.11, 3.12, 3.13, and 3.14.
 
 ## Rules to check when reviewing knowledge files
 
