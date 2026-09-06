@@ -61,9 +61,9 @@ Choose the requested mode before running steps. Structural review ends after Ste
    - **Before applying the fix, explicitly state "which item in the requirements checklist / judgment wording this fix satisfies"** (fixes inferred from axis names often do not land. See the "Fix propagation patterns" section below.)
    - **Consult the failure pattern ledger first**. If the structured reflection's `General Fix Rule` already matches a known pattern, the first question is "why didn't the existing fix prevent it?" — the fix may need to move closer to the top of the prompt, or be re-worded, before a new ledger entry is added.
    - **Done when:** the prompt is edited, the edit is stated to satisfy a named checklist item or judgment wording, and the ledger has been checked for a matching pattern.
-6. **Re-evaluate**: Run 2 → 5 again with a new executor (do not reuse the same agent: it has learned the previous improvements). Expand cases or repetitions only to resolve a specific uncertainty within the agreed budget.
-   - **Done when:** a fresh executor has evaluated the edited prompt against the same scenarios and checklists.
-7. **Convergence check**: The rough rule is "stop when 2 consecutive iterations have zero new unclear points AND metric improvements fall below the thresholds (below)". Make it 3 consecutive for high-importance prompts.
+6. **Re-evaluate**: Run Steps 2–4 again with a new executor (do not reuse the same agent: it has learned the previous improvements). Proceed to Step 7 on the evaluated version. Return to Step 5 only if another fix is needed within the requested tuning scope, then re-evaluate that edit before a convergence decision. Expand cases or repetitions only to resolve a specific uncertainty within the agreed budget.
+   - **Done when:** a fresh executor has evaluated the current prompt against the same scenarios and checklists, with no subsequent unevaluated edit.
+7. **Convergence check**: Apply the declared rule in "Iteration stopping criteria" below to the evaluated version.
    - **Done when:** the "Iteration stopping criteria" section below has been checked against the latest rounds and yields convergence, divergence, or an explicit resource-cutoff call.
 
 ## Evaluation axes
@@ -92,7 +92,7 @@ Fix → effect is not linear. Pre-estimation can play out in the following 3 pat
 - **Overshoot** (estimate < actual): one structural piece of information (e.g., a combination of command + config + expected output) satisfied judgment wording across multiple axes at once. "Combinations of information structurally hit multiple axes."
 - **Zero-shoot** (estimate > 0, actual = 0): a fix inferred from the axis name did not reach any of the judgment wording. "Axis names and judgment wording are different things."
 
-To stabilize this, **before applying the diff, have the executor verbalize "which judgment wording this fix satisfies"**. Estimation accuracy does not come out unless you tie things at the threshold-wording level. When adding a new evaluation axis, also concretize the judgment criteria for each point down to the threshold-wording level (at a granularity the executor can judge, such as "all explicit" or "full text of a minimum working configuration" — so it knows what constitutes 2 points).
+To stabilize this, **before applying the diff, have the evaluator record "which judgment wording this fix satisfies"**. Estimation accuracy does not come out unless you tie things at the threshold-wording level. When adding a new evaluation axis, also concretize the judgment criteria for each point down to the threshold-wording level (at a granularity the evaluator can judge, such as "all explicit" or "full text of a minimum working configuration" — so scoring specifies what constitutes 2 points).
 
 ## Executor invocation contract
 
@@ -143,7 +143,7 @@ A separate session or fresh agent can supply an executor. If one selected enviro
 
 ## Iteration stopping criteria
 
-- **Convergence (tuning mode only)**: use a declared stopping rule; the following is a starting heuristic, not a model-independent guarantee. Require all critical items to pass in every supported environment before calling the result converged. For 2 consecutive rounds:
+- **Convergence (tuning mode only)**: use a declared stopping rule; the following is a starting heuristic, not a model-independent guarantee. Require all critical items to pass in every supported environment before calling the result converged. For 2 consecutive rounds (3 for high-importance prompts):
   - New unclear points: 0
   - No requirement regression; accuracy improvement vs previous is between 0 and +3 percentage points
   - Comparable operation-count variation vs previous: within ±10%, when measured

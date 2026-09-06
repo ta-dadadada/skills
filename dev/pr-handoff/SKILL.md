@@ -110,7 +110,7 @@ git commit -m "feat(client): 指数バックオフ付きリトライポリシー
 - Create no files for the deliverable, unless the repo's own conventions require an artifact file.
 - Use read-only Git commands for inspection; execute none of the proposed staging, commit, push, or PR-creation commands. Leave the work tree, index, and history unchanged.
 
-**Done when:** the single message holds both artifacts, and the work tree and index are untouched.
+**Done when:** the single message holds both artifacts, and the work tree, index, and history are untouched.
 
 ## Red flags
 

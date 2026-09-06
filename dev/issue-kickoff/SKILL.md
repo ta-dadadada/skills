@@ -32,10 +32,10 @@ What counts as done is agreed before any code is written. Reuse agreed goals, co
 
 - Read the issue body, any linked discussion, and referenced code — `gh issue view` for a GitHub issue, or the conversation itself for a verbal request — plus the minimal look at the code needed to phrase the Step 3 questions; the full landing-zone survey stays in Step 4.
 - A linked reference that cannot be read (no gh, nothing pasted) is recorded as unread; when the work's independence from it cannot be established, it joins the question gate.
-- Restate the requirement in your own words. Record the issue's metadata: number, labels, related issues or PRs — or note explicitly that no tracked issue exists.
+- Restate the requirement in your own words. Record the issue's metadata: number, labels, related issues or PRs — or record that no issue reference was supplied or found. Missing references do not establish that no issue exists; ask only if a required reference or conflict blocks the work.
 - Separate the actual requirement from background noise in the source material.
 
-**Done when:** the requirement is restated in the skill's own words and the issue metadata (number, links) is recorded — or the absence of a tracked issue is noted.
+**Done when:** the requirement is restated in the skill's own words and the issue metadata (number, links) is recorded — or the lack of a supplied or discovered reference is recorded without asserting that no issue exists.
 
 ### Step 2 — Derive acceptance criteria
 

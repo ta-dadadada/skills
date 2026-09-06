@@ -1,6 +1,6 @@
 # session-goal
 
-> Persist the goal at the start of a development session, including clear requests, or when the purpose drifts. Save an explicit goal without reconfirmation; clarify competing or ambiguous goals first. Not for acceptance criteria, work plans, implementation, or an in-flight handover.
+> Persist the goal at the start of a development session, including clear requests, or when the purpose drifts. Save an explicit goal without reconfirmation; clarify competing or ambiguous goals first. This skill saves the goal before requested implementation; it does not implement changes itself. Not for acceptance criteria, work plans, or an in-flight handover.
 
 ## Install
 

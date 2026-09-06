@@ -1,7 +1,7 @@
 ---
 name: session-goal
 description: >-
-  Persist the goal at the start of a development session, including clear requests, or when the purpose drifts. Save an explicit goal without reconfirmation; clarify competing or ambiguous goals first. Not for acceptance criteria, work plans, implementation, or an in-flight handover.
+  Persist the goal at the start of a development session, including clear requests, or when the purpose drifts. Save an explicit goal without reconfirmation; clarify competing or ambiguous goals first. This skill saves the goal before requested implementation; it does not implement changes itself. Not for acceptance criteria, work plans, or an in-flight handover.
 license: MIT
 compatibility: >-
   Step 1 may use the gh CLI when a material is a GitHub issue; absent
@@ -46,7 +46,7 @@ One session serves one goal — about one PR's worth — and the goal is the use
 - Work of the incidental kind (minor bug fixes, blocker fixes, refactoring, tests, docs, dependency updates) named in the prompt is presented with its default classification — accompanying work — plus, when the prompt leaves the intent undetermined, one question confirming whether the user means it as the session's purpose itself.
 - When the prompt and materials already pin a single clear goal, treat it as confirmed and continue through statement writing and persistence without another approval. No question needed does not mean no goal file needed.
 
-**Done when:** exactly one goal — or a set the user explicitly chose to run in parallel — is stated as Why/What, and no choice needed to save it faithfully is unanswered. An explicit goal proceeds to Step 4 even when later implementation details remain open.
+**Done when:** exactly one goal — or a set the user explicitly chose to run in parallel — is stated as Why/What, and no choice needed to save it faithfully is unanswered. An explicit goal proceeds through Step 3 statement writing and Step 4 persistence even when later implementation details remain open.
 
 ### Step 3 — Write the statement; confirm only unresolved choices
 
@@ -79,7 +79,7 @@ _<ISO8601> | branch: `<branch>`_
 - Keep the file out of version control: read `.gitignore`, and when no line equals `.agent-goal.md`, append it once (creating `.gitignore` when absent). The file becomes tracked only on the user's explicit instruction. In a non-git directory, writing the file is enough.
 - Report the written path and what happened to `.gitignore` (appended, already present, or skipped as non-git). Pass the goal and constraints to the next requested workflow; saving the goal does not complete an implementation request.
 
-**Done when:** the file at the fixed path carries the confirmed statement, the `.gitignore` entry exists exactly once (or the directory is non-git), and the path was reported.
+**Done when:** the file at the fixed path carries the confirmed statement and all explicit user constraints (in the statement or Constraints section), the `.gitignore` entry exists exactly once (or the directory is non-git), and the path was reported. When further work was requested, its workflow receives the saved goal and constraints.
 
 ## Red flags
 
