@@ -1,19 +1,7 @@
 ---
 name: pr-handoff
 description: >-
-  Propose-only wrap-up of an implementation session: read the repo's diff
-  and the session's own record, separate what the diff proves from what
-  the session shows was intended, ask the user about anything neither
-  source answers, then deliver in chat a PR description (implementation
-  summary, decisions with their reasons, notes) plus a logical commit
-  split with Conventional-Commits messages as ready-to-run git commands —
-  executing none of them. Use at the end of an implementation session,
-  before opening a PR, when the current diff needs a reviewable
-  explanation, when the session's decisions should be captured for
-  reviewers, or when a logical commit plan is needed before committing.
-  Not for doing the implementation itself, not for actually
-  staging/committing/pushing or creating the PR, not without an existing
-  diff to describe, and not for rewriting existing history.
+  Propose a PR description and logical commit plan for an existing diff at implementation handoff, before opening a PR, or when preparing changes and session decisions for review. Does not stage, commit, push, create a PR, or rewrite history.
 license: MIT
 metadata:
   author: ta-dadadada
@@ -21,7 +9,7 @@ metadata:
 
 # PR Handoff
 
-A handoff mixes two kinds of knowledge that must never blur: the diff is the only source of facts — what changed, in which files — and the session's own record is the only source of intent — why it changed, what was weighed and rejected. Anything found in neither becomes a question to the user, never a guess dressed as a summary. The skill proposes text and commands in chat and executes nothing: git state after the handoff equals git state before it. The handoff is done when the PR description and the commit plan sit together in one chat message.
+A handoff mixes two kinds of knowledge that must never blur: the diff is the only source of facts — what changed, in which files — and the session's own record is the only source of intent — why it changed, what was weighed and rejected. Unsupported claims are omitted or explicitly marked unknown; ask only when a missing decision prevents an accurate handoff. The skill proposes text and commands in chat and executes none of the proposed operations: git state after the handoff equals git state before it. The handoff is done when the PR description and the commit plan sit together in one chat message.
 
 ## When to use
 
@@ -33,7 +21,7 @@ A handoff mixes two kinds of knowledge that must never blur: the diff is the onl
 ## When not to use
 
 - The implementation work itself — this skill describes a change, it does not make one.
-- Executing git operations or creating/sending the PR — this skill only proposes.
+- Executing state-changing Git operations or creating/sending the PR — this skill only proposes.
 - No diff exists — a generic PR template is not this skill's job.
 - Summarizing text unrelated to the repository.
 - Rewriting existing commit history.
@@ -62,8 +50,8 @@ A handoff mixes two kinds of knowledge that must never blur: the diff is the onl
 ### Step 3 — Close the gaps (question gate)
 
 - Check the Step 2 gaps against what an accurate handoff needs: the change's purpose, why the chosen approach won, rejected alternatives, compatibility/migration decisions, deliberate non-goals, known limitations, issue numbers, and test results not witnessed in the session.
-- When searching for an issue number: first check the branch name and session record (as described in Step 2). If neither yields a number, ask the user if an issue/ticket number exists for this work. Issue numbers are not required — if the user confirms none exists, proceed with the standard Conventional Commits format without a number.
-- If any other blocking gap is missing, ask the user those questions now, batched, and stop: no draft PR description or commit plan is shown until the answers arrive — a finished-looking draft invites rubber-stamping the guesses inside it.
+- Use an issue number supported by the branch name or session record (Step 2). If none is found, omit it without asking whether one exists. Ask only when repository conventions require a number or conflicting references affect accuracy; do not infer that no issue exists merely because none was found.
+- A gap is blocking when it changes the purpose, commit grouping, or a required compatibility/migration statement and cannot be omitted or honestly labelled unknown. Unrecorded alternatives and unwitnessed tests do not by themselves block the handoff. For blocking gaps, ask batched questions and wait: no draft PR description or commit plan is shown until the answers arrive — a finished-looking draft invites rubber-stamping the guesses inside it.
 - Ask only what blocks accuracy; with no blocking gaps, proceed without asking.
 
 **Done when:** either every blocking gap has a user answer, or no blocking gaps existed.
@@ -99,7 +87,7 @@ reviewer attention points. Omit the whole section when nothing applies.
 - Partition the change set into commits by purpose and dependency: each commit reviewable alone, the sequence buildable in order, tests and docs travelling with the change they verify or describe, no unrelated changes sharing a commit, no mechanical file-per-commit split.
 - Every authored change lands in exactly one commit — intra-file splits are the only exception. Generated artifacts in the work tree (build output, caches, bytecode) stay out of the plan and get a Note instead.
 - Commit messages (subject and body) are written in Japanese.
-- Messages follow the repo's convention from Step 1 when one exists, else Conventional Commits: `type(scope): subject`, with the body in a second `-m`. When an issue number is confirmed in Step 2 or 3, use the format `type(scope): <No.>: subject` (e.g., `feat(client): #123: 指数バックオフ付きリトライポリシーを追加`). If no issue number is confirmed after checking the branch name and session record, ask the user; commit with the standard format when no issue number exists.
+- Messages follow the repo's convention from Step 1 when one exists, else Conventional Commits: `type(scope): subject`, with the body in a second `-m`. When an issue number is confirmed in Step 2 or 3, use the format `type(scope): <No.>: subject` (e.g., `feat(client): #123: 指数バックオフ付きリトライポリシーを追加`). Follow Step 3 for missing or conflicting references; propose the standard format without a number when it is optional and unknown.
 - Commands use explicit paths — `git add <paths>`, never `git add .` or `-A`. When one file genuinely belongs to two commits, prefer redrawing the commit boundary to whole files when the history reads as well; otherwise emit `git add -p <file>`, name which hunks to take, and flag that it needs interactive selection.
 - Present each commit in this shape:
 
@@ -120,7 +108,7 @@ git commit -m "feat(client): 指数バックオフ付きリトライポリシー
 - Put the PR description and the commit plan into one chat message, verbatim and complete.
 - Wrap the PR description in a markdown code block and each git command sequence in an sh code block, each independently copy-runnable.
 - Create no files for the deliverable, unless the repo's own conventions require an artifact file.
-- Execute no git command: `git status` after the skill equals `git status` before it.
+- Use read-only Git commands for inspection; execute none of the proposed staging, commit, push, or PR-creation commands. Leave the work tree, index, and history unchanged.
 
 **Done when:** the single message holds both artifacts, and the work tree and index are untouched.
 
