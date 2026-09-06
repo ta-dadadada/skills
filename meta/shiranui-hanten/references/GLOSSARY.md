@@ -4,7 +4,7 @@ One entry per term. `SKILL.md` orders the work, [`PRINCIPLES.md`](PRINCIPLES.md)
 
 ## Foundation
 
-- **Predictability** — the agent taking the same *process* every run, not producing the same output. The root virtue; every other term is a lever serving it.
+- **Predictability** — consistent satisfaction of required outcomes, quality, authority boundaries, and necessary ordering, allowing equivalent methods and routine judgment.
 - **Skill** — a reusable package of work procedures: what to check, in what order, which tool under which condition, and what counts as done. It complements MCP and tools rather than replacing them; it is not an override of model capability.
 - **Skill layers** — four roles a skill can play: **domain** (a unit of work: bug-fix, code-review, release-notes), **procedure** (a flow reused across domains: reproduce → diagnose → fix → verify), **guard** (a safety rule: secret detection, dangerous-command gating), **ops** (maintenance behavior: logging, failure reporting).
 
@@ -23,22 +23,22 @@ One entry per term. `SKILL.md` orders the work, [`PRINCIPLES.md`](PRINCIPLES.md)
 ## Information hierarchy
 
 - **Information hierarchy** — a ladder ranking content by how immediately the agent needs it: in-skill step → in-skill reference → external reference.
-- **Steps** — ordered actions in `SKILL.md`, each ending on a completion criterion. The primary tier.
+- **Steps** — actions in `SKILL.md`, ordered where dependencies require it; completion criteria identify meaningful gates.
 - **Reference** — a definition, rule, or fact consulted on demand rather than executed in order.
 - **External reference** — reference pushed out of `SKILL.md` into a separate file, reached by a context pointer, loaded only when the pointer fires.
 - **Progressive disclosure** — moving content down the ladder — out of `SKILL.md` into a linked file — so the top stays legible.
 - **Co-location** — keeping a concept's definition, rules, and caveats under one heading, so reading one part brings its neighbours with it.
-- **Sprawl** — a skill simply too long, even when every line is live and unique. Cured by disclosure and splitting.
+- **Sprawl** — unrelated responsibilities or irrelevant material that obscure the task; length alone does not establish it.
 
 ## Steering
 
 - **Branch** — a distinct way the skill is used; different runs take different paths through it. Inline what every branch needs; put behind a pointer what only some branches reach.
-- **Leading word** — a compact concept already living in the model's pretraining that anchors a region of behaviour in few tokens (*tight*, *red*, *fog of war*). Anchors execution in the body and invocation in the description.
+- **Leading word** — an optional compact concept supporting recognition or execution; concrete requirements remain authoritative across models.
 - **Completion criterion** — the condition that tells the agent a step (or the whole task) is done. Must be *checkable* (done vs not-done is decidable) and, where it matters, *exhaustive*.
 - **Legwork** — the digging the agent does within the work. Raised by demanding completion criteria.
 - **Post-completion steps** — the steps still ahead of the current one; their visibility tempts the agent to rush.
 - **Premature completion** — ending a step before it's genuinely done, attention slipping to *being done*. Countered by sharper criteria first, splitting second.
-- **Negation** — steering by prohibition; naming the banned behaviour makes it more available. State the positive target instead.
+- **Negation** — wording that prohibits behavior; retain it where it states scope or authority precisely, and clarify permitted actions where needed.
 
 ## Pruning
 
@@ -47,7 +47,7 @@ One entry per term. `SKILL.md` orders the work, [`PRINCIPLES.md`](PRINCIPLES.md)
 - **Duplication** — the same meaning in more than one place; costs maintenance and tokens, and inflates the meaning's apparent rank.
 - **Relevance** — whether a line still bears on what the skill does.
 - **Sediment** — stale layers that settle because adding feels safe and removing feels risky. The default fate of an unpruned skill.
-- **No-op** — a line the model already obeys by default; you pay load to say nothing. Test: does it change behaviour versus the default?
+- **No-op** — text adding neither a requirement nor useful guidance. A requirement remains necessary even when a model follows it by default.
 
 ## Verification
 
@@ -55,7 +55,7 @@ One entry per term. `SKILL.md` orders the work, [`PRINCIPLES.md`](PRINCIPLES.md)
 - **Trajectory** — the sequence of actions and decisions the agent took during a run. The layer where a skill's predictability lives or dies.
 - **Offline evaluation** — running the skill against prepared scenarios (regression, expected-output) before release.
 - **Online evaluation** — observing real runs of the skill after release.
-- **Representative task** — a realistic task a fresh executor runs to exercise the skill end to end; the minimum bar of verification.
+- **Representative task** — a realistic task a fresh executor runs to check affected behavior; select it according to the change rather than requiring it for every edit.
 
 ---
 

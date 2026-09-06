@@ -1,6 +1,6 @@
 # shiranui-hansode
 
-> Methodology for iteratively improving agent-facing instructions (skills / slash commands / CLAUDE.md / code-gen prompts) via bias-free executor + two-sided evaluation (self-report + instruction-side metrics). Meta-skill, invoke ONLY when the user explicitly asks for an "empirical" eval of a prompt or skill, or for the Iter-0 description / body consistency check. Do NOT auto-invoke after every skill edit; this loop is operator-triggered by name.
+> Evaluate agent instructions when the user explicitly requests a structural review, empirical comparison, or iterative tuning. Compare outcomes, required boundaries, and observed execution across the selected environments. Not an automatic follow-up to skill edits.
 
 ## Install
 
@@ -30,6 +30,7 @@ npx degit ta-dadadada/skills/meta/shiranui-hansode ~/.claude/skills/shiranui-han
 ## Files
 
 - [SKILL.md](./SKILL.md) — the workflow (start here)
+- [references/executor-environments.md](./references/executor-environments.md) — environment-specific execution and metric capture
 
 ## Credits
 

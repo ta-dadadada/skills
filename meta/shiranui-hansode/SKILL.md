@@ -1,6 +1,6 @@
 ---
 name: shiranui-hansode
-description: Methodology for iteratively improving agent-facing instructions (skills / slash commands / CLAUDE.md / code-gen prompts) via bias-free executor + two-sided evaluation (self-report + instruction-side metrics). Meta-skill, invoke ONLY when the user explicitly asks for an "empirical" eval of a prompt or skill, or for the Iter-0 description / body consistency check. Do NOT auto-invoke after every skill edit; this loop is operator-triggered by name.
+description: Evaluate agent instructions when the user explicitly requests a structural review, empirical comparison, or iterative tuning. Compare outcomes, required boundaries, and observed execution across the selected environments. Not an automatic follow-up to skill edits.
 license: MIT
 ---
 
@@ -8,57 +8,62 @@ license: MIT
 
 Forked from [mizchi/skills: meta/empirical-prompt-tuning](https://github.com/mizchi/skills/tree/main/meta/empirical-prompt-tuning); substantially modified for this repository's conventions (added per-step `Done when:` criteria, reworked the `Related` section, and other changes below) and treated here as an independent skill.
 
-The author of a prompt cannot judge its quality. The clearer the writer thinks something is, the more likely another agent will stumble on it. The core of this skill is to **have a bias-free executor actually run the instruction, evaluate it two-sidedly, and iterate**. Do not stop until improvements plateau.
+Author review can assess static consistency but cannot establish execution quality. Use fresh executors without authorial context, inspect their artifacts and observable actions, and separate evidence from self-report. Match the evaluation scope to the request: structural review, bounded comparison, or an explicitly requested tuning loop.
 
 ## When to use
 
-- Right after creating or substantially revising a skill / slash command / task prompt
-- When an agent does not behave as expected and you want to attribute the cause to ambiguity on the instruction side
-- When hardening high-importance instructions (frequently used skills, automation-core prompts)
+- An explicit request to check instruction structure or description/body consistency.
+- An explicit request to compare execution before and after an instruction change.
+- An explicit request to iteratively tune instructions against fixed requirements.
 
 ## When not to use
 
-- One-off throwaway prompts (evaluation cost does not pay off)
-- When the goal is not to improve success rate but merely to reflect the writer's subjective preferences
+- Automatic evaluation after every skill edit.
+- Treating a subjective preference as a proven execution improvement.
+- A one-off prompt whose evaluation cost is not justified by the requested task.
 
 ## Workflow
+
+Choose the requested mode before running steps. Structural review ends after Step 0 without executing scenarios or editing the target. Bounded comparison runs Steps 0–4 for the requested versions and reports results; it does not enter the tuning loop. Steps 5–7 require an explicit tuning request. Reuse the caller's fixed cases and budget when supplied.
 
 0. **Iteration 0 — description / body consistency check** (static, no dispatch needed)
    - Read the triggers / use cases claimed by the frontmatter `description`
    - Read the scope the body actually covers
-   - If there is a gap, reconcile description or body before moving to iter 1
+   - Record gaps with file/section evidence. In execution modes, resolve or isolate a gap before interpreting results; structural review reports it without modifying the target
    - Example: description says "navigation / form filling / data extraction" but the body is only a CLI reference for `npx playwright test` — detect that kind of gap
-   - If you skip this, the subagent will "reinterpret" the body to match the description, and accuracy will come out high even though the skill does not actually meet the requirements (false positive)
-   - **Done when:** every description trigger maps to body content and vice versa, or the gap is reconciled before iter 1.
+   - Keep invocation coverage separate from execution quality: a successful explicitly invoked run does not establish that the description selects the skill correctly
+   - **Done when:** description/body coverage and gaps are recorded. Structural review delivers findings and stops here; execution modes carry relevant gaps into the evaluation limits.
 
-1. **Baseline preparation**: Fix the target prompt and prepare the following two things.
-   - **Evaluation scenarios**, 2 to 3 kinds (1 median + 1 to 2 edge). Realistic tasks that assume actual situations where the target prompt would apply.
+1. **Baseline preparation**: Fix the target prompt and prepare the following inputs.
+   - **Evaluation scenarios** scoped to the change: start with the affected case and relevant boundary or non-activation cases. Add cases or repetitions when differences, failures, or uncertainty justify them; do not require a full-suite comparison for every change.
    - **Requirements checklist** (for computing accuracy). For each scenario, enumerate 3 to 7 items the deliverable must satisfy. Accuracy % = items satisfied / total items. Fix this in advance (do not move it afterward).
-   - **Done when:** scenarios and their checklists exist in writing and will not be edited after evaluation starts.
-2. **Bias-free read**: Have a "blank-slate" executor read the instruction. **Dispatch a new subagent** via the Task tool. Do not substitute with a self-reread (it is structurally impossible to view text you just wrote objectively). When running multiple scenarios in parallel, place multiple Agent invocations within a single message. For how to handle environments where dispatch is unavailable, see the "Environment constraints" section.
-   - **Done when:** every scenario has been dispatched to a fresh subagent that has never seen this prompt before.
-3. **Execution**: Hand the subagent a prompt that follows the **subagent invocation contract** described below, and have it execute the scenario. The executor produces an implementation or output and returns a self-report at the end.
-   - **Done when:** each dispatched subagent has returned a report in the contract's structure.
+   - Record tool/version, model identifier, reasoning settings, permissions, available tools, installed instructions, task fixture, target revision, and resource limit. Use identical fixtures and settings within each before/after pair; report environmental differences separately.
+   - **Done when:** scenarios, checklists, environment records, and comparison scope are fixed before execution.
+2. **Fresh execution context**: Start a separate session or fresh agent for each case/version with no authorial history or previous variant results. Use the environment's supported launcher, permissions, and tracing; consult [executor-environments.md](references/executor-environments.md) for environment-specific capture. Independent runs may run concurrently in isolated fixtures when supported.
+   - **Done when:** each selected case/version has a fresh executor, or its unavailable execution environment is recorded.
+3. **Execution**: Hand the executor a prompt that follows the **executor invocation contract** described below, and have it execute the scenario. The executor produces an implementation or output and returns a self-report at the end.
+   - **Done when:** each dispatched executor has returned a report in the contract's structure.
 4. **Two-sided evaluation**: Record the following from the returned results.
-   - **Executor self-report** (extracted from the body of the subagent's report): unclear points / discretionary fill-ins / places where template application got stuck
-   - **Trace interpretation**: each unclear point is tagged with the phase it originated in (Understanding / Planning / Execution / Formatting — see "Subagent invocation contract"). Phase-local fixes land better than global "the prompt was unclear" fixes; a single Understanding-phase ambiguity often looks like a chain of Execution-phase failures.
+   - **Executor self-report** (extracted from the body of the executor's report): unclear points / material judgment and assumptions / places where template application got stuck
+   - **Trace interpretation**: each unclear point is tagged with the phase it originated in (Input review / Plan artifact / Execution / Formatting — see "Executor invocation contract"). Phase-local fixes land better than global "the prompt was unclear" fixes; a single input ambiguity often looks like a chain of Execution-phase failures.
    - **Structured reflection**: each unclear point must be returned as `Issue / Cause / General Fix Rule`. The `General Fix Rule` is the class-level abstraction that feeds the "Failure pattern ledger" — without it, fixes stay as one-off patches that rediscover the same mistake later.
    - **Instruction-side measurements** (the judgment rules are defined canonically in this section; refer to it from elsewhere):
      - Success/failure: counts as success (○) only when **all** requirements tagged `[critical]` are ○. If even one is × or partial, it is failure (×). The label is the binary ○ / × only.
      - Accuracy (achievement rate of the requirements checklist, %. ○ = full score, × = 0, partial = 0.5; sum and divide by total items)
-     - Step count (use the `tool_uses` field in the usage meta attached to the Task tool return value as-is. Include Read / Grep, do not exclude them)
-     - Duration (`duration_ms` from the Task tool usage meta)
-     - Retry count (how many times the subagent redid the same decision. Extract from the subagent's self-report; not measurable from the instruction side)
+     - Operation count (reads/searches, writes, checks, and other observable operations); preserve the capture source and native call count separately, following the environment reference. Missing data is N/A, not zero
+     - Duration (elapsed execution time with source and unit; distinguish tool-reported time from wall time)
+     - Retry count (repeated attempts visible in the trace, with self-reported decision retries labelled separately)
      - **On failure, add a one-line note to the "unclear points" section of the presentation format stating "which [critical] item dropped"** (for root cause tracing)
    - The requirements checklist must include **at least one** `[critical]`-tagged item (if there are zero, the success judgment becomes vacuous). Do not add or remove [critical] tags after the fact.
-   - **Done when:** every scenario has a filled evaluation-axis row and every unclear point carries Issue / Cause / General Fix Rule.
+   - Judge correct outcomes and critical boundaries before cost. Distinguish permitted routine choices from unsupported business, scope, or authority decisions and assumptions presented as facts. Causes in self-reports are hypotheses until corroborated by artifacts or traces.
+   - **Done when:** every attempted scenario has results or an explicit execution limit, findings distinguish evidence from self-report, and bounded comparison delivers its findings without entering Step 5.
 5. **Apply the diff**: Put the minimum fix into the prompt to eliminate the unclear points. One theme per iteration (multiple related fixes are OK, unrelated fixes go to next time).
    - **Before applying the fix, explicitly state "which item in the requirements checklist / judgment wording this fix satisfies"** (fixes inferred from axis names often do not land. See the "Fix propagation patterns" section below.)
    - **Consult the failure pattern ledger first**. If the structured reflection's `General Fix Rule` already matches a known pattern, the first question is "why didn't the existing fix prevent it?" — the fix may need to move closer to the top of the prompt, or be re-worded, before a new ledger entry is added.
    - **Done when:** the prompt is edited, the edit is stated to satisfy a named checklist item or judgment wording, and the ledger has been checked for a matching pattern.
-6. **Re-evaluate**: Run 2 → 5 again with a new subagent (do not reuse the same agent: it has learned the previous improvements). Increase parallelism if iterating further does not plateau improvements.
-   - **Done when:** a fresh subagent has evaluated the edited prompt against the same scenarios and checklists.
-7. **Convergence check**: The rough rule is "stop when 2 consecutive iterations have zero new unclear points AND metric improvements fall below the thresholds (below)". Make it 3 consecutive for high-importance prompts.
+6. **Re-evaluate**: Run Steps 2–4 again with a new executor (do not reuse the same agent: it has learned the previous improvements). Proceed to Step 7 on the evaluated version. Return to Step 5 only if another fix is needed within the requested tuning scope, then re-evaluate that edit before a convergence decision. Expand cases or repetitions only to resolve a specific uncertainty within the agreed budget.
+   - **Done when:** a fresh executor has evaluated the current prompt against the same scenarios and checklists, with no subsequent unevaluated edit.
+7. **Convergence check**: Apply the declared rule in "Iteration stopping criteria" below to the evaluated version.
    - **Done when:** the "Iteration stopping criteria" section below has been checked against the latest rounds and yields convergence, divergence, or an explicit resource-cutoff call.
 
 ## Evaluation axes
@@ -67,23 +72,17 @@ The author of a prompt cannot judge its quality. The clearer the writer thinks s
 |---|---|---|
 | Success/failure | Did the executor produce the intended deliverable (binary) | Minimum bar |
 | Accuracy | What % of requirements the deliverable satisfies | Degree of partial success |
-| Step count | Tool-call / decision-step count used by the executor | Indicator of instruction waste |
-| Duration | Executor's duration_ms | Proxy indicator of cognitive load |
+| Operation count | Observable operations with capture method; native call count kept separately | Cost indicator requiring trace interpretation |
+| Duration | Recorded elapsed time and source | Operational cost; affected by tool latency and environment |
 | Retry count | How many times the same decision was redone | Signal of instruction ambiguity |
 | Unclear points (self-report) | Executor enumerates as bullets | Qualitative improvement material |
-| Discretionary fill-ins (self-report) | Decisions not fixed by the instruction | Surfaces implicit specification |
+| Judgment (self-report and trace) | Routine choices, explicit assumptions, or unsupported consequential decisions | Distinguishes permitted discretion from requirement or boundary defects |
 
-**Weighting**: Qualitative (unclear points / discretionary fill-ins) is primary, quantitative (time / step count) is auxiliary. Chasing only time reduction makes the prompt too thin.
+**Weighting**: Correct outcomes and required boundaries are primary; unnecessary questions, reads, repeated checks, and premature stopping are execution findings. Time and operation count are auxiliary. Do not trade a critical regression in one environment for gains in another.
 
-### Qualitative interpretation of `tool_uses`
+### Interpreting execution cost
 
-Looking only at accuracy hides skill problems. Using `tool_uses` as a **relative value across scenarios** reveals structural defects:
-
-- If one scenario is **3-5x or more** vs the others, that skill is a sign of being **decision-tree-index-leaning with low self-containment**. The executor is being forced into references descent.
-- Typical example: all scenarios have `tool_uses` of 1-3 but one scenario alone has 15+ → there is no recipe for that scenario in the skill itself, so it is cross-searching references/
-- Countermeasure: adding an "inline minimum complete example" or "guidance on when to read references" at the top of SKILL.md in iter 2 significantly drops `tool_uses`
-
-Even at 100% accuracy, a skew in `tool_uses` is grounds for triggering iter 2. "Cut off based on accuracy alone" tends to miss structural defects.
+Compare the same case before and after within one environment. More operations may reflect task complexity, necessary verification, batching differences, or tool latency rather than instruction waste. Inspect repeated or irrelevant work before attributing a difference to the instruction. Raw call counts are not directly comparable across tools. Add inline guidance or adjust reference conditions only when the trace supports that diagnosis.
 
 ### Fix propagation patterns (conservative / overshoot / zero-shoot)
 
@@ -93,27 +92,27 @@ Fix → effect is not linear. Pre-estimation can play out in the following 3 pat
 - **Overshoot** (estimate < actual): one structural piece of information (e.g., a combination of command + config + expected output) satisfied judgment wording across multiple axes at once. "Combinations of information structurally hit multiple axes."
 - **Zero-shoot** (estimate > 0, actual = 0): a fix inferred from the axis name did not reach any of the judgment wording. "Axis names and judgment wording are different things."
 
-To stabilize this, **before applying the diff, have the subagent verbalize "which judgment wording this fix satisfies"**. Estimation accuracy does not come out unless you tie things at the threshold-wording level. When adding a new evaluation axis, also concretize the judgment criteria for each point down to the threshold-wording level (at a granularity the subagent can judge, such as "all explicit" or "full text of a minimum working configuration" — so it knows what constitutes 2 points).
+To stabilize this, **before applying the diff, have the evaluator record "which judgment wording this fix satisfies"**. Estimation accuracy does not come out unless you tie things at the threshold-wording level. When adding a new evaluation axis, also concretize the judgment criteria for each point down to the threshold-wording level (at a granularity the evaluator can judge, such as "all explicit" or "full text of a minimum working configuration" — so scoring specifies what constitutes 2 points).
 
-## Subagent invocation contract
+## Executor invocation contract
 
-The prompt given to the executor takes the following structure. This is the input contract for "two-sided evaluation".
+The prompt given to the executor takes the following structure. Request observable actions and concise results, not private reasoning. This is the input contract for "two-sided evaluation".
 
 ```
 You are an executor reading <target prompt name> with a blank slate.
 
 ## Target prompt
-<Paste the full body of the target prompt, or specify a path for Read>
+<For execution quality, provide the target instruction or its path. For invocation testing, provide the candidate descriptions without telling the executor which skill to choose.>
 
 ## Scenario
 <One paragraph setting the scenario context>
 
-## Requirements checklist (items the deliverable must satisfy)
-1. [critical] <item that belongs to the minimum bar>
+## User requirements (only information available in the real request)
+1. <explicit user requirement>
 2. <normal item>
 3. <normal item>
 ...
-(Judgment rules are canonically defined in "Workflow 4. Two-sided evaluation / Instruction-side measurements". At least one [critical] is required.)
+(Keep evaluator-only expected decisions and scoring criteria outside the executor prompt. Critical tags belong in the evaluator checklist.)
 
 ## Task
 1. Follow the target prompt to execute the scenario and produce the deliverable.
@@ -121,10 +120,10 @@ You are an executor reading <target prompt name> with a blank slate.
 
 ## Report structure
 - Deliverable: <artifact or execution summary>
-- Requirement achievement: ○ / × / partial (with reason) for each item
+- Requirement achievement: observable result for each supplied requirement
 - **Trace** (tag OK / stuck / skipped for each phase, one-line reason when not OK):
-  - Understanding (reading the instruction and building a mental model)
-  - Planning (deciding the approach / ordering)
+  - Input review (sources read or unavailable)
+  - Plan artifact (produced or unnecessary)
   - Execution (actually doing the work)
   - Formatting (shaping the deliverable to the expected form)
   - *Collapsed form allowed*: when all four phases are OK, a single line `Trace: all OK` is sufficient. Emit phase-by-phase only when any phase is stuck or skipped. (This avoids happy-path boilerplate; the trace structure only earns its cost when something actually goes wrong.)
@@ -132,28 +131,23 @@ You are an executor reading <target prompt name> with a blank slate.
   - Issue: <what observably happened>
   - Cause: <why, diagnosed at the instruction level>
   - General Fix Rule: <a class-level rule, not a spot fix, that would prevent this class of mistake>
-- Discretionary fill-ins: places not fixed by the instruction and filled in by your own judgment (bullets)
+- Judgment: material routine choices and their evidence; explicit assumptions; unresolved consequential decisions
 - Retries: number of times you redid the same decision and why
 ```
 
-The caller extracts the self-report portion from the report and fills the evaluation-axis table by obtaining `tool_uses` / `duration_ms` from the Agent tool's usage meta.
+The evaluator scores the fixed checklist from artifacts, observable actions, and labelled self-report. The environment reference defines how to capture available metrics; no particular tool-return field is required by this contract.
 
 ## Environment constraints
 
-In environments where dispatching a new subagent is not possible (already running as a subagent, Task tool is disabled, etc.), **do not apply** this skill.
-- Alternative 1: ask the parent session's user to start a separate Claude Code session and delegate the evaluation there
-- Alternative 2: give up on evaluation and explicitly report to the user "empirical evaluation skipped: dispatch unavailable"
-- **NG**: substitute with a self-reread (bias enters, so you must not trust the evaluation result)
-
-**Structural review mode**: when you want to check only the **consistency and clarity of the description** of the skill / prompt rather than run empirical evaluation, carve it out explicitly as structural review mode. Note clearly in the request prompt to the subagent "this round is structural review mode: text consistency check, not execution". That way the subagent will not trip on the skip behavior in the environment-constraints section and can return a static review. Structural review is an aid to empirical, not a replacement (it cannot be used for consecutive-clear judgment).
+A separate session or fresh agent can supply an executor. If one selected environment is unavailable, complete independent checks and report that cell as unavailable with the reason. A self-reread remains static review, never a substitute execution result. Structural review needs no executor and does not count toward empirical convergence.
 
 ## Iteration stopping criteria
 
-- **Convergence (stop)**: 2 consecutive rounds satisfying **all** of the following:
+- **Convergence (tuning mode only)**: use a declared stopping rule; the following is a starting heuristic, not a model-independent guarantee. Require all critical items to pass in every supported environment before calling the result converged. For 2 consecutive rounds (3 for high-importance prompts):
   - New unclear points: 0
-  - Accuracy improvement vs previous: +3 points or less (saturation such as 5% → 8%)
-  - Step count variation vs previous: within ±10%
-  - Duration variation vs previous: within ±15%
+  - No requirement regression; accuracy improvement vs previous is between 0 and +3 percentage points
+  - Comparable operation-count variation vs previous: within ±10%, when measured
+  - Comparable duration variation vs previous: within ±15%, when measured; record unavailable metrics rather than treating them as stable
   - **Overfitting check**: at convergence judgment, add 1 hold-out scenario not used so far and evaluate. If accuracy drops 15 points or more from the recent average, overfitting. Go back to baseline scenario design and add edges.
 - **Divergence (suspect the design)**: if new unclear points do not decrease across 3+ iterations → the design direction of the prompt itself may be wrong. Stop fixing by patches and rewrite the structure
 - **Resource cutoff**: stop when importance and improvement cost no longer balance (the "ship at 80 points" call)
@@ -183,11 +177,11 @@ When iterations approach a plateau but convergence criteria (2 consecutive clear
 - **Conservative variant**: current prompt + next-best minor fix
 - **Exploratory variant**: current prompt with one structural change — reorder sections, split a dense paragraph, drop a redundant section, or add a missing scaffolding (e.g., a worked example)
 
-Dispatch fresh subagents on the same scenarios in parallel (one message with multiple Agent tool calls). Keep the variant with higher accuracy; on tie, prefer fewer unclear points; on further tie, prefer lower `tool_uses`.
+Run fresh executors on identical scenarios in isolated fixtures, concurrently only when supported. Reject critical regressions in any supported environment. Among qualifying variants prefer higher requirement achievement, fewer evidenced defects, then lower comparable cost. If only one environment improves, report the split result and retain the common version unless the others preserve quality and boundaries; isolate a proven tool-specific need in a thin adapter.
 
 Pairwise-comparison caveats:
-- Do **not** ask a subagent to rate "A vs B" directly. LLM position bias and self-preference bias make such judgments noisy at small n.
-- Compare on the objective axes only (accuracy, step count, unclear-points count, phase-weakness counts). Those are reproducible; "which prompt felt better" is not.
+- Do **not** ask an executor to rate "A vs B" directly. LLM position bias and self-preference bias make such judgments noisy at small n.
+- Compare on the objective axes only (accuracy, operation count, unclear-points count, phase-weakness counts). Keep their capture methods fixed and repeat uncertain comparisons; small samples do not establish reproducibility.
 - If qualitative comparison is genuinely needed, counterbalance: run both orderings (A,B) and (B,A) and accept a verdict only if both orderings agree.
 
 Cost: variant exploration doubles dispatch count per iteration. Use when plateau is suspected, not by default.
@@ -199,12 +193,15 @@ Record and present to the user with the following form at each iteration:
 ```
 ## Iteration N
 
+### Environment and scope
+<Mode, target revisions, tool/model versions, reasoning settings, permissions, fixture, capture source, unavailable cells, and resource limit>
+
 ### Changes (diff from previous)
 - <one-line fix content>
 - Pattern applied: <pattern name from ledger, or "(new)">
 
 ### Execution results (per scenario)
-| Scenario | Success/Failure | Accuracy | steps | duration | retries | Weak phase |
+| Scenario | Success/Failure | Accuracy | operations | duration | retries | Weak phase |
 |---|---|---|---|---|---|---|
 | A | ○ | 90% | 4 | 20s | 0 | — |
 | B | × | 60% | 9 | 41s | 2 | Execution |
@@ -216,7 +213,7 @@ Record and present to the user with the following form at each iteration:
   - General Fix Rule: <class-level abstraction>
 - <Scenario A>: (nothing new)
 
-### Discretionary fill-ins (newly surfaced this time)
+### Judgment and assumptions (newly surfaced this time)
 - <Scenario B>: <fill-in content>
 
 ### Ledger updates
@@ -233,14 +230,14 @@ Record and present to the user with the following form at each iteration:
 
 | Rationalization that surfaces | Reality |
 |---|---|
-| "Rereading it myself has the same effect" | You cannot view text you just wrote "objectively". Always dispatch a new subagent. |
-| "One scenario is enough" | One scenario overfits. Minimum 2, ideally 3. |
-| "Zero unclear points once, so we're done" | Could be coincidence. Finalize with 2 consecutive rounds. |
+| "A self-reread proves the change works" | static review cannot establish execution behavior; use a fresh executor for that claim |
+| "Every edit needs the full suite" | select affected and boundary cases; expand where differences or failures justify the cost |
+| "One clean run proves reliability" | report its limited coverage; tuning convergence and bounded comparison are different claims |
 | "Let's knock out multiple unclear points at once" | You lose track of what worked. One theme per iteration. |
 | "Split each related micro-fix strictly into its own iter" | Trap in the opposite direction. "One theme" is a semantic unit. 2-3 related micro-fixes can be bundled into 1 iter. Splitting too far explodes the iter count. |
 | "Metrics are good, so ignore qualitative feedback" | Time reduction can also be a sign of being too thin. Keep qualitative primary. |
 | "Rewriting from scratch is faster" | Correct if unclear points do not decrease across 3+ iterations. Before that stage, it is escape. |
-| "Let's reuse the same subagent" | It has learned the previous improvements. Always dispatch a new one. |
+| "Let's reuse the same executor" | It has learned the previous improvements. Always dispatch a new one. |
 
 ## Common failures
 
@@ -251,4 +248,4 @@ Record and present to the user with the following form at each iteration:
 
 ## Related
 
-- `shiranui-hanten` — the workflow this skill's Step 6 (Validation & verification) hands off to for a multi-iteration tuning loop; use `shiranui-hanten` to build or restructure a skill, then this skill to harden it empirically.
+- `shiranui-hanten` — use it to build or restructure a skill. Its Step 6 (Validation & verification) can hand off here for an explicitly requested review, comparison, or tuning scope.

@@ -27,8 +27,9 @@ GLOSSARY).
   `^[a-z0-9]+(?:-[a-z0-9]+)*$`; `description` is at most 1024 characters
   and states both what the skill does and when to fire.
 - The body follows the house pattern: title → one-paragraph thesis →
-  "When to use" / "When not to use" → "Workflow" with every step ending on
-  a bold `Done when:` line → "Red flags" table.
+  "When to use" / "When not to use" → "Workflow" → "Red flags" table.
+  Require checkable completion criteria for the skill and meaningful gates;
+  per-action `Done when:` lines are optional.
 - Every trigger in the description has a matching branch in the body, and
   vice versa.
 - Portability: relative links that resolve, no absolute paths, no
@@ -56,7 +57,10 @@ GLOSSARY).
   cannot check invites premature completion.
 - Flag duplicated meaning across files; each rule should have one
   authoritative home.
-- Flag prose that merely restates a model's default behaviour (a no-op
-  instruction) rather than changing it.
+- Apply `meta/shiranui-hanten/references/PRINCIPLES.md` for predictability,
+  permitted judgment, pruning, and change-scoped verification. Required outcomes,
+  quality, procedures, and authority remain requirements even when a model
+  follows them by default. Do not flag routine evidence-based choices merely
+  because the request did not spell them out.
 - Do not propose unrelated build tooling or non-Markdown artifacts; runtime
   code and CI must stay scoped to a skill that demonstrably needs them.

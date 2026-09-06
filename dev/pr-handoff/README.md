@@ -1,6 +1,6 @@
 # pr-handoff
 
-> Propose-only wrap-up of an implementation session: read the repo's diff and the session's own record, separate what the diff proves from what the session shows was intended, ask the user about anything neither source answers, then deliver in chat a PR description (implementation summary, decisions with their reasons, notes) plus a logical commit split with Conventional-Commits messages as ready-to-run git commands — executing none of them. Use at the end of an implementation session, before opening a PR, when the current diff needs a reviewable explanation, when the session's decisions should be captured for reviewers, or when a logical commit plan is needed before committing. Not for doing the implementation itself, not for actually staging/committing/pushing or creating the PR, not without an existing diff to describe, and not for rewriting existing history.
+> Propose a PR description and logical commit plan for an existing diff at implementation handoff, before opening a PR, or when preparing changes and session decisions for review. Does not stage, commit, push, create a PR, or rewrite history.
 
 ## Install
 

@@ -31,13 +31,24 @@ Run both, separately:
 Promptfoo-style declarative evals and red-teaming are designed to run in
 CI/CD — treat skill changes like code changes.
 
-## Minimum acceptance set for a skill
+## Change-scoped acceptance
 
-1. **Regression cases** — realistic issues/change requests with expected
-   outcomes.
-2. **Trajectory tests** — assert the expected tool-call order.
-3. **Automated verification** — tests, lint, type check, build.
-4. **Continuous scoring** — against production traces after release.
+The repository's authoring policy lives in
+[PRINCIPLES.md § Verification](../../meta/shiranui-hanten/references/PRINCIPLES.md#verification).
+Select cases according to the changed behavior rather than running a fixed suite
+for every edit. Keep static consistency, prior recorded evidence, and current
+execution results distinct.
+
+Trajectory checks assert required events and necessary ordering, not an exact
+sequence of tool calls. Accept equivalent tools and routine choices; inspect
+unnecessary questions, irrelevant reads, repeated checks, and premature stopping.
+A design-only or propose-only skill's boundary remains part of the expected result.
+
+For cross-tool comparisons, keep before/after fixtures and settings fixed within
+each environment, retain metric sources, and report unavailable measurements as
+N/A. Require quality and critical boundaries in each environment; an average gain
+does not cancel a regression. Execution adapters and the evaluation contract live
+in [shiranui-hansode](../../meta/shiranui-hansode/SKILL.md).
 
 ## Lessons from coding-agent benchmarks
 

@@ -146,6 +146,7 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/terraform-implementation`
 - `meta/shiranui-hansode`
 - `meta/shiranui-hanten`
+- `meta/skill-opportunity-review`
 
 UI設計のみには `frontend-ui-design` を単独で利用できます。実装まで行う場合は
 `frontend-ui-implementation` も導入してください。前者が設計契約と
