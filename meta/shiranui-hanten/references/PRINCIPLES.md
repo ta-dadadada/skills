@@ -4,7 +4,13 @@ The judgment behind the decisions `SKILL.md` orders. Bold terms are defined in [
 
 ## Predictability
 
-A skill exists to wrangle determinism out of a stochastic system. **Predictability** — the agent taking the same *process* every run, not producing the same output — is the root virtue; every principle below is a lever serving it.
+**Predictability** means consistently satisfying required outcomes, quality constraints, authority boundaries, and necessary ordering across supported models and tools. Equivalent methods and evidence-based routine choices are allowed within those constraints.
+
+Separate durable requirements from guidance intended to compensate for a model's observed weakness. Preserve requirements even when a model follows them unaided. Evaluate compensating guidance against the affected task before keeping, changing, or removing it.
+
+Define judgment boundaries by consequence. Choosing spacing from an existing UI system is routine judgment. Inventing business rules, scope, or authority without evidence, or presenting an assumption as a confirmed fact, is a defect. Missing wording alone is not a reason to ask: ask when an unresolved decision changes the task, authority, or required outcome and available evidence or delegated discretion cannot resolve it. Record consequential assumptions as assumptions.
+
+Preserve ordering that protects a dependency, such as establishing a behavior baseline before changing it or reviewing a design before implementing it. Independent investigation and equivalent tools need not follow an identical sequence.
 
 ## What a skill is
 
@@ -19,7 +25,7 @@ Treat a skill as a reusable package of work procedures — what to check, in wha
 | Guard | a safety rule | secret detection, dangerous-command gating |
 | Ops | maintenance behavior | logging, failure reporting |
 
-Keep each skill in one layer. A draft that spans layers is a monolith in the making — split it, and let skills reference each other instead.
+Give each skill a clear primary responsibility. Split when independent invocation or ownership earns the extra dependency; keep supporting quality and authority constraints with the workflow that needs them.
 
 ## Invocation
 
@@ -36,7 +42,7 @@ Mechanics vary by tool (Claude Code uses `disable-model-invocation: true`); keep
 
 The description does two jobs — state what the skill is, and list the **branches** that should trigger it. Every word increases context load, so it earns even harder pruning than the body:
 
-- Front-load the skill's **leading word** — the description is where it does its invocation work.
+- Front-load the purpose and invocation conditions. A **leading word** may help recognition, but is optional and does not replace concrete triggers.
 - One trigger per branch. Synonyms that rename a single branch are duplication; collapse them, keep only genuinely distinct branches.
 - Cut identity that's already in the body; keep triggers, plus any "when another skill needs…" reach clause.
 - Include both *what* the skill does and *when* to use it — the description is the search index the agent routes on.
@@ -45,7 +51,7 @@ The description does two jobs — state what the skill is, and list the **branch
 
 A skill mixes two content types — **steps** and **reference** — and the core decision is where each piece sits on a ladder ranked by how immediately the agent needs it:
 
-1. **In-skill step** — an ordered action in `SKILL.md`, the primary tier. Each step ends on a **completion criterion**: make it *checkable* (the agent can tell done from not-done) and, where it matters, *exhaustive* ("every modified file accounted for", not "produce a change list") — a vague criterion invites premature completion.
+1. **In-skill step** — an ordered action in `SKILL.md`, the primary tier. State **completion criteria** for meaningful gates: make it *checkable* (the agent can tell done from not-done) and, where it matters, *exhaustive* ("every modified file accounted for", not "produce a change list") — a vague criterion invites premature completion.
 2. **In-skill reference** — a definition, rule, or fact in `SKILL.md`, consulted on demand. Often a legitimately flat peer-set — a fine arrangement, not a smell.
 3. **External reference** — reference pushed into a separate file (conventionally `references/`), reached by a **context pointer**, loaded only when the pointer fires.
 
@@ -53,31 +59,24 @@ Push too little down and the top bloats; push too much and you hide material the
 
 Where the ladder decides how far down a piece sits, **co-location** decides what sits beside it once there: keep a concept's definition, rules, and caveats under one heading, so reading one part brings its neighbours with it.
 
-A demanding completion criterion drives thorough **legwork** whether the skill has steps or not — "every rule applied" binds flat reference just as "every step done" binds a sequence.
+Completion criteria cover the applicable requirements, whether expressed as reference or steps. Their scope must distinguish required checks from irrelevant work and permit reuse of unchanged evidence where appropriate.
 
 ## Leading words
 
-A **leading word** is a compact concept already living in the model's pretraining that the agent thinks with while running the skill (*tight*, *red*, *fog of war*). Repeated through the text — though a strong one may be needed only once — it accumulates a distributed definition and anchors a whole region of behaviour in the fewest tokens, by recruiting priors the model already holds. It serves predictability twice: in the body it anchors execution; in the description it anchors invocation.
-
-Hunt for passages begging to collapse into one:
-
-- "fast, deterministic, low-overhead" → a *tight* loop — one quality restated across a phase, collapsed into a single pretrained word.
-- "a loop you believe in" → the loop goes *red* on the bug, or it doesn't — a fuzzy gate converted into a binary observable state.
-
-You win twice: fewer tokens, and a sharper hook for the agent to hang its thinking on. Assume every skill carries restatements a leading word retires.
+A **leading word** is an optional compact concept that may help an agent recognize or apply guidance. Its interpretation can vary across models; concrete outcomes and decision boundaries remain authoritative. Retain it when it helps clarity, not merely to reduce token count.
 
 ## When to split
 
 **Granularity** is how finely you divide skills, and each cut spends one of the two loads, so split only when the cut earns it:
 
-- **By invocation** — split off a model-invoked skill when a distinct leading word should trigger it on its own, or another skill must reach it. The new always-loaded description costs context load; the independent reach has to be worth it.
-- **By sequence** — split a run of steps when the **post-completion steps** tempt the agent to rush the one in front of it. Keeping them out of view buys more legwork on the current task.
+- **By invocation** — split off a model-invoked skill when a distinct task should trigger it on its own, or another skill must reach it. The new always-loaded description costs context load; the independent reach has to be worth it.
+- **By sequence** — consider a split when an observed rush toward later work persists despite clear completion criteria. Preserve the handoff and continuation of already requested work; compare whether the split actually improves completion.
 
 ## Pruning
 
 - Keep each meaning in a **single source of truth**: one authoritative place, so changing behaviour is a one-place edit.
 - Check every line for **relevance**: does it still bear on what the skill does?
-- Hunt **no-ops** sentence by sentence, not just line by line: run the test — does this change behaviour versus the default? — and when a sentence fails, delete the whole sentence rather than trim words from it. Most prose that fails should go, not be rewritten.
+- Remove **no-ops** that add neither a requirement nor useful guidance. A model following a rule by default does not make it a no-op. Preserve user-required outcomes, quality, procedures, and authority. Assess model-compensating guidance through focused comparisons; length alone is not a defect.
 
 ## Failure modes
 
@@ -88,19 +87,26 @@ Use these to diagnose a draft or a misbehaving skill.
 | **Premature completion** | attention slips from the work to *being done* | sharpen the completion criterion first (cheap, local); split by sequence only if the criterion is irreducibly fuzzy *and* you observe the rush |
 | **Duplication** | same meaning in more than one place | collapse to the single source of truth |
 | **Sediment** | stale layers settle; adding feels safe, removing feels risky | pruning passes on every update; delete whole sentences |
-| **Sprawl** | skill too long even with every line live | disclose reference behind pointers; split by branch or sequence |
-| **No-op** | a line the model obeys by default | delete it, or replace a weak leading word with a stronger one (*relentless*, not *be thorough*) |
-| **Negation** | prohibition names the banned thing and makes it more available | state the target behaviour positively; keep a prohibition only as a hard guardrail you can't phrase positively, paired with what to do instead |
+| **Sprawl** | unrelated responsibilities or irrelevant material obscure the task | disclose conditional references; split only where independent responsibilities justify it |
+| **No-op** | text adds neither a requirement nor useful guidance | remove it while preserving durable requirements |
+| **Unclear boundary** | a broad prohibition hides what is permitted or when confirmation is needed | name the action, scope, existing authorization, and unresolved decision; retain explicit prohibitions where precise |
 
 ## Verification
 
 Proofreading is not verification — the author reads intent into their own text. Evaluate at three layers, because the final answer alone is insufficient:
 
 1. **Final response** — did the run produce the right deliverable?
-2. **Trajectory** — did the agent take the intended process? This is where a skill's predictability lives or dies.
+2. **Trajectory** — were required events, authority boundaries, and necessary ordering respected, without unnecessary questions, reads, repeated checks, or premature stopping? Accept equivalent methods.
 3. **Single step** — at each decision point, did the skill's wording produce the intended choice?
 
-Split **offline evaluation** (prepared regression scenarios, before release) from **online evaluation** (observing real use, after). The minimum bar for any new or changed skill: one **representative task** run by a fresh executor — an agent with no authorial context — while you watch the trajectory. Every stumble or discretionary fill-in marks a wording or structure defect; feed it back into writing and pruning. For a multi-iteration loop with instruction-side metrics, hand off to the `shiranui-hansode` skill.
+Separate **offline evaluation** from **online evaluation**, and select checks for the changed behavior:
+
+- Meaning-preserving wording, inventory, and link fixes: diff review and mechanical checks.
+- Invocation changes: compare relevant activation and non-activation cases; preserve intended functions as well as exclusions.
+- Decision, authority, or completion changes: compare affected cases before and after in the supported environments, using fresh executors without authorial context. Expand when differences or regressions appear.
+- Script changes: run the relevant automated tests and check uncovered affected success and failure paths.
+
+Record the checks performed and pending comparisons. Static consistency does not establish behavioral improvement. Distinguish permitted judgment from unsupported business, scope, or authority decisions and assumptions presented as facts; only the latter require correction on that basis. No fixed suite size or multi-iteration loop is required for every edit. Use `shiranui-hansode` for a multi-iteration loop only when explicitly requested.
 
 ## Safety
 
