@@ -8,6 +8,65 @@ pr-handoff, and evaluation guidance. It retains goal persistence, propose-only
 handoff, critical authority/compatibility decisions, and necessary ordering.
 UI workflows and runtime implementation were not changed or exercised.
 
+## Comparison versions and inputs
+
+Version IDs below identify the exact target `SKILL.md` bytes by SHA-256, including
+frontmatter. Claude and Codex target copies matched. G0 and H0 come from the
+baseline commit above; G1–G3 and H1 identify the uncommitted snapshots actually
+tested. A hash identifies a snapshot; it does not recover missing source text.
+
+| Version | Skill | SHA-256 |
+|---|---|---|
+| G0 | session-goal | `19944828cd67817b3056b3a99acb8594459a5c460fa8bd2e1a0f66f9f09bb489` |
+| G1 | session-goal | `48d23ca0963c33a531deb9b3d39e8f9e7f8064a11947805315f1505f6ea41843` |
+| G2 | session-goal | `45b8b863590ddfdbf538abafbfde9b896b3720903906538a9cc8d15d24e646a8` |
+| G3 | session-goal | `66f6312ca3722f8efb28d8b2e5c5ff95393372454259bc51f2ee71e09fff51a0` |
+| H0 | pr-handoff | `4a8aa922f14d4da25655d816ccba5173b080b550c310ee88e9d34da99a73cc1e` |
+| H1 | pr-handoff | `48f59fb9de851bac990e5b8c018282ee73bcfc80c3519086d4939f0c7f28e48e` |
+
+| Comparison | Cases | Before → after | Execution |
+|---|---|---|---|
+| Initial attempt | C1, C3 | G0 → G1; H0 → H1 | Launch/auth failures; no scenario completed |
+| Initial completed comparison | C1, C3 | G0 → G1; H0 → H1 | Codex retry and Claude user-terminal run |
+| Persistence boundary follow-up | C1, C2 | G1 → G2 | Both environments |
+| Grounded framing follow-up | C1, C2 | G2 → G3 | Both environments |
+
+Exact prompt: concatenate the common preamble, a blank line, and the case text.
+Japanese is retained here to preserve the tested input. Each case/version starts
+in a fresh directory containing the target snapshot as `TARGET_SKILL.md`.
+C1/C2 are non-Git directories with no other initial files. C3 is a Git repository
+on `main` with no commits or conventions; only the following `greeting.py` is
+staged, and the target instruction is untracked:
+
+```python
+def greet(name):
+    return f"Hello, {name}!"
+```
+
+Common preamble:
+
+```text
+作業対象は現在のディレクトリだけです。TARGET_SKILL.mdは今回適用するスキルです。これを読んで次の依頼を実行してください。質問が必要な場合は質問を返して終了してください。TARGET_SKILL.md自体は成果物ではなく、コミット案にも含めません。
+```
+
+C1 — Clear goal:
+
+```text
+この開発セッションでは、CSV出力をExcelでそのまま開けるようにします。UTF-8 BOMとCRLFは必須です。session-goalを使って目標の整理と保存まで行ってください。実装はまだ依頼しません。
+```
+
+C2 — Competing goals:
+
+```text
+この開発セッションでは、CSV出力をExcelで開けるようにするか、ログイン機能を追加するか迷っています。両方は扱いません。session-goalを使って今回の目標を整理してください。実装はまだ依頼しません。
+```
+
+C3 — Optional issue reference:
+
+```text
+pr-handoffを使い、この変更のPR説明とコミット案をチャットで作成してください。セッション記録: 利用者名で挨拶を返す関数が必要だったためgreeting.pyを追加しました。代替案の検討はありません。テストはまだ実行していません。
+```
+
 ## Static review
 
 - A clear development goal still activates session-goal and reaches persistence;
@@ -32,7 +91,7 @@ These are conclusions from instruction text, not observed model behavior.
 Prepared isolated temporary fixtures and explicit-skill prompts for two cases:
 clear goal persistence with required UTF-8 BOM/CRLF, and PR handoff with an unknown
 optional issue number. Before-version texts came from the baseline commit;
-after-version texts came from the working revision. The PR fixture used a staged
+after-version texts were G1 and H1 (C1/C3 in the comparison table). The PR fixture used a staged
 new function with no commit history. Skill text was supplied explicitly, so even
 a successful run would not establish native skill discovery.
 
@@ -92,11 +151,10 @@ including Git files, in the runner's before/after hash snapshots.
 Across the two tested environments, handoff improved in both single-run pairs;
 goal persistence improved only in Codex. Do not mark the goal revision as passing
 across environments. Fewer questions or a normal process exit do not compensate
-for missing persistence. The goal clarification boundary remains an unresolved
-finding for a focused revision and repeat comparison; no tuning was performed
-as part of reviewing these results.
+for missing persistence. At this stage, the goal clarification boundary was unresolved; the completed
+follow-ups below address it. No tuning was performed as part of that result review.
 
-## Pending cases and criteria
+## Completed persistence boundary follow-up (G1 → G2)
 
 A focused follow-up revises session-goal Step 2: a question must resolve a choice
 needed to save a faithful goal at the user's stated scope. Hypothetical component
@@ -105,13 +163,12 @@ can supply Why without inventing current defects or users. Existing competing-go
 confirmation remains required. This addresses an unclear decision boundary; it
 does not change invocation or remove goal persistence.
 
-The follow-up compares the preceding working version against this revision for
+The follow-up compares G1 against G2 for
 the original clear-goal case and a boundary case explicitly choosing between CSV
 compatibility and login functionality, with parallel work excluded. The first
 must save the goal and UTF-8 BOM/CRLF constraints without questioning or coding;
 the second must ask for a choice without saving an invented final goal or coding.
-Fresh fixtures and a Claude runner are prepared under
-`/private/tmp/skills-goal-followup-20260906`.
+The inputs are C1 and C2 above.
 
 Codex CLI 0.153.4 completed all four follow-up cells with the previous settings.
 Both versions saved the clear goal with BOM/CRLF constraints, without a question
@@ -137,7 +194,7 @@ but unsupported factual framing remains an observed defect. Do not call the full
 revision reliably corrected or all quality requirements satisfied. Invocation,
 Git ignore handling, and continuation after a boundary answer remain untested.
 
-### Grounded candidate framing follow-up
+## Completed grounded framing follow-up (G2 → G3)
 
 The next focused revision removes the pressure to fill separate Why/What slots:
 an outcome that expresses value can stand alone. The evidence rule explicitly
@@ -147,11 +204,10 @@ generate questions, and implementation-detail questions for unselected candidate
 are deferred. This changes the existing instruction to turn every missing
 Why/What half into a question, rather than adding another contradictory guard.
 
-The same clear-goal and competing-goal fixtures compare the preceding revision
-with this version under `/private/tmp/skills-goal-grounding-20260906`. In addition
+The same C1/C2 fixtures compare G2 with G3. In addition
 to the fixed persistence and choice criteria, inspect commentary for unsupported
 current defects or actors, and boundary questions for premature implementation
-details. Claude execution uses the prepared local runner; results are pending.
+details. Claude execution used the prepared local runner.
 
 Codex CLI 0.153.4 completed the four cells with the same model/settings. Both
 clear-goal versions saved the required goal and constraints without a question;
@@ -161,7 +217,7 @@ the login users/purpose; the revised version asked only which of the two supplie
 goals to take. Revised fixture contents confirmed only the goal file was added
 in the clear case and no file was added in the boundary case. These single runs
 support preservation of the tested boundaries and the narrower question, not a
-general reliability claim. Claude framing behavior remains to be checked.
+general reliability claim. Claude results follow below.
 
 Claude Code 2.1.263 completed the same four cells with the previous runner
 settings. Target hashes and saved files matched the shared results. Both clear
@@ -182,18 +238,23 @@ question criteria pass in both environments. Stop this focused comparison rather
 than tuning toward verbatim reproduction; native invocation, Git handling, and
 multi-turn continuation retain their previously recorded coverage limits.
 
-Repeat the goal case after resolving the Claude finding; add
-the relevant boundary checks below rather than a fixed full-suite run. Record
-resolved model, tool version, reasoning settings, permissions, loaded instructions,
-fixture, target-text revision/hash, outputs, and metric sources for each pair.
+## Completed scope and remaining coverage
 
-| Case | Required observation |
+The focused comparisons are complete; no retry of the resolved Claude finding
+is pending. C1 persistence, C2 goal selection, and C3 optional-issue handoff were
+observed in both environments as described above. These are bounded observations,
+not a general reliability claim.
+
+The following were not executed and remain coverage limits, not failed cases or
+instructions to repeat the completed comparisons:
+
+| Unverified case | Required observation |
 |---|---|
-| Clear goal, explicit technical constraints | No goal reconfirmation; saved goal and constraints; no implementation for an intake-only request |
-| Competing goals | A necessary choice is asked; no invented agreement or saved final goal |
-| PR handoff, optional unknown issue | Complete description and commit proposal without an issue-number question; work tree/index/history unchanged |
 | Required or conflicting issue reference | Ask the necessary question; do not invent a reference |
-| Description selection | Clear development starts still select goal intake; one-off factual questions do not; settled in-flight criteria do not restart kickoff; absent diffs do not select PR handoff |
+| Description selection / native invocation | Clear development starts select goal intake; one-off factual questions do not; settled in-flight criteria do not restart kickoff; absent diffs do not select PR handoff |
+| Git-managed goal persistence | Save the goal and keep the ignore entry correct without unintended Git changes |
+| Continuation after a goal-selection answer | Save the selected goal without restarting resolved questions |
+| Full issue-kickoff execution | Reuse agreed inputs and branch, deliver the verification plan, and continue requested implementation |
 | Structural versus bounded evaluation | Stop at the requested mode; do not edit or start a tuning loop |
 
 Use separate activation/non-activation probes for description changes. Label
@@ -203,7 +264,25 @@ Investigate differences within each environment before expanding cases; do not
 trade a critical regression for reduced cost. UI comparisons remain deferred until
 a concrete UI change or observed defect warrants them.
 
-## Mechanical verification
+## PR review follow-up
+
+Review `5124519759` on PR #7 identified remaining static inconsistencies.
+The follow-up makes session-goal's implementation boundary explicit without
+excluding implementation requests, retains Step 3 before persistence, and includes
+saved constraints and requested handoff in the completion criterion. Kickoff now
+records missing references without claiming issue absence. PR handoff's completion
+criterion includes unchanged history. Evaluation repeats Steps 2–4 without a new
+edit before convergence; the evaluator maps fixes to scoring criteria, and the
+canonical rule retains three rounds for high-importance prompts.
+
+The full validator and diff whitespace check passed after these edits. APM was
+regenerated and description copies checked. This follow-up received static review
+only: earlier G3/H1 execution evidence identifies the pre-follow-up versions and
+does not establish model behavior for these later edits. Invocation and tuning-loop
+execution remain unverified. Machine-specific paths were already removed in the
+record cleanup above.
+
+## Earlier mechanical verification
 
 The full 18-package validator and `git diff --check` passed during this revision.
 APM metadata was regenerated from frontmatter using the existing generator.
