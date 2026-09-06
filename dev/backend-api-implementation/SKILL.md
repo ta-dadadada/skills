@@ -69,9 +69,9 @@ The contract — input and output schemas, error shapes, status/error codes — 
 - Write tests in the project's test pattern from Step 1, one per contract case: each success shape, each error shape/code, and each invariant (a failed or duplicate call leaves stored data consistent).
 - Place each test at the cheapest level in the project's suite that catches its failure: domain-rule cases where the rule lives, shape/status/serialization cases at the transport layer, storage constraints against real persistence — routing and middleware are what Step 5's real request covers.
 - For a changed endpoint, pin the behaviour that must survive: each compatible consumer expectation from Step 2 gets its own test.
-- Run the new tests and confirm each fails because the behaviour is absent — a failure in the harness or fixtures means fixing the test first.
+- Run the contract tests before implementation. Tests for added or changed behaviour must fail because that behaviour is absent; preservation tests must pass against the existing behaviour. A failure in the harness or fixtures means fixing the test first.
 
-**Done when:** every contract case from Step 2 maps to a named test, and each new test fails because the behaviour does not exist yet.
+**Done when:** every contract case from Step 2 maps to a named test, tests for added or changed behaviour fail for the expected reason, and preservation tests pass against the existing behaviour.
 
 ### Step 4 — Implement
 
