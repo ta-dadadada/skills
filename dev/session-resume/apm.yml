@@ -1,0 +1,10 @@
+name: session-resume
+description: 'Resume interrupted development work from .agent-session.md: read the handover,
+  reconcile its goal, decisions, evidence, and next steps with the latest user instructions
+  and current repository state, then carry the first valid next step forward without repeating
+  settled investigation. Use when continuing work from a session-handover snapshot or when
+  the user asks to resume an interrupted session. Not for starting new work without a handover,
+  recovering arbitrary chat history, or summarizing progress without continuing the task.'
+license: MIT
+type: skill
+version: '0.1.0'
