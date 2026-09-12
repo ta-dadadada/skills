@@ -1,0 +1,12 @@
+name: work-report
+description: >-
+  Create a concise Markdown report of work for a requested period, or the
+  current session when no period is specified. Use when the user asks for
+  a work report, today's work summary, or a recap over a date range.
+  For explicit periods, inspect available diffs and memory beyond the
+  session. For either scope, ask about discovered outside-session changes
+  before including them. Write for readers outside the project. Not for resumption handovers,
+  PR descriptions, or performing the work being reported.
+license: MIT
+type: skill
+version: '0.1.0'

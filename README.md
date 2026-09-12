@@ -144,6 +144,7 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/session-goal`
 - `dev/session-handover`
 - `dev/terraform-implementation`
+- `dev/work-report`
 - `meta/shiranui-hansode`
 - `meta/shiranui-hanten`
 
