@@ -138,3 +138,8 @@ git commit -m "feat(client): 指数バックオフ付きリトライポリシー
 | "Draft the PR description first, ask later" | a finished-looking draft gets rubber-stamped; questions come before the artifact |
 | "Just run the git commands, it's faster" | the deliverable is the proposal; executing it takes decisions that belong to the user |
 | "Invent a plausible issue number format" | an unconfirmed reference points reviewers at the wrong work; omit it |
+
+## Related
+
+- `implementation-loop` — converges acceptance criteria, verification, and review
+  findings before this skill turns the resulting diff into PR and commit plans.
