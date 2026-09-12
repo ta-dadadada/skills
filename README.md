@@ -137,6 +137,7 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/frontend-ui-design`
 - `dev/frontend-ui-implementation`
 - `dev/hypothesis-driven-debugging`
+- `dev/implementation-loop`
 - `dev/issue-kickoff`
 - `dev/local-intake`
 - `dev/pr-handoff`

@@ -78,5 +78,8 @@ What counts as done is agreed before any code is written. Reuse agreed goals, co
 
 ## Related
 
-- `pr-handoff` — the exit-side counterpart to this entry-side skill.
+- `implementation-loop` — consumes the agreed acceptance criteria, scope,
+  verification mapping, and working branch, then coordinates implementation to
+  convergence without redefining this intake.
+- `pr-handoff` — the exit-side counterpart after implementation has converged.
 - `purpose-driven-software-design` — hand off here when the survey surfaces a real design decision.
