@@ -18,6 +18,7 @@ dependencies:
   - ta-dadadada/skills/dev/purpose-driven-software-design
   - ta-dadadada/skills/dev/session-goal
   - ta-dadadada/skills/dev/session-handover
+  - ta-dadadada/skills/dev/session-resume
   - ta-dadadada/skills/dev/terraform-implementation
   - ta-dadadada/skills/dev/work-report
   - ta-dadadada/skills/meta/shiranui-hansode

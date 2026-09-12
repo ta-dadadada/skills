@@ -143,4 +143,5 @@ Verified:
 
 ## Related
 
+- `session-resume` — reconciles and consumes the checkpoint when interrupted work continues.
 - `pr-handoff` — the exit for *finished* work heading to review; this skill is the exit for *interrupted* work heading to another session.
