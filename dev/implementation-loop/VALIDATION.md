@@ -70,16 +70,17 @@ initial full review and targeted re-review complete, no unresolved material
 scoped finding, and no unauthorized expansion, the executor stopped. It reported
 no ambiguity that would make the trajectory diverge and changed no files.
 
-## Responsibility and structure — 2026-09-12
+## Responsibility and structure — established 2026-09-12, revised 2026-09-13
 
 - Job: an implementation agent converges an agreed change one acceptance
   criterion at a time and delivers current verification and review evidence.
 - Layer: procedure/orchestration. Specialist skills retain domain implementation;
   `issue-kickoff` retains criteria and scope; `pr-handoff` retains PR and commit
   planning.
-- Completion: all criteria are `satisfied` or explicitly `blocked`, global
-  verification passes for the current diff, and an independent fresh-context
-  full-diff review has no actionable finding.
+- Completion: all agreed criteria are `satisfied` or explicitly `blocked`, global
+  deterministic verification passes for the current diff, the required review
+  chain is complete with no unresolved material finding tied to agreed scope,
+  and the diff contains no unauthorized scope expansion.
 - Invocation: model-invoked after `issue-kickoff` or equivalent intake when
   feedback-cycle coordination adds value. A small direct change can use its
   specialist workflow without this loop; no criterion-count threshold is fixed.
@@ -96,29 +97,29 @@ or `pr-handoff` would extend those skills beyond their entry or exit boundaries.
 
 ## Requirements classification
 
-`Observed` records the supplied Issue #1 run and does not by itself create a
-general rule. `Required` is the first-version operating contract selected from
-that evidence and the explicit requested boundaries. `Experimental` remains an
-evaluation question and is not prescribed by the skill.
+`Observed` records a supplied run and does not by itself create a general rule.
+`Required` is the current operating contract selected from the accumulated
+evidence and explicit requested boundaries. `Experimental` remains an evaluation
+question and is not prescribed by the skill.
 
-| Candidate | Class | First-version decision |
+| Candidate | Class | Current decision |
 |---|---|---|
 | `session-goal` fixed Why/What and `issue-kickoff` prepared criteria, scope, verification, and branch | Observed | Consume agreed inputs without requiring those exact producers. |
 | Acceptance criteria are implementation work units | Required | One ledger row and evidence trail per agreed criterion. |
-| One iteration changes one criterion | Required | Select exactly one pending criterion; handle prerequisites explicitly. |
+| One iteration has one primary Act target | Required | Select one pending criterion as the primary implementation target; current verification and review evidence may update other affected rows. |
 | Re-observe current repository state before selection | Required | Reconcile status, diff, relevant files, rules, and ledger each iteration. |
 | Prefer deterministic verification to agent judgment | Required | Verification precedes review; inspection cannot replace an available deterministic check. |
-| Review findings feed the next iteration | Required | Findings keep or return affected criteria to `pending`. |
+| Material actionable findings feed the next iteration | Required | Apply the finding gate; only material actionable findings keep or return affected criteria to `pending`. |
 | A previously satisfied criterion can reopen | Required | `satisfied → pending` is an explicit transition. |
 | External conditions are a formal blocked state | Required | Record evidence and unblock condition; continue independent criteria. |
 | Run the project-wide quality gate in every iteration | Observed | Require affected checks per iteration and one global gate at the end; evaluate the cost/value of an unconditional per-iteration gate. |
-| Finish with an independent fresh-context full-diff review | Required | A non-author reviews the authoritative inputs and current full diff. |
-| Final review findings reopen work | Required | Map each actionable finding to a criterion, fix through the loop, and rerun final gates. |
-| Compound stop condition | Required | Terminal criteria, green global verification, and green final review must all hold for the current diff. |
+| Initial final review is fresh full-diff; localized fixes use targeted independent re-review | Required | A fresh non-author reviews the authoritative inputs and current full diff initially; localized fixes receive targeted re-review, with a fresh full review reserved for a material reset. |
+| Only material actionable final findings reopen work | Required | Map each material actionable finding to an affected criterion or agreed scope; other dispositions do not reopen work. |
+| Compound stop condition | Required | Terminal agreed criteria, green current global verification, a complete required review chain, no unresolved material scoped finding, and no unauthorized scope expansion must all hold. |
 | Persist state in `.agent-loop.md` or another new file | Experimental | No format introduced; use available working context or an existing repository/user convention. |
 | Use an independent reviewer for every criterion | Experimental | Iteration review may be performed by the implementer; evaluate whether independence changes outcomes enough to justify its cost. |
-| Make the final review the only review | Experimental | Initial version retains review in each iteration plus an independent final review. |
-| Reuse the same final reviewer after a fix | Experimental | Require independence, not reviewer identity; compare same-reviewer and new-reviewer reruns later. |
+| Make the final review the only review | Experimental | The current workflow retains review in each iteration plus the staged independent final review. |
+| Reuse the same final reviewer after a localized fix | Required | Return to the same independent reviewer when available for the prior findings, changed area, and fix-induced regressions; an unavailable reviewer may be replaced without widening review scope. |
 | Invoke the loop for a single small criterion | Experimental | Use coordination value rather than a fixed count; test activation and non-activation cases. |
 | Let the skill manage iteration, time, or cost budgets | Experimental | Budget policy remains external until evidence supports a reusable rule. |
 
