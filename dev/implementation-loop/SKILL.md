@@ -2,17 +2,15 @@
 name: implementation-loop
 description: >-
   Convergence loop for implementing an already agreed change one acceptance
-  criterion at a time: re-observe the repository, select one pending criterion,
-  route its implementation through the relevant specialist workflow, prefer
-  deterministic verification, review the result, continue independent work
-  around blocked criteria, reopen criteria on findings, and finish with global
-  verification plus an independent fresh-context full-diff review. Use after
-  issue-kickoff or equivalent intake when settled criteria, dependencies,
+  criterion at a time: re-observe the repository, use deterministic evidence,
+  reopen criteria only for material findings tied to agreed scope, escalate new
+  project constraints instead of silently adopting them, and use targeted
+  re-review after an initial independent fresh-context full-diff review. Use
+  after issue-kickoff or equivalent intake when settled criteria, dependencies,
   blockers, or review feedback require coordination across implementation
-  cycles. Not for deriving scope or criteria,
-  supplying domain-specific implementation methods, PR/commit planning, or a
-  small direct change whose normal implementation workflow already provides a
-  sufficient convergence path.
+  cycles. Not for deriving scope or criteria, supplying domain-specific
+  implementation methods, PR/commit planning, or a small direct change whose
+  normal workflow already provides a sufficient convergence path.
 license: MIT
 metadata:
   author: ta-dadadada
@@ -24,9 +22,11 @@ Converge an agreed change by treating each acceptance criterion as a reversible
 unit of work. The loop owns observation, selection, evidence, review feedback,
 and state transitions; specialist skills own how a selected change is designed
 or implemented. A criterion becomes satisfied only after deterministic evidence
-and review agree, and it can return to pending whenever later evidence invalidates
-that conclusion. The whole change is done only when the current full diff passes
-global verification and an independent fresh-context review.
+and scoped review agree, and it can return to pending whenever material later
+evidence invalidates that conclusion. Review searches for defects in the agreed
+change; proposed new requirements go to their scope owner. The loop converges
+when current global checks are green, scoped review findings are resolved, and
+the diff contains no unauthorized expansion.
 
 ## When to use
 
@@ -58,12 +58,41 @@ durable artifact. The skill defines no new state-file format.
 | State | Meaning |
 |---|---|
 | `pending` | Work or evidence remains, including work reopened by a finding. |
-| `satisfied` | Its mapped deterministic verification passed and criterion review has no actionable finding. |
+| `satisfied` | Its mapped deterministic verification passed and criterion review has no unresolved material finding. |
 | `blocked` | No available authorized action can advance it; the missing external action or condition is recorded. |
 
 Allowed transitions are `pending → satisfied`, `pending → blocked`,
 `blocked → pending`, and `satisfied → pending`. A blocked criterion returns to
 pending before it can be verified and satisfied.
+
+## Review finding gate
+
+A review label alone never changes the ledger. For each finding, require the
+reviewer to provide:
+
+1. the claim and affected path;
+2. its authority: an exact acceptance criterion, task requirement, applicable
+   existing project rule, ADR, or convention, production path supported by the
+   changed implementation, or a concrete correctness, security, or data-loss
+   condition;
+3. evidence that the path is reachable or supported in this repository, rather
+   than merely theoretically expressible;
+4. the practical impact and the affected criterion or agreed scope; when no
+   ledger row covers that scope, the scope owner who must map the genuine gap.
+
+Classify the supplied evidence into exactly one disposition:
+
+| Disposition | Required handling |
+|---|---|
+| `material actionable` | The finding is supported by the gate above and can be corrected within agreed scope and existing rules. Keep or return every invalidated criterion to `pending`; a material scoped finding with no row remains unresolved until its owner maps the gap. |
+| `scope/design escalation` | Correction needs a new acceptance criterion, permanent prohibition, architecture or coding rule, public contract, or other project-wide decision. Return the decision to the user, acceptance-criteria owner, or design owner; do not adopt it as a repair. |
+| `non-blocking` | The claim is speculative, unreachable, unsupported by project evidence, or has no material impact on agreed scope. Record it only when useful; it does not reopen a criterion or prevent Stop. |
+
+When an escalation is necessary to complete an existing criterion, that
+criterion can become `blocked` with the decision and owner recorded. An
+out-of-scope improvement that is not necessary for an agreed criterion remains
+non-blocking for this task. A concrete harm on a supported production path is
+not dismissed merely because the issue omitted its syntax or mechanism.
 
 ## Workflow
 
@@ -89,16 +118,19 @@ the scope boundary is available to every later review.
   diff, the code or configuration relevant to the pending work, the ledger, and
   any applicable project rules. Treat earlier plans and inferences as history,
   not as facts about the current checkout.
-- Reconcile observations with the ledger. New evidence that invalidates a
-  satisfied row reopens it to pending before selection.
+- Reconcile every relevant row with current evidence. New material evidence that
+  invalidates a satisfied row reopens it to pending before selection. A row can
+  also become satisfied when its own mapped verification and scoped review
+  evidence now hold, even when it was not the prior iteration's primary target.
 - Select the highest-priority pending criterion whose dependencies permit useful
-  work. One iteration has one selected criterion. If it is externally blocked,
-  record the blocker through Step 6 and begin another iteration before selecting
-  independent work.
+  work as the iteration's single primary implementation target. This limits what
+  Act is trying to change; it does not limit evidence-based ledger transitions
+  to one row. If the target is externally blocked, record the blocker through
+  Step 6 and begin another iteration before selecting independent work.
 
 **Done when:** current repository evidence supports the ledger, and exactly one
-actionable pending criterion is selected, or all remaining pending criteria have
-concrete blockers to classify.
+actionable pending criterion is selected as the primary target, or all remaining
+pending criteria have concrete blockers to classify.
 
 ### Step 3 — Route and implement the minimum change
 
@@ -110,6 +142,9 @@ concrete blockers to classify.
 - Implement only what the selected criterion and its necessary prerequisites
   require. If an unplanned prerequisite is independently observable work, return
   it to the acceptance-criteria owner rather than silently adding a criterion.
+- Keep collateral changes traceable to the primary target. The change may
+  objectively satisfy another criterion, but that result is recognized from
+  verification and re-observation rather than by adding another primary target.
 - Keep the selected criterion pending while implementation and evidence are
   incomplete.
 
@@ -126,6 +161,10 @@ criterion, or a concrete blocker prevents further authorized action.
 - A failed check leaves the criterion pending and supplies the next iteration's
   evidence. A check unavailable because of an external condition records the
   exact condition for Step 6; lack of evidence never produces `satisfied`.
+- When one check objectively covers other criteria, record the result against
+  each covered row and run any remaining mapped checks those rows require. This
+  evidence is reconciled in Step 5; it does not turn them into additional Act
+  targets.
 - Run a project-wide quality gate here when project rules require it for each
   change or the selected criterion can invalidate distant behavior. Step 7 still
   runs the final global verification against the complete current diff.
@@ -140,29 +179,35 @@ condition that prevented them.
   its interaction with the existing diff. Check requirement coverage, excess
   change, configuration, security, and maintainability separately from the
   deterministic verification result.
-- Map every actionable finding to the affected criterion. A finding keeps the
-  selected criterion pending or reopens any affected satisfied criterion to
-  pending; it becomes input to the next iteration. A finding that exposes missing
-  or changed scope returns to the acceptance-criteria owner before implementation
-  continues.
-- Mark the selected criterion satisfied only when its mapped verification passed
-  at the current repository state and this review has no actionable finding.
-  Record both the evidence and review result in its ledger row. The implementing
-  agent may perform this iteration review; reviewer independence is mandatory
-  only at the final gate.
+- Apply the Review finding gate to every claim. Only a `material actionable`
+  finding keeps or returns an affected criterion to `pending`. A
+  `scope/design escalation` goes to its owner without changing requirements or
+  code; a `non-blocking` observation does not change ledger state.
+- Re-observe all criteria materially affected by the change. Mark any such row,
+  including the primary target, satisfied only when its own mapped verification
+  passed at the current repository state and scoped review has no unresolved
+  material finding. Record both forms of evidence. The implementing agent may
+  perform this iteration review; reviewer independence is mandatory at the
+  final gate.
 
 **Done when:** every finding has a disposition and affected state, and the
-selected criterion is either satisfied with current verification and review
-evidence, pending with its next evidence, or ready for a blocked classification.
+primary target and every other materially affected row reflect current
+verification and review evidence, with the primary target satisfied, pending, or
+ready for blocked classification.
 
 ### Step 6 — Classify blockers and continue independent work
 
 - Mark a criterion blocked only when permission, an external service or setting,
   an unavailable plan, required human action, or another condition outside the
-  agent's available authority prevents progress. Record the evidence, the actor
-  or condition that can unblock it, and any dependent criteria.
+  agent's available authority prevents progress. This includes a necessary
+  scope/design decision that the current task does not authorize. Record the
+  evidence, the actor or condition that can unblock it, and any dependent
+  criteria.
 - Continue iterations for independent pending criteria. A blocked row does not
   stop unrelated work.
+- Keep escalated improvements that are unnecessary for an agreed criterion out
+  of the ledger's blocking path; report them separately instead of extending the
+  task.
 - When its condition changes, move a blocked criterion to pending, re-observe the
   repository, and verify it through the normal loop; never move it directly to
   satisfied.
@@ -176,48 +221,72 @@ all rows are satisfied or blocked.
 - After no pending row remains, run the project's global verification against the
   complete current diff. Map a failure to the affected criterion, reopen it to
   pending, and return to Step 2.
-- Give an independent reviewer with fresh context the authoritative goal,
-  acceptance criteria, scope boundary, current full diff, and verification
-  evidence. Have it review requirement coverage, excess change, configuration,
-  security, and maintainability across the whole diff. The reviewer must not have
-  authored the implementation; no particular agent or reviewer reuse policy is
-  required.
-- Map each actionable final finding to its affected criterion and reopen that row
-  to pending. Resolve findings through the normal loop, then rerun global
-  verification and an independent review against the updated full diff. When an
-  independent review cannot be obtained, leave the final gate incomplete and
-  report the exact missing capability.
+- For the initial final review, give an independent reviewer with fresh context
+  the authoritative goal, acceptance criteria, in-scope and out-of-scope
+  boundaries, applicable existing project rules, ADRs, and conventions, current
+  full diff, and verification evidence. Require the Review finding gate fields
+  for every claim.
+  Have it review requirement coverage, excess change, configuration, security,
+  and maintainability across the whole diff. The reviewer must not have authored
+  the implementation.
+- Apply the gate to every final finding. Reopen criteria only for `material
+  actionable` findings, route `scope/design escalation` without silently
+  changing the task, and retain `non-blocking` observations without extending
+  the loop.
+- After correcting a finding, rerun global deterministic verification and return
+  to the same independent reviewer when available. Limit re-review to the prior
+  findings, the changed area, and regressions plausibly introduced by the fix.
+  The reviewer remains separate from the maker and does not implement the fix.
+  When that reviewer is unavailable, give an independent replacement the prior
+  review and fix context with the same targeted mandate; reviewer replacement
+  alone does not require a new full adversarial review.
+- Reset to a fresh independent full-diff review only when either an authorized
+  change materially alters the architecture, agreed scope, public contract, data
+  model, trust boundary or security model, or new material evidence invalidates
+  assumptions of the prior full review. Obtain scope or design authorization
+  before making a change that requires it. Theoretical room for another reviewer
+  to search is not a reset condition.
+- When an independent initial review or required re-review cannot be obtained,
+  leave that final gate incomplete and report the exact missing capability.
 
-**Done when:** global verification passes at the current repository state and an
-independent fresh-context review of that same full diff has no actionable
-finding, or the exact unavailable final gate is reported without claiming
-convergence.
+**Done when:** global verification passes at the current repository state, one
+initial independent fresh-context full-diff review exists, every material finding
+is resolved by the applicable targeted or reset review, and every escalation has
+a recorded disposition; or the exact unavailable final gate is reported without
+claiming convergence.
 
 ### Step 8 — Stop and hand off
 
-- Stop only when every criterion is satisfied or explicitly blocked, global
-  verification is green for the current diff, and the final independent review
-  is green for that diff.
+- Stop when every agreed criterion is satisfied or explicitly blocked, global
+  deterministic verification is green for the current diff, no unresolved
+  material finding is tied to agreed scope, the required review chain from Step
+  7 is complete, and the diff contains no unauthorized scope expansion.
 - Report each criterion's final state and evidence or blocker, the global
-  verification result, the final review result, and any effects that remain
+  verification result, the review result and scope, any escalations or
+  non-blocking observations worth retaining, and any effects that remain
   externally unverified. Describe blocked work as blocked rather than completed.
+- End the loop when these gates hold. The possibility of discovering further
+  speculative edge cases does not justify another review cycle.
 - Hand the converged diff and recorded evidence to `pr-handoff` when PR
   description or commit planning is requested.
 
-**Done when:** the report proves all three stop gates from current evidence and
-preserves every blocker and verification limit for the next consumer.
+**Done when:** the report proves every scope-aware Stop gate from current evidence
+and preserves every blocker, escalation, and verification limit for the next
+consumer.
 
 ## Red flags
 
 | Rationalization | Reality |
 |---|---|
 | "I already inspected this at the last iteration" | Repository state is re-observed before every selection; prior reasoning is not current evidence. |
-| "Two related criteria are faster together" | One iteration has one work unit; dependencies are selected and evidenced explicitly. |
+| "Only the selected row may change state" | One iteration has one primary Act target; current evidence may update every materially affected row. |
 | "The diff looks right, so verification passed" | Review and deterministic verification answer different questions; neither substitutes for the other. |
 | "This was satisfied earlier" | Satisfaction is reversible when later evidence or a finding invalidates it. |
 | "One blocked item stops the issue" | Only its dependents stop; independent pending criteria continue. |
-| "The final reviewer found just one issue" | Every actionable finding reopens affected work before the stop gates run again. |
-| "The checks are green, so the loop is done" | Current global verification, terminal criterion states, and a green independent full-diff review are all required. |
+| "The reviewer listed it, so it blocks" | A claim reopens work only after authority, reachability, impact, and affected scope pass the finding gate. |
+| "Ban that construct so the checker is complete" | A new permanent constraint is a scope/design decision, not an automatic bug fix. |
+| "A fresh reviewer might find another bypass" | Fresh full review is required initially and after a material reset; targeted re-review closes localized fixes. |
+| "The checks are green, so the loop is done" | Current global verification, terminal criterion states, scoped review, and the no-unauthorized-expansion guard must all hold. |
 
 ## Related
 
