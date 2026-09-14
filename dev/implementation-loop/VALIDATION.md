@@ -1,5 +1,60 @@
 # Validation record
 
+## Delegated review evidence reuse — 2026-09-15
+
+The review stages previously required verification evidence to be handed to an
+independent reviewer but did not define how the reviewer should consume it. That
+left a fresh reviewer free to reconstruct the task and rerun the same tests solely
+to reproduce results already observed by the implementing agent.
+
+The revision adds one handoff contract shared by delegated iteration review,
+initial full-diff review, and targeted re-review:
+
+- The delegating agent identifies the review mode, authoritative requirements and
+  boundaries, exact repository state and diff, and the questions the reviewer
+  must answer.
+- Verification evidence is mapped by command or procedure, covered claim and
+  criterion, result, and relevant output or observation. Missing and unavailable
+  checks remain explicit; planned or second-hand results are not promoted to
+  observed evidence.
+- A reviewer reuses current evidence for the same state and claim. Independent
+  review means independent judgment, not automatic duplicate execution.
+- Additional execution requires a named reason: an explicit independent-run
+  requirement, missing/stale/ambiguous/conflicting evidence, or targeted
+  reproduction of a new concrete finding. The narrowest sufficient check is
+  preferred.
+- The review response accounts for evidence used, additional checks and their
+  reasons, remaining gaps, and gated findings. The reviewer still does not
+  implement fixes.
+
+This stays within the procedure skill's existing responsibility. Step 4 and the
+implementing agent continue to own deterministic verification; review consumes
+that evidence and independently judges the assigned review surface. No reviewer
+framework, persistence format, trust shortcut for stale evidence, or relaxation
+of project-mandated independent verification was introduced.
+
+### Static scenarios
+
+- When unit tests and lint passed against the exact handed-off state, the reviewer
+  inspects the full diff and relies on those results without rerunning them merely
+  for confirmation.
+- When the diff changes after a recorded test, the state mismatch makes that
+  evidence stale and permits the narrow check needed to resolve the affected
+  claim.
+- When a project rule requires an independent security test, the reviewer may run
+  it and records that rule as the reason even if the implementer already ran it.
+- When review discovers a concrete reachable defect, the reviewer may run a
+  targeted reproducer; that exception does not authorize replaying the whole
+  global suite.
+- A targeted re-review receives the prior finding, disposition, fix delta, and
+  updated verification evidence, so reviewer replacement does not broaden either
+  the review or verification surface.
+
+Mechanical and static validation cover the package structure, single-source
+handoff rule, workflow references, and exception boundaries. A fresh-executor
+before/after comparison of duplicate-check behavior remains pending; this record
+does not claim the wording has yet changed runtime behavior.
+
 ## Convergence policy revision — 2026-09-13
 
 Two observed implementation runs confirmed the value of criterion-level state,

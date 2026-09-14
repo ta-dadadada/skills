@@ -94,6 +94,44 @@ out-of-scope improvement that is not necessary for an agreed criterion remains
 non-blocking for this task. A concrete harm on a supported production path is
 not dismissed merely because the issue omitted its syntax or mechanism.
 
+## Delegated review handoff
+
+When an iteration or final review is delegated, send one bounded review brief
+instead of asking the reviewer to reconstruct the implementation session. Fresh
+context means independent judgment, not missing context. The brief contains:
+
+1. the review mode and exact surface: criterion review, initial full-diff review,
+   or targeted re-review, including the questions the reviewer must answer;
+2. the authoritative goal, acceptance criteria, in-scope and out-of-scope
+   boundaries, and applicable existing project rules, ADRs, and conventions;
+3. the exact repository state under review and its diff, with enough identity to
+   tell whether later edits make supplied evidence stale;
+4. the convergence ledger's verification evidence for that state: each command
+   or procedure, the claim and criteria it covers, its result, and the relevant
+   output or observation; list checks not run or unavailable with the reason
+   instead of implying they passed; and
+5. for re-review, the prior findings, their dispositions, the fix delta, and any
+   known evidence limits.
+
+Pass only observed results as verification evidence. Mark results reported by
+another source as such, and do not present planned checks as completed. A
+reviewer consumes current evidence for the same repository state and claim and
+does not rerun a handed-off check merely to reproduce a passing result. Reviewer
+independence applies to review judgment, not duplicate verification execution.
+
+A reviewer may run a check when an acceptance criterion or project rule requires
+an independent run; the supplied evidence is absent, stale, ambiguous, or
+inconsistent with the diff; or a new concrete finding needs targeted
+reproduction. State the evidence gap and claim before running it, and prefer the
+narrowest check that resolves them. The review response identifies supplied
+evidence it relied on, any additional check and why it was necessary, remaining
+unverified claims, and findings in the Review finding gate format. The reviewer
+does not implement the fix.
+
+**Done when:** the reviewer can judge the assigned surface without rediscovering
+the task or repeating current checks, and any additional execution has a stated
+evidence reason.
+
 ## Workflow
 
 ### Step 1 — Establish the convergence ledger
@@ -179,6 +217,9 @@ condition that prevented them.
   its interaction with the existing diff. Check requirement coverage, excess
   change, configuration, security, and maintainability separately from the
   deterministic verification result.
+- When this iteration review is delegated, use the Delegated review handoff and
+  keep its review mode limited to the selected criterion and materially affected
+  interactions.
 - Apply the Review finding gate to every claim. Only a `material actionable`
   finding keeps or returns an affected criterion to `pending`. A
   `scope/design escalation` goes to its owner without changing requirements or
@@ -221,22 +262,22 @@ all rows are satisfied or blocked.
 - After no pending row remains, run the project's global verification against the
   complete current diff. Map a failure to the affected criterion, reopen it to
   pending, and return to Step 2.
-- For the initial final review, give an independent reviewer with fresh context
-  the authoritative goal, acceptance criteria, in-scope and out-of-scope
-  boundaries, applicable existing project rules, ADRs, and conventions, current
-  full diff, and verification evidence. Require the Review finding gate fields
-  for every claim.
-  Have it review requirement coverage, excess change, configuration, security,
-  and maintainability across the whole diff. The reviewer must not have authored
-  the implementation.
+- For the initial final review, use the Delegated review handoff with an
+  independent reviewer who did not author the implementation. Set the mode to
+  full-diff review and require requirement coverage, excess change,
+  configuration, security, and maintainability across the whole diff. A fresh
+  reviewer still receives the complete brief; freshness does not require it to
+  rediscover scope or repeat the supplied global verification.
 - Apply the gate to every final finding. Reopen criteria only for `material
   actionable` findings, route `scope/design escalation` without silently
   changing the task, and retain `non-blocking` observations without extending
   the loop.
-- After correcting a finding, rerun global deterministic verification and return
-  to the same independent reviewer when available. Limit re-review to the prior
-  findings, the changed area, and regressions plausibly introduced by the fix.
-  The reviewer remains separate from the maker and does not implement the fix.
+- After correcting a finding, rerun global deterministic verification, update
+  the handed-off repository state and evidence, and return to the same
+  independent reviewer when available. Limit re-review to the prior findings,
+  the changed area, and regressions plausibly introduced by the fix. The
+  reviewer remains separate from the maker, consumes the updated evidence under
+  the handoff rules, and does not implement the fix.
   When that reviewer is unavailable, give an independent replacement the prior
   review and fix context with the same targeted mandate; reviewer replacement
   alone does not require a new full adversarial review.
@@ -250,9 +291,10 @@ all rows are satisfied or blocked.
   leave that final gate incomplete and report the exact missing capability.
 
 **Done when:** global verification passes at the current repository state, one
-initial independent fresh-context full-diff review exists, every material finding
-is resolved by the applicable targeted or reset review, and every escalation has
-a recorded disposition; or the exact unavailable final gate is reported without
+initial independent fresh-context full-diff review exists, every delegated review
+accounts for supplied and additional verification, every material finding is
+resolved by the applicable targeted or reset review, and every escalation has a
+recorded disposition; or the exact unavailable final gate is reported without
 claiming convergence.
 
 ### Step 8 — Stop and hand off
@@ -286,6 +328,7 @@ consumer.
 | "The reviewer listed it, so it blocks" | A claim reopens work only after authority, reachability, impact, and affected scope pass the finding gate. |
 | "Ban that construct so the checker is complete" | A new permanent constraint is a scope/design decision, not an automatic bug fix. |
 | "A fresh reviewer might find another bypass" | Fresh full review is required initially and after a material reset; targeted re-review closes localized fixes. |
+| "Independent review means rerunning every test" | Independence applies to judgment. Reuse current evidence for the same state and claim; run another check only for a stated evidence gap or independent-execution requirement. |
 | "The checks are green, so the loop is done" | Current global verification, terminal criterion states, scoped review, and the no-unauthorized-expansion guard must all hold. |
 
 ## Related
