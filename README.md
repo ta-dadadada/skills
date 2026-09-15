@@ -3,6 +3,9 @@
 このリポジトリは、[Agent Skills](https://agentskills.io) 形式の再利用可能な
 スキルを配布します。各スキルは `SKILL.md` を含むディレクトリです。
 
+収録スキルの役割や選び方、おすすめの利用フローは
+[プロジェクトガイド（日本語）](docs/project-guide.md)を参照してください。
+
 ## GitHub からインストールする
 
 以下では、GitHub リポジトリを `<owner>/<repository>`、スキル名を
