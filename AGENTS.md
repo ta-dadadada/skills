@@ -9,7 +9,7 @@ This repository distributes reusable Agent Skills rather than a compiled applica
 - `knowledge/`: distilled, reusable reference material; follow `knowledge/README.md` when adding content.
 - `.local/`: ignored scratch space. Never place files intended for review or release here.
 
-When adding or renaming a skill, keep its directory name identical to the `name` field in `SKILL.md` frontmatter and update the skill list in the root `README.md`.
+When adding or renaming a skill, keep its directory name identical to the `name` field in `SKILL.md` frontmatter and update the skill list in `docs/project-guide.md`. Keep the root `README.md` focused on readers and users, linking to that guide instead of duplicating the inventory. Contributor documentation belongs in `docs/development-guide.md`.
 
 ## Project Skills
 

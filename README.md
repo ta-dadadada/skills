@@ -3,7 +3,9 @@
 このリポジトリは、[Agent Skills](https://agentskills.io) 形式の再利用可能な
 スキルを配布します。各スキルは `SKILL.md` を含むディレクトリです。
 
-収録スキルの役割や選び方、おすすめの利用フローは
+## 収録スキル
+
+スキル一覧・簡単な説明・おすすめの利用フローは
 [プロジェクトガイド（日本語）](docs/project-guide.md)を参照してください。
 
 ## GitHub からインストールする
@@ -31,12 +33,8 @@ npx skills add ta-dadadada/skills --skill pr-handoff
 
 [`apm`](https://github.com/microsoft/apm)（Agent Package Manager）でも、
 各スキルディレクトリを `SKILL.md` を含む "skill bundle" としてそのまま
-インストールできます。各スキルディレクトリには `SKILL.md` の frontmatter
-（`name`・`description`・`license`）から自動生成した `apm.yml` を同梱して
-おり、`name`・`description`・`license` が apm 側にも渡ります
-（生成スクリプトは [`scripts/generate_apm_yml.py`](scripts/generate_apm_yml.py)、
-`SKILL.md` を編集したら再実行してください。リポジトリ直下の `apm.yml`
-も同スクリプトが再生成します）。
+インストールできます。各スキルディレクトリには `apm.yml` を同梱しており、
+スキル名・説明・ライセンスが apm 側にも渡ります。
 
 #### 全スキルをまとめてインストールする
 
@@ -123,62 +121,13 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 プロジェクト用スキルは、コピー後に `.agents/skills/` などの対象ディレクトリを
 コミットしてください。チーム全員がリポジトリを取得すると同じスキルを利用できます。
 
-## このリポジトリで使うスキル
+## 利用時の注意
 
-このリポジトリ自身の作業で使うスキルは、`.agents/skills/` と
-`.claude/skills/` に相対シンボリックリンクで配置しています。
-どちらも `dev/`・`meta/` の正本を参照し、個人用の同名コピーとは指示を混ぜません。
-参照先と選択ルールは [AGENTS.md](AGENTS.md#project-skills) にまとめています。
-
-スキルの作成・改訂には `shiranui-hanten`、明示的な指示評価には
-`shiranui-hansode`、作業の中断・再開には `session-handover` と
-`session-resume` を使います。配置されているスキルを毎回すべて実行する必要はありません。
-
-以下の収録スキル一覧は配布対象の一覧であり、このプロジェクトで使うスキルの一覧とは区別します。
-
-## 公開・更新時の運用
-
-- スキル名はディレクトリ名と `SKILL.md` の frontmatter にある `name` を一致させる。
 - 導入前に `SKILL.md`、同梱スクリプト、参照ファイルを確認する。スキルはエージェントの行動やコマンド実行に影響する。
-- GitHub のリリースタグまたはコミット SHA を指定すると、チームで同じ版を再現しやすい。
+- コミット SHA を指定すると、チームで同じ版を再現しやすい。
 - 非公開リポジトリは、利用環境で GitHub 認証を済ませたうえで `git clone` してからコピーする。
 
-## 収録スキル
+## 開発に参加する
 
-- `dev/backend-api-implementation`
-- `dev/business-ui-design`
-- `dev/characterization-testing`
-- `dev/doc-sync`
-- `dev/domain-modeling`
-- `dev/frontend-ui-design`
-- `dev/frontend-ui-implementation`
-- `dev/hypothesis-driven-debugging`
-- `dev/implementation-loop`
-- `dev/issue-kickoff`
-- `dev/local-intake`
-- `dev/pr-handoff`
-- `dev/purpose-driven-software-design`
-- `dev/session-goal`
-- `dev/session-handover`
-- `dev/session-resume`
-- `dev/terraform-implementation`
-- `dev/work-report`
-- `meta/just-do-it`
-- `meta/shiranui-hansode`
-- `meta/shiranui-hanten`
-- `meta/skill-opportunity-review`
-
-`just-do-it` は明示的に指定した作業を、任意の追加スキルを使わず直接進めます。
-メインエージェントでの実行を基本とし、完了までの時間短縮が見込める独立作業だけを
-並行化します。必要な検証と権限境界は維持します。
-
-UI設計のみには `frontend-ui-design` を単独で利用できます。実装まで行う場合は
-`frontend-ui-implementation` も導入してください。前者が設計契約と
-アクセシビリティ要件を決め、後者がHTML・ARIA・CSS・JSで実現し、実UIを検証します。
-設計契約が確定している実装作業には実装スキルから入れます。
-
-業務ツールの情報構造やレコード操作も設計する場合は `business-ui-design` を追加します。
-業務UIの実装は `business-ui-design` → `frontend-ui-design` →
-`frontend-ui-implementation` の順に、同じ設計記録と受入ケースを引き継ぎます。
-個別インストールでは必要な各スキルを導入してください。ルートのAPMパッケージは
-3スキルを含む全収録スキルをインストールします。
+スキルの作成・改訂、このリポジトリのスキル設定、生成・検証・公開の手順は
+[開発者ガイド](docs/development-guide.md)を参照してください。
