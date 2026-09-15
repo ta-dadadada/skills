@@ -27,4 +27,4 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - プロジェクトで使うスキルの正本と選択ルールは [AGENTS.mdのProject Skills](AGENTS.md#project-skills) に従う。同名の個人用コピーとは指示を混ぜない。
 - スキルの新規作成・更新時は、このリポジトリの `meta/shiranui-hanten` スキル（`meta/shiranui-hanten/SKILL.md`）に従うこと。組み込みの skill-creator ではなくこちらを正とする。
 - 各ファイルは特定のツールに配置（コピー/シンボリックリンク）されて初めて機能する。ファイルを追加・改名した場合、配置方法や参照元への影響を確認すること。
-- スキル全体の validator と `dev/local-intake` の unittest は `.github/workflows/ci.yml` で実行する。スクリプト変更時は同じチェックをローカルでも実行すること。
+- スキル全体の validator は `.github/workflows/ci.yml` で毎回実行する。`dev/local-intake` の unittest はPython関連ファイルまたはCI設定に差分がある場合のみ実行する。判定対象は `docs/development-guide.md` を参照。スクリプト変更時は同じチェックをローカルでも実行すること。

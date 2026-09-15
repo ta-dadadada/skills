@@ -96,7 +96,17 @@ python3 meta/shiranui-hanten/scripts/validate_skill.py dev/pr-handoff
 文書のリンクとコマンドは、実行・参照するディレクトリを基準に確認します。
 
 [CI](../.github/workflows/ci.yml)では、Python 3.11・3.12・3.13・3.14で
-全スキルのvalidatorと `local-intake` のテストを実行します。
+全スキルのvalidatorを常に実行します。`local-intake` のテストとCLIのヘルプ確認は、
+次のPython関連ファイルに差分がある場合のみ実行します。
+
+- Pythonソース: `*.py`・`*.pyi`。
+- 設定・依存関係: `pyproject.toml`、`setup.cfg`、`tox.ini`、`pytest.ini`、`.python-version`、
+  `requirements*.txt`・`requirements*.in`、`Pipfile`・`Pipfile.lock`、`poetry.lock`、`uv.lock`、`pdm.lock`。配置先は問いません。
+- CI設定: `.github/workflows/ci.yml`。
+
+PRはベースブランチとの分岐点から、pushは前回コミットからの差分で判定します。
+削除・名称変更も対象とし、比較元がない初回pushではテストを実行します。
+Markdownなどだけの変更ではランタイムテストをスキップしますが、スキル検証は残ります。
 指示の静的レビューと実行比較は別の証拠として扱い、実測していない効果は保証しません。
 
 ## コミット・PR・公開前の確認
