@@ -12,6 +12,10 @@ there is no compiled build step. The authority for skill structure and style is
 `meta/shiranui-hanten/SKILL.md` and its `references/` (SPEC, PRINCIPLES,
 GLOSSARY).
 
+For project skill selection and canonical sources, follow
+[AGENTS.md's Project Skills](../AGENTS.md#project-skills). Do not merge a
+project-installed skill with a same-name personal copy.
+
 ## Layout
 
 - `dev/<skill>/`, `meta/<skill>/` — one directory per skill: `SKILL.md`
@@ -41,8 +45,10 @@ GLOSSARY).
 - `python3 meta/shiranui-hanten/scripts/validate_skill.py <skill-dir>`
   must pass for every touched skill.
 - Runtime script changes must keep their focused automated tests passing. The
-  CI workflow validates every skill and runs the `dev/local-intake` unittest
-  suite on Python 3.11, 3.12, 3.13, and 3.14.
+  CI workflow always validates every skill on Python 3.11, 3.12, 3.13, and
+  3.14. The `dev/local-intake` unittest suite runs on those versions only for
+  Python-related or CI workflow changes; see `docs/development-guide.md` for
+  the change filter.
 
 ## Rules to check when reviewing knowledge files
 
