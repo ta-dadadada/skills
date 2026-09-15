@@ -1,0 +1,11 @@
+name: just-do-it
+description: Complete the requested task directly, minimizing lead time without optional
+  skill discovery or workflow overhead. Use only when the user explicitly invokes
+  just-do-it or asks to work without additional skills. The main agent executes by
+  default; delegate only when permitted independent parallel work is expected to shorten
+  completion time. Preserve required verification, authority boundaries, and explicit
+  limits such as design-only requests. Do not activate merely because a task looks
+  simple or urgent.
+license: MIT
+type: skill
+version: '0.1.0'
