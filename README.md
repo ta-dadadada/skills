@@ -147,9 +147,14 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 - `dev/session-resume`
 - `dev/terraform-implementation`
 - `dev/work-report`
+- `meta/just-do-it`
 - `meta/shiranui-hansode`
 - `meta/shiranui-hanten`
 - `meta/skill-opportunity-review`
+
+`just-do-it` は明示的に指定した作業を、任意の追加スキルを使わず直接進めます。
+メインエージェントでの実行を基本とし、完了までの時間短縮が見込める独立作業だけを
+並行化します。必要な検証と権限境界は維持します。
 
 UI設計のみには `frontend-ui-design` を単独で利用できます。実装まで行う場合は
 `frontend-ui-implementation` も導入してください。前者が設計契約と
