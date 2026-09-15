@@ -1,2 +1,4 @@
 .local
 __pycache__/
+.agent-goal.md
+.agent-session.md

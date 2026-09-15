@@ -12,6 +12,10 @@ there is no compiled build step. The authority for skill structure and style is
 `meta/shiranui-hanten/SKILL.md` and its `references/` (SPEC, PRINCIPLES,
 GLOSSARY).
 
+For project skill selection and canonical sources, follow
+[AGENTS.md's Project Skills](../AGENTS.md#project-skills). Do not merge a
+project-installed skill with a same-name personal copy.
+
 ## Layout
 
 - `dev/<skill>/`, `meta/<skill>/` — one directory per skill: `SKILL.md`

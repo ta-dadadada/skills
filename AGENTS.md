@@ -11,6 +11,31 @@ This repository distributes reusable Agent Skills rather than a compiled applica
 
 When adding or renaming a skill, keep its directory name identical to the `name` field in `SKILL.md` frontmatter and update the skill list in the root `README.md`.
 
+## Project Skills
+
+The canonical sources for this repository's own skills are in `dev/` and `meta/`.
+Selected workflows are exposed through relative directory symlinks in
+`.agents/skills/` and `.claude/skills/`; keep both sets aligned. These installed
+workflows support maintaining this repository, not the full distribution inventory.
+
+When selecting one of these project-installed skills, read its symlink target's
+`SKILL.md` and resolve references and scripts from that canonical directory.
+If a personal installation has the same skill name, use the repository source
+for work here; do not merge instructions from the personal copy. This is a
+repository execution rule, not a claim that tools hide or automatically override
+same-name skills. Leave personal installations unchanged unless the user asks.
+
+- Skill creation or revision: use `meta/shiranui-hanten/SKILL.md`.
+- Explicit instruction review, comparison, or tuning: use
+  `meta/shiranui-hansode/SKILL.md`; do not run empirical evaluation automatically
+  after every edit.
+- Interrupted work: write a checkpoint with `dev/session-handover/SKILL.md`,
+  then reconcile and continue with `dev/session-resume/SKILL.md` when resuming.
+  Keep `.agent-session.md` out of version control.
+
+Other project-installed skills retain their own invocation conditions; installing
+a skill does not require running it on every task.
+
 ## Build, Test, and Development Commands
 
 There is no compiled build. Validate skill packages and test runtime utilities directly:

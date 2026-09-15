@@ -120,6 +120,19 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 プロジェクト用スキルは、コピー後に `.agents/skills/` などの対象ディレクトリを
 コミットしてください。チーム全員がリポジトリを取得すると同じスキルを利用できます。
 
+## このリポジトリで使うスキル
+
+このリポジトリ自身の作業で使うスキルは、`.agents/skills/` と
+`.claude/skills/` に相対シンボリックリンクで配置しています。
+どちらも `dev/`・`meta/` の正本を参照し、個人用の同名コピーとは指示を混ぜません。
+参照先と選択ルールは [AGENTS.md](AGENTS.md#project-skills) にまとめています。
+
+スキルの作成・改訂には `shiranui-hanten`、明示的な指示評価には
+`shiranui-hansode`、作業の中断・再開には `session-handover` と
+`session-resume` を使います。配置されているスキルを毎回すべて実行する必要はありません。
+
+以下の収録スキル一覧は配布対象の一覧であり、このプロジェクトで使うスキルの一覧とは区別します。
+
 ## 公開・更新時の運用
 
 - スキル名はディレクトリ名と `SKILL.md` の frontmatter にある `name` を一致させる。
