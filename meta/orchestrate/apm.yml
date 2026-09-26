@@ -1,0 +1,11 @@
+name: orchestrate
+description: 'Orchestrate a requested task through up to three subagents: decompose
+  the work, select a suitable available model for each bounded assignment, delegate
+  substantive execution, coordinate dependencies, and integrate and verify the results
+  while the main agent remains the orchestrator. Use only when the user explicitly
+  invokes orchestrate or asks the main agent to delegate the work and orchestrate
+  it. Not for creating persistent subagent definitions. Does not broaden the task''s
+  scope or authority.'
+license: MIT
+type: skill
+version: '0.1.0'
