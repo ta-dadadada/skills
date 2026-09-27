@@ -30,6 +30,26 @@ class DashboardTest(unittest.TestCase):
         return {'id': rid, 'expected_revision': revision, 'reason': reason,
                 'snapshot': copy.deepcopy(snapshot or self.snapshot)}
 
+    def test_overview_counts_do_not_infer_completion_or_unverified_work(self):
+        state = self.store.state()
+        snapshot = state['snapshot']
+        snapshot['phases'][0]['todos'] = [
+            {'id': str(i), 'title': status, 'status': status, 'owner': 'main', 'result': ''}
+            for i, status in enumerate(['done', 'cancelled', 'blocked', 'in_progress', 'pending'])]
+        base = snapshot['agents'][0]
+        snapshot['agents'] = [dict(base, id='working', status='working', review='pending', result=''),
+                              dict(base, id='report', status='reported', review='pending', result=''),
+                              dict(base, id='failed', status='failed', review='accepted', result='')]
+        state['pending_reports'] = ['queued']
+        counts = d.overview(state)
+        self.assertEqual((counts['done'], counts['total'], counts['cancelled']), (1, 5, 1))
+        self.assertEqual((counts['running'], counts['failed'], counts['unverified']), (1, 1, 2))
+        rendered = d.body(state)
+        self.assertLess(rendered.index('id="attention"'), rendered.index('id="plan"'))
+        self.assertIn('queued', rendered)
+        self.assertIn('<details id="history">', rendered)
+        self.assertIn('data-todo-status="cancelled"', rendered)
+
     def test_durable_inbox_and_idempotent_retry(self):
         report = self.report()
         self.store.submit(report)
@@ -195,7 +215,7 @@ class DashboardTest(unittest.TestCase):
         self.store.apply('one')
         text = d.page(self.store.state())
         self.assertIn('作業計画はまだ報告されていません', text)
-        self.assertIn('判断・レビューの依頼はありません', text)
+        self.assertIn('報告された対応待ち・問題・未確認成果はありません', text)
         self.assertIn('担当状況の報告はまだありません', text)
 
     def test_metrics_unknown_zero_scope_and_escaping(self):

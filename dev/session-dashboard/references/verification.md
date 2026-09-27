@@ -129,3 +129,25 @@ and entities. Escaping now covers CommonMark ASCII punctuation, with regression
 coverage for entities, setext-like lines, links, HTML and backslashes.
 The reviewer rechecked the fix and reran all four Node tests; no further material
 finding remained in the final delta.
+
+## Operations hierarchy redesign
+
+The report-first surface was replaced with a status header, five linked counters,
+an expanded attention queue and shared-surface plan/agent rows. Quiet records and
+metadata use native disclosures. Counts are based on explicit reported states;
+working agents without results are not counted as unverified results. Cancelled
+TODOs stay in the denominator and have a separate count.
+
+19 Python tests and six Node tests pass, including count semantics and Markdown
+export of collapsed records, summary counters and TODO ownership. Package validation
+and whitespace checks pass. In the in-app browser, pointer navigation from the
+Attention counter and Enter activation of disclosure/copy controls worked. An actual
+semantic report update preserved the expanded session details and focused summary.
+At 360 × 800, scroll width was 345px; the plan and agents stacked and counters wrapped.
+The viewport override was reset. The sample session is a UI fixture, not a claim of
+current host-agent activity. Copy showed success; clipboard-byte, screen-reader,
+actual 200% zoom, direct saved-file and print checks retain their prior limitations.
+
+Independent review found a missing text separator between TODO title and owner in
+Markdown export. The fix adds an explicit owner label and a regression test. The
+schema, storage, authority model and lifecycle inference rules remain unchanged.

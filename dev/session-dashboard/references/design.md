@@ -1,110 +1,79 @@
 # Design and acceptance contract
 
-This ops skill lets the main agent and a recording subagent maintain one session's
-read-only dashboard. Success means that the agreed goal, phase/slice TODOs,
-human requests, agent observations, and reasons for plan changes are visible and
-remain readable after shutdown. Invocation is explicit. No approval UI, autonomous
-planning, or cross-session aggregation is included.
+This ops skill maintains one session's read-only dashboard and durable record.
+The main agent owns goals, plans, completion and acceptance judgments. The recorder
+applies submitted snapshots unchanged; deterministic local code validates versions,
+serializes writes and renders HTML. Hooks record lifecycle observations only.
+Invocation is explicit; chat remains the response/approval surface.
 
-## Responsibility and storage
+A session directory contains a canonical SQLite journal, JSON and self-contained
+HTML exports. Every applied event is saved. Expected revisions reject stale writes;
+report IDs make retries idempotent. Presentation must not change stored semantics.
 
-The main agent owns the semantic snapshot. It submits a versioned report before
-messaging the recorder, so a lost message cannot lose the report. The recorder
-applies the submitted report unchanged and returns its receipt. A deterministic
-local runtime validates reports, serializes writes, preserves history, and renders
-HTML. Hooks may record lifecycle observations but never complete a TODO.
+## Operations hierarchy
 
-A session directory contains a SQLite journal (canonical), a JSON export, and a
-self-contained HTML export. Use a durable, project-local ignored directory, not
-an OS temporary directory. Saving happens at every event, not just shutdown.
-An optimistic revision rejects stale semantic reports. Report IDs make retries
-idempotent. Runtime lifecycle updates do not advance the semantic revision.
+Job: a developer opening the dashboard must scan current session state, explicit
+TODO completion, human requests, failures/unverified results, and agent work in
+seconds. Deliver a working UI using the existing snapshot schema and local export.
+Use a compact status header, linked count strip, phase progress rows, an attention
+queue, then a shared-surface plan/agent split. Running/blocked work precedes quiet
+work within each phase; completed/cancelled items, resolved requests, history and
+session identity use native disclosures. Keep session start discoverable in the
+header; full timestamps/CWD/IDs and metric provenance remain in secondary details.
 
-## Screen contract
+Counts are explicit: done / all TODOs, with cancelled counted separately (never
+completed); Attention counts open human requests; Failed counts failed agents;
+Unverified counts reported/results-bearing agents whose review is pending, plus
+unapplied reports. Running counts in-progress TODOs. Pending agents still working
+are not unverified results. Blocked TODOs and changes-requested agents also appear
+in attention. Counts link to their supporting sections, not invented filters.
+Free-text summary remains visible if present, since it can contain unresolved risk.
+No timing inference or lifecycle-to-completion inference is added.
 
-Entry is the loopback URL during work or the saved HTML after shutdown. The reader
-sees purpose and completion conditions, human requests, plan, agent reports, and
-history in that order. Human requests name blocked TODOs separately from optional
-reviews. Completed work keeps its result. Empty sections explain the absence of
-reported information. There is no inferred percentage or automatic completion.
+Use an off-white shared canvas, charcoal type, muted secondary text, fine rules,
+blue running states, amber attention/unverified states and red failure states.
+No decorative cards, shadows, blinking or animation. Native details/summary and
+anchors support keyboard use; focus and open disclosures survive semantic refresh.
+Below 760px the plan and agent sections stack; counts wrap without horizontal
+scrolling at 360px. Copy exports the complete record, including collapsed details,
+so lower visual priority never removes durable information. Print expands details.
 
-Use a light neutral background, dark ink, restrained teal emphasis, and amber for
-requests. Status always has words. A wide layout pairs the plan with agent reports;
-below 600px these stack in reading order. Long text wraps at 360px and 200% zoom.
-No editing inputs, dialogs, tabs, sorting, or custom keyboard controls are needed.
-The Markdown export action and readonly fallback are described below. Native
-heading/list semantics and ordinary browser scrolling provide access. Refresh
-preserves scroll and focus; a persistent status region announces connection errors
-and recovery without announcing the entire document. A failed refresh retains the
-last content and states that it may be stale. Offline HTML explicitly says it is
-a saved record and performs no network requests.
+Design review: the five questions each have a direct surface; counters have named
+sources and denominators; zero/unknown remains explicit; attention never hides in
+a collapsed archive. No new mutation, approval, filter or provider integration.
+Static contract passes task/hierarchy/disclosure/recovery/action-scope checks.
+Runtime keyboard, refresh preservation, copy, narrow layout and contrast remain
+implementation checks; screen-reader and actual 200% zoom require separate evidence.
 
-## Acceptance and verification
+## Secondary information and export
 
-| Criterion (source: agreed conversation) | Evidence |
-| --- | --- |
-| Purpose, conditions, phase/slice TODOs, ownership and results | Schema/render tests and browser inspection |
-| Pending human decisions/reviews with blocked TODOs; chat replies | Schema tests and read-only UI inspection |
-| Agent assignment, reports, review state, lifecycle observations | Report and hook tests; host smoke checks |
-| Reasons survive plan additions/removals/reordering | Revision and history tests |
-| Updates at milestones; recorder handles repeated reports | Durable inbox/retry tests and host smoke checks |
-| Readable record after shutdown and interruptions | Export, restart, offline browser and failure tests |
-| Portable skill with Codex/Claude Code instructions | Validator, installation links, bounded execution checks |
+Session start, CWD and dashboard start remain separate. Unknown values stay explicit;
+never infer session start from dashboard creation. Elapsed time is wall time since
+dashboard creation, includes waiting, freezes while paused/interrupted/completed,
+and includes the intervening interval upon resumption. Saved HTML uses export time.
+Usage totals/models are optional, with source/scope/observation timestamp; missing
+values are not zero and overlapping counts are not summed.
 
-## Design review
+A native Markdown-copy button announces success. Clipboard denial/unavailability
+reveals a labeled readonly textarea, focuses/selects the click-time snapshot and
+provides Close returning focus to the button. Controls stay outside the refreshed
+main region. Copy includes collapsed content and escapes Markdown punctuation.
+The same code is embedded in saved HTML and does not require the server.
 
-Static walkthrough: the four user questions have dedicated sections; requests
-precede work details; agent lifecycle is separate from accepted results. Empty,
-live, disconnected and offline states have explicit text. No mutation controls
-or focus-changing refresh are specified. The UI contract is coherent; runtime
-browser checks, actual zoom and assistive technology remain to be verified.
+Live refresh retains the last view on connection failure, visibly marks disconnection
+and reconnects automatically. Displayed states are last reports, never proof of
+liveness. Saved HTML identifies itself as a saved record and makes no requests.
+Empty collections explicitly report absence of information, not inferred success.
 
-## Usage widgets (requested extension)
+## Acceptance
 
-Three read-only widgets follow the purpose: elapsed time since dashboard
-initialization (including waiting), reported token total, and observed models.
-Elapsed time advances during active viewing and freezes while paused/interrupted
-or completed. Resuming includes the intervening wall time; this is not CPU time
-or the duration before dashboard activation. Saved HTML shows export-time values.
-Token/model values are optional and show unknown rather than zero when absent.
-Every supplied metric includes its scope, source and observation time. Never sum
-main-agent and child usage unless the source establishes non-overlapping totals.
-Keep three compact columns down to 360px; stack metrics at 320px or narrower. Text and values wrap.
-
-Design review: these widgets add no input or focus behavior. Scope and provenance
-prevent mistaking partial usage for a session total. Tests cover legacy snapshots,
-unknown versus zero, validation, frozen/restarted time and safe rendering. Browser
-checks cover the three widgets and narrow layout. Provider-specific automatic
-usage collection remains outside this extension.
-
-## Developer density adjustment
-
-The user requested a denser developer-facing view. Use 14px body text with 1.45
-line height, compact headings and 6px TODO row padding. Remove empty paragraphs,
-keep metrics in three columns above 320px, and use the wider available viewport.
-Retain explicit status text, provenance and a single-column narrow-screen layout.
-Review: no controls or semantic data changed; check desktop/narrow reading and
-long-value wrapping at runtime.
-
-## Session identity follow-up
-
-Display session start, session CWD and dashboard start separately beneath the
-heading in compact labeled rows. Unknown session start/CWD remain explicit.
-Timestamp offsets remain visible; long directory names wrap without overflow.
-Old records must remain readable. Optional context comes from the main agent's
-host observations; dashboard initialization must not masquerade as session start.
-Design review: no new actions; verify parsing, unknowns, escaping and narrow layout.
-
-## Markdown copy action
-
-An explicit user request adds one local export action above the document. Copy the
-visible main document at click time, including the current elapsed display, metadata,
-plan/TODO checkboxes, requests, agents and history. No server fetch or mutation is
-needed, so saved HTML can use the same code. Escape literal Markdown/HTML content.
-Announce success; on clipboard denial/unavailability, reveal a labeled readonly
-textarea, focus/select its snapshot, and offer Close returning focus to the button.
-Keep controls outside the refreshed main region so refresh preserves focus and
-the manual-copy snapshot. Use native buttons for keyboard operation.
-Design review: read-only work semantics remain unchanged; no browser approval or
-chat submission added. Verify serialization, success, failure, latest content and
-manual-copy focus behavior.
+- Five operational questions have directly scannable surfaces, linked to detail.
+- Counts agree with reported records; cancelled work is not completed work.
+- Human requests, blocked work, failures, revisions requested and unverified
+  results remain expanded even when the session is marked completed.
+- Phase and owner identity, results, resolution reasons and history remain accessible.
+- Working agents are distinct from reported results and accepted results.
+- Desktop/narrow keyboard and pointer paths work; refresh preserves disclosure,
+  focus, scroll and manual-copy context; offline exports retain all content.
+- Package validation and runtime tests pass. Browser/AT/print claims are limited
+  to executed checks recorded in verification.md.

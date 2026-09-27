@@ -140,3 +140,7 @@ access is unavailable, a readonly textarea exposes the captured Markdown for
 manual copy. It remains unchanged during later dashboard refreshes; press the
 copy button again to capture a newer revision. Saved HTML includes the same export
 action and does not need a server for copying. Browser clipboard policy still applies.
+
+Collapsed sections remain part of Markdown export. The operations summary counts
+explicit TODO/agent/request states; see [the design contract](design.md) for their
+definitions. Disclosure changes never alter the stored session.

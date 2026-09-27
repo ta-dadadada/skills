@@ -297,7 +297,7 @@ LABELS = {"pending": "未着手 / 未確認", "in_progress": "作業中", "done"
 
 
 def badge(value):
-    return f'<span class="badge">{esc(LABELS.get(value, value))}</span>'
+    return f'<span class="badge status-{esc(value)}">{esc(LABELS.get(value, value))}</span>'
 
 
 def elapsed_text(state, observed_at=None):
@@ -328,59 +328,113 @@ def usage_widgets(state, observed_at=None):
             f'<p class="meta">{esc(note)}</p></section>')
 
 
+def overview(state):
+    s = state["snapshot"]
+    todos = [t for p in s["phases"] for t in p["todos"]]
+    return {
+        "total": len(todos), "done": sum(t["status"] == "done" for t in todos),
+        "running": sum(t["status"] == "in_progress" for t in todos),
+        "cancelled": sum(t["status"] == "cancelled" for t in todos),
+        "attention": sum(r["status"] == "open" for r in s["requests"]),
+        "failed": sum(a["status"] == "failed" for a in s["agents"]),
+        "unverified": sum(a["review"] == "pending" and (a["status"] == "reported" or bool(a["result"].strip()))
+                          for a in s["agents"]) + len(state.get("pending_reports", [])),
+    }
+
+
+def disclosure(key, title, content):
+    return f'<details id="{esc(key)}"><summary>{esc(title)}</summary>{content}</details>'
+
+
 def body(state):
     s = state["snapshot"]
+    counts = overview(state)
     context = s.get("session_context", {})
-    session_info = ('<dl class="session-info">'
-                    f'<div><dt>セッション開始</dt><dd>{esc(context.get("started_at") or "未取得")}</dd></div>'
-                    f'<div><dt>CWD</dt><dd><code>{esc(context.get("cwd") or "未取得")}</code></dd></div>'
-                    f'<div><dt>ダッシュボード起動</dt><dd>{esc(state["history"][0]["at"])}</dd></div></dl>')
-    parts = [f'<header><p class="eyebrow">SESSION RECORD · {esc(state["session_id"])}</p>'
-             f'<h1>{esc(s["goal"])}</h1>{badge(s["status"])}{session_info}'
-             f'<p>{esc(s["current_work"])}</p><h2>完了条件</h2><ul>'
-             + ''.join(f'<li>{esc(x)}</li>' for x in s["completion_conditions"]) + '</ul></header>',
-             f'<p class="meta">最終報告受信：{esc(state["received_at"])}<br>'
-             f'最終反映：{esc(state["applied_at"])} · 更新番号 {state["revision"]}</p>']
-    parts.append(usage_widgets(state))
-    pending = state.get("pending_reports", [])
-    if pending:
-        parts.append(f'<p class="notice">反映待ちの報告：{esc(", ".join(pending))}</p>')
-    parts.append('<section class="requests"><h2>判断・レビュー</h2><p>返答は元のチャットでお願いします。</p>')
+    parts = [f'<header><div class="session-line"><span class="eyebrow">SESSION / STATUS</span>{badge(s["status"])}</div>'
+             f'<h1>{esc(s["goal"])}</h1><p class="current"><span class="meta">NOW</span> {esc(s["current_work"]) or "現在の作業は未報告"}</p>'
+             f'<p class="meta">セッション開始：{esc(context.get("started_at") or "未取得")} · 最終反映：{esc(state["applied_at"])}</p></header>',
+             '<nav class="overview" aria-label="状況サマリー">']
+    for key, label, target, tone in [("done", "完了 / 全TODO", "plan", ""),
+                                   ("attention", "Attention · 対応待ち", "attention", "attention"),
+                                   ("running", "Running · 作業中", "plan", "running"),
+                                   ("failed", "Failed · 問題あり", "agents", "failed"),
+                                   ("unverified", "Unverified · 未確認", "attention", "attention")]:
+        number = f'{counts[key]} / {counts["total"]}' if key == "done" else str(counts[key])
+        parts.append(f'<a href="#{target}" class="stat {tone if counts[key] else ""}"><span>{label}</span><strong>{number}</strong></a>')
+    parts.append('</nav><p class="meta legend">件数は最終報告時点。Attention＝人間への依頼、Running＝TODO、Failed＝エージェント、Unverified＝成果・反映待ち報告。</p>')
+    parts.append('<section id="attention"><h2>Attention <span>判断・レビュー / 確認事項</span></h2>')
+    attention = []
+    resolved = []
     for r in s["requests"]:
-        parts.append(f'<article><h3>{esc(r["title"])}</h3>{badge(r["kind"])} {badge(r["status"])}'
-                     f'<p>{esc(r["detail"])}</p><p>停止中のTODO：{esc(", ".join(r["blocks"])) if r["blocks"] and r["status"] == "open" else "なし"}</p>'
-                     f'<p>{esc(r["resolution"])}</p></article>')
-    if not s["requests"]:
-        parts.append('<p>判断・レビューの依頼はありません。</p>')
-    parts.append('</section><div class="columns"><section><h2>作業計画</h2>')
-    for p in s["phases"]:
-        parts.append(f'<article><h3>{esc(p["title"])}</h3><ul class="todos">')
-        for t in p["todos"]:
-            parts.append(f'<li data-todo-status="{esc(t["status"])}">{badge(t["status"])} <strong>{esc(t["title"])}</strong>'
-                         f'<p class="meta">{esc(t["id"])} · 担当 {esc(t["owner"])}</p><p>{esc(t["result"])}</p></li>')
-        parts.append('</ul></article>')
-    if not s["phases"]:
-        parts.append('<p>作業計画はまだ報告されていません。</p>')
-    parts.append('</section><section><h2>サブエージェント</h2>')
+        row = (f'<article class="attention-row"><div class="row-heading">{badge(r["kind"])} <h3>{esc(r["title"])}</h3>{badge(r["status"])}</div>'
+               f'<p>{esc(r["detail"])}</p><p class="meta">停止中のTODO：{esc(", ".join(r["blocks"])) if r["blocks"] and r["status"] == "open" else "なし"}</p>'
+               f'<p>{esc(r["resolution"])}</p></article>')
+        (attention if r["status"] == "open" else resolved).append(row)
+    for phase in s["phases"]:
+        for t in phase["todos"]:
+            if t["status"] == "blocked":
+                attention.append(f'<p class="attention-row">{badge("blocked")} {esc(t["title"])} · 担当 {esc(t["owner"])} — {esc(t["result"])}</p>')
     for a in s["agents"]:
-        parts.append(f'<article><h3>{esc(a["id"])}</h3>{badge(a["status"])}'
-                     f'<p>{esc(a["assignment"])}</p><p>{esc(a["latest_report"])}</p>'
-                     f'<p>{esc(a["result"])}</p><p>成果の確認：{badge(a["review"])}</p>'
-                     f'<p class="meta">報告時刻：{esc(a["reported_at"])}</p></article>')
-    if not s["agents"]:
-        parts.append('<p>担当状況の報告はまだありません。</p>')
-    if state["runtime_agents"]:
-        parts.append('<h3>実行環境からの観測</h3><p>最後に観測した開始・応答終了です。TODOの完了を意味しません。</p><ul>')
-        for aid, observed in state["runtime_agents"].items():
-            label = "開始を観測" if observed["event"] == "SubagentStart" else "応答終了を観測"
-            parts.append(f'<li>{esc(aid)} · {esc(observed["type"])} · {label}<p class="meta">{esc(observed["at"])}</p></li>')
-        parts.append('</ul>')
-    parts.append('</section></div><section><h2>変更・進捗履歴</h2><ol>')
-    for event in reversed(state["history"]):
-        parts.append(f'<li><p>{esc(event["reason"])}</p><p class="meta">{esc(event["at"])} · 更新番号 {event["revision"]}</p></li>')
-    parts.append('</ol></section>')
+        if a["status"] == "failed" or a["review"] == "changes_requested" or (a["review"] == "pending" and (a["status"] == "reported" or a["result"].strip())):
+            label = "failed" if a["status"] == "failed" else a["review"]
+            attention.append(f'<p class="attention-row">{badge(label)} <strong>{esc(a["id"])}</strong> · {esc(a["assignment"])} — {esc(a["latest_report"])}</p>')
+    if state.get("pending_reports"):
+        attention.append(f'<p class="attention-row">反映待ちの報告：{esc(", ".join(state["pending_reports"]))}</p>')
+    parts.extend(attention or ['<p class="empty">報告された対応待ち・問題・未確認成果はありません。</p>'])
+    if counts["attention"]:
+        parts.append('<p class="meta">返答は元のチャットでお願いします。</p>')
     if s["summary"]:
-        parts.append(f'<section><h2>作業のまとめ・残作業・未確認事項</h2><p>{esc(s["summary"])}</p></section>')
+        parts.append(f'<p class="summary-note">作業のまとめ・残作業・未確認事項：{esc(s["summary"])}</p>')
+    parts.append('</section><div class="columns"><section id="plan"><h2>作業計画 <span>フェーズ / TODO</span></h2>')
+    rank = {"blocked": 0, "in_progress": 1, "pending": 2, "done": 3, "cancelled": 4}
+    for phase in s["phases"]:
+        done = sum(t["status"] == "done" for t in phase["todos"])
+        total = len(phase["todos"])
+        parts.append(f'<article class="phase"><div class="row-heading"><h3>{esc(phase["title"])}</h3><span class="meta">{done} / {total} 完了</span></div>'
+                     f'<progress value="{done}" max="{total or 1}" aria-label="{esc(phase["title"])}のTODO完了数"></progress>')
+        active, complete = [], []
+        for t in sorted(phase["todos"], key=lambda t: rank[t["status"]]):
+            row = (f'<li data-todo-status="{esc(t["status"])}"><div class="todo-line">{badge(t["status"])} <strong>{esc(t["title"])}</strong> <span class="owner">担当 {esc(t["owner"])}</span></div>'
+                   f'<p class="meta">{esc(t["id"])}</p><p>{esc(t["result"])}</p></li>')
+            (complete if t["status"] in {"done", "cancelled"} else active).append(row)
+        parts.append('<ul class="todos">' + ''.join(active) + '</ul>')
+        if complete:
+            parts.append(disclosure('phase-' + phase['id'], f'完了・取りやめ {len(complete)}件', '<ul class="todos">' + ''.join(complete) + '</ul>'))
+        parts.append('</article>')
+    if not s["phases"]:
+        parts.append('<p class="empty">作業計画はまだ報告されていません。</p>')
+    parts.append(f'<p class="meta">取りやめ {counts["cancelled"]}件（完了数には含めません）</p></section><section id="agents"><h2>エージェント <span>報告された状態</span></h2>')
+    quiet = []
+    for a in sorted(s["agents"], key=lambda a: ({"failed": 0, "working": 1, "waiting": 2, "reported": 3, "stopped": 4}[a["status"]])):
+        row = (f'<article class="agent-row"><div class="row-heading">{badge(a["status"])}<h3>{esc(a["id"])}</h3></div>'
+               f'<p>{esc(a["assignment"])}</p><p class="agent-report">{esc(a["latest_report"])}</p><p>{esc(a["result"])}</p>'
+               f'<p class="meta">成果の確認：{badge(a["review"])} · 報告時刻：{esc(a["reported_at"])}</p></article>')
+        if a["review"] == "accepted" and a["status"] in {"reported", "stopped"}:
+            quiet.append(row)
+        else:
+            parts.append(row)
+    if not s["agents"]:
+        parts.append('<p class="empty">担当状況の報告はまだありません。</p>')
+    if quiet:
+        parts.append(disclosure('accepted-agents', f'確認済みエージェント {len(quiet)}件', ''.join(quiet)))
+    parts.append('</section></div><footer>')
+    parts.append(disclosure('session-details', 'セッション詳細・実行状況',
+        '<dl class="session-info">' + ''.join(f'<div><dt>{label}</dt><dd>{esc(value)}</dd></div>' for label, value in [
+            ('セッションID', state['session_id']), ('セッション開始', context.get('started_at') or '未取得'),
+            ('CWD', context.get('cwd') or '未取得'), ('ダッシュボード起動', state['history'][0]['at']),
+            ('最終報告受信', state['received_at']), ('更新番号', state['revision'])]) + '</dl>' + usage_widgets(state)))
+    parts.append(disclosure('conditions', '完了条件', '<ul>' + ''.join(f'<li>{esc(x)}</li>' for x in s['completion_conditions']) + '</ul>'))
+    if resolved:
+        parts.append(disclosure('resolved-requests', f'解決済みの判断・レビュー {len(resolved)}件', ''.join(resolved)))
+    if state['runtime_agents']:
+        observations = '<p class="meta">最後に観測した開始・応答終了です。TODOの完了を意味しません。</p><ul>'
+        for aid, observed in state['runtime_agents'].items():
+            label = '開始を観測' if observed['event'] == 'SubagentStart' else '応答終了を観測'
+            observations += f'<li>{esc(aid)} · {esc(observed["type"])} · {label}<p class="meta">{esc(observed["at"])}</p></li>'
+        parts.append(disclosure('runtime-observations', '実行環境からの観測', observations + '</ul>'))
+    history = '<ol>' + ''.join(f'<li><p>{esc(e["reason"])}</p><p class="meta">{esc(e["at"])} · 更新番号 {e["revision"]}</p></li>' for e in reversed(state['history'])) + '</ol>'
+    parts.append(disclosure('history', f'変更・進捗履歴 {len(state["history"])}件', history))
+    parts.append('</footer>')
     return ''.join(parts)
 
 

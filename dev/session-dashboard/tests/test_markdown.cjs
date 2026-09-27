@@ -81,3 +81,22 @@ for (const clipboard of [undefined, {writeText: async () => { throw new Error('d
     assert.equal(app.controls['copy-markdown'].disabled, false);
   });
 }
+
+ test('collapsed record details and overview remain in Markdown', () => {
+  const {context} = setup();
+  const output = context.dashboardMarkdown(element('main', [
+    element('nav', [element('a', [element('span', ['Failed']), element('strong', ['2'])])]),
+    element('details', [element('summary', ['履歴']), element('p', ['過去の結果'])]),
+  ]));
+  assert.ok(output.includes('- Failed: 2'));
+  assert.ok(output.includes('### 履歴'));
+  assert.ok(output.includes('過去の結果'));
+});
+
+test('TODO row separates its title and owner in copied text', () => {
+  const {context} = setup();
+  const output = context.dashboardMarkdown(element('ul', [element('li', [
+    element('div', [element('span', ['作業中']), ' ', element('strong', ['実装する']), ' ', element('span', ['担当 main'])]),
+  ], {todoStatus: 'in_progress'})]));
+  assert.equal(output, '- [ ] 作業中 実装する 担当 main\n');
+});
