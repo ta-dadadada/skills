@@ -1,0 +1,10 @@
+name: session-dashboard
+description: 'Maintain a browser dashboard and durable work record for one session:
+  goal, phase or slice TODOs, progress, human decisions and reviews, subagent reports,
+  and reasons for plan changes. Use only when the user explicitly requests a session
+  dashboard, including updates or resumption of an activated dashboard. Assign a recording
+  subagent and update at milestones. Replies remain in chat. Not for autonomous planning,
+  browser approvals, or cross-session aggregation.'
+license: MIT
+type: skill
+version: '0.1.0'
