@@ -356,7 +356,7 @@ def body(state):
     for p in s["phases"]:
         parts.append(f'<article><h3>{esc(p["title"])}</h3><ul class="todos">')
         for t in p["todos"]:
-            parts.append(f'<li>{badge(t["status"])} <strong>{esc(t["title"])}</strong>'
+            parts.append(f'<li data-todo-status="{esc(t["status"])}">{badge(t["status"])} <strong>{esc(t["title"])}</strong>'
                          f'<p class="meta">{esc(t["id"])} · 担当 {esc(t["owner"])}</p><p>{esc(t["result"])}</p></li>')
         parts.append('</ul></article>')
     if not s["phases"]:

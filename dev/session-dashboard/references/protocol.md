@@ -131,3 +131,12 @@ start timestamp so activating the dashboard later does not misrepresent session
 start. CWD means the session workspace, not the recorder's command directory.
 No history/log scraping or guessed timestamp is required. Preserve the context
 in later reports and update CWD when the session actually changes directories.
+
+## Copy as Markdown
+
+The top copy button serializes the displayed document at click time, including
+TODO checkboxes and all visible metadata. Success is announced. When clipboard
+access is unavailable, a readonly textarea exposes the captured Markdown for
+manual copy. It remains unchanged during later dashboard refreshes; press the
+copy button again to capture a newer revision. Saved HTML includes the same export
+action and does not need a server for copying. Browser clipboard policy still applies.

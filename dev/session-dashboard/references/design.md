@@ -31,7 +31,8 @@ reported information. There is no inferred percentage or automatic completion.
 Use a light neutral background, dark ink, restrained teal emphasis, and amber for
 requests. Status always has words. A wide layout pairs the plan with agent reports;
 below 600px these stack in reading order. Long text wraps at 360px and 200% zoom.
-No inputs, dialogs, tabs, sorting, or custom keyboard controls are needed. Native
+No editing inputs, dialogs, tabs, sorting, or custom keyboard controls are needed.
+The Markdown export action and readonly fallback are described below. Native
 heading/list semantics and ordinary browser scrolling provide access. Refresh
 preserves scroll and focus; a persistent status region announces connection errors
 and recovery without announcing the entire document. A failed refresh retains the
@@ -93,3 +94,17 @@ Timestamp offsets remain visible; long directory names wrap without overflow.
 Old records must remain readable. Optional context comes from the main agent's
 host observations; dashboard initialization must not masquerade as session start.
 Design review: no new actions; verify parsing, unknowns, escaping and narrow layout.
+
+## Markdown copy action
+
+An explicit user request adds one local export action above the document. Copy the
+visible main document at click time, including the current elapsed display, metadata,
+plan/TODO checkboxes, requests, agents and history. No server fetch or mutation is
+needed, so saved HTML can use the same code. Escape literal Markdown/HTML content.
+Announce success; on clipboard denial/unavailability, reveal a labeled readonly
+textarea, focus/select its snapshot, and offer Close returning focus to the button.
+Keep controls outside the refreshed main region so refresh preserves focus and
+the manual-copy snapshot. Use native buttons for keyboard operation.
+Design review: read-only work semantics remain unchanged; no browser approval or
+chat submission added. Verify serialization, success, failure, latest content and
+manual-copy focus behavior.

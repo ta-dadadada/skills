@@ -107,3 +107,25 @@ The real host session start was not available from the supplied context, so it
 was not inferred from dashboard activation or the first implementation command.
 A fresh independent full-diff review covered all 18 paths and found no material
 actionable issue or scope escalation, including optional context compatibility.
+
+## Markdown copy extension
+
+The native copy button exports the currently displayed main document, including
+TODO checkboxes and metadata. Controls and the readonly fallback remain outside
+the refreshed region. The same script is embedded in saved HTML.
+
+18 Python regression tests and four dependency-free Node tests pass. Run the
+latter with `node --test dev/session-dashboard/tests/test_markdown.cjs` (Node 18+).
+They check literal Markdown punctuation/entities, TODO states, metadata, latest
+content, clipboard success, missing/denied clipboard, snapshot retention, selection
+and focus restoration using DOM substitutes. The package validator and diff check
+pass. Browser pointer and Enter activation both displayed the success message.
+The browser clipboard inspection returned no text, so exact clipboard bytes were
+not independently verified there. Denial/unavailable paths were tested with mocks;
+direct saved-file browser execution remains subject to the earlier limitation.
+
+Independent review identified incomplete escaping of literal Markdown punctuation
+and entities. Escaping now covers CommonMark ASCII punctuation, with regression
+coverage for entities, setext-like lines, links, HTML and backslashes.
+The reviewer rechecked the fix and reran all four Node tests; no further material
+finding remained in the final delta.
