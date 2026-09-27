@@ -97,3 +97,9 @@ jobs:
         run: |
           python3 -m unittest discover -s dev/local-intake/tests -v
           python3 dev/local-intake/scripts/serve_form.py --help
+
+      - name: Test session-dashboard
+        if: needs.changes.outputs.python == 'true'
+        run: |
+          python3 -m unittest discover -s dev/session-dashboard/tests -v
+          python3 dev/session-dashboard/scripts/dashboard.py --help

@@ -1,0 +1,13 @@
+{
+  "goal": "目的・作業計画・進捗をブラウザで確認できるようにする",
+  "completion_conditions": ["更新を確認できる", "終了後も作業記録を読める"],
+  "current_work": "表示と記録の仕組みを検証しています",
+  "status": "active",
+  "summary": "",
+  "phases": [{"id": "design", "title": "設計", "todos": [
+    {"id": "contract", "title": "表示内容を整理する", "status": "done", "owner": "main", "result": "目的・計画・判断依頼・担当状況を表示する"},
+    {"id": "runtime", "title": "更新と保存を検証する", "status": "in_progress", "owner": "worker", "result": ""}
+  ]}],
+  "requests": [{"id": "review", "kind": "review", "title": "表示内容のレビュー", "detail": "必要な情報が揃っているか、元のチャットで確認してください。", "status": "open", "blocks": [], "resolution": ""}],
+  "agents": [{"id": "worker", "assignment": "更新と保存を検証する", "status": "working", "latest_report": "自動更新を確認中", "result": "", "review": "pending", "reported_at": "2026-09-27T12:00:00Z"}]
+}

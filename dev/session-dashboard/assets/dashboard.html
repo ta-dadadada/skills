@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>セッションの作業記録</title>
+<style>
+:root { color-scheme:light; --ink:#20242b; --muted:#616873; --line:#e1e4e8; --accent:#2459a9; --paper:#fafbfc; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font:14px/1.5 system-ui,sans-serif; overflow-wrap:anywhere; }
+main,body>aside,.copy-tools { max-width:1440px; margin:auto; padding:12px 28px; }
+body>aside { font-size:12px; color:var(--muted); padding-bottom:0; }
+.copy-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:8px; padding-bottom:0; }
+button { font:inherit; color:var(--ink); background:transparent; border:1px solid #bbc1cb; border-radius:5px; padding:5px 10px; cursor:pointer; }
+button:hover { background:#edf0f4; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+#copy-status { font-size:12px; color:var(--muted); }
+#copy-fallback { width:100%; }
+textarea { display:block; width:100%; min-height:180px; margin:6px 0; font:12px/1.5 monospace; }
+header { padding:12px 0 16px; }
+.session-line,.row-heading,.todo-line { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.session-line { gap:16px; }
+.eyebrow { font-size:11px; letter-spacing:.1em; color:var(--muted); }
+h1 { font-size:clamp(20px,2vw,27px); line-height:1.3; font-weight:650; margin:8px 0; }
+h2 { font-size:14px; margin:0 0 12px; font-weight:650; }
+h2>span { font-size:12px; font-weight:400; color:var(--muted); margin-left:8px; }
+h3 { font-size:14px; margin:0; font-weight:600; }
+p { margin:4px 0; white-space:pre-wrap; }
+p:empty,ul:empty { display:none; }
+.meta,.owner { font-size:12px; color:var(--muted); }
+.current { font-size:15px; }
+.current>.meta { margin-right:8px; }
+.badge { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:var(--muted); white-space:nowrap; }
+.badge::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.status-in_progress,.status-working,.status-active { color:#2459a9; }
+.status-open,.status-blocked,.status-waiting,.status-changes_requested,.status-pending { color:#825714; }
+.status-failed,.status-interrupted { color:#b33131; }
+.status-done,.status-accepted,.status-completed { color:#39735c; }
+.overview { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.stat { color:var(--muted); text-decoration:none; padding:12px 16px; border-left:1px solid var(--line); }
+.stat:first-child { padding-left:0; border-left:0; }
+.stat>span { display:block; font-size:12px; }
+.stat strong { display:block; font-size:26px; line-height:1.3; font-weight:600; font-variant-numeric:tabular-nums; }
+.stat.attention { color:#825714; }.stat.running { color:#2459a9; }.stat.failed { color:#b33131; }
+.stat:hover { background:#f0f2f5; }
+.legend { font-size:11px; margin:6px 0 0; }
+section { padding:20px 0; min-width:0; scroll-margin-top:12px; }
+#attention { border-bottom:1px solid var(--line); }
+.attention-row { border-left:2px solid #b68a38; padding:8px 12px; margin:6px 0; background:#f8f5ed; }
+.attention-row:has(.status-failed) { border-color:#b33131; background:#fbefef; }
+.summary-note { padding-top:10px; }
+.columns { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(0,1fr); gap:36px; }
+.phase+.phase,.agent-row+.agent-row { border-top:1px solid var(--line); padding-top:14px; margin-top:14px; }
+.row-heading>.meta { margin-left:auto; }
+progress { width:100%; height:3px; display:block; margin:10px 0; border:0; background:#e1e4e8; accent-color:#39735c; }
+progress::-webkit-progress-bar { background:#e1e4e8; } progress::-webkit-progress-value { background:#39735c; }
+.todos { list-style:none; padding:0; margin:0; }
+.todos>li { padding:8px 0; border-bottom:1px solid #eceef1; }
+.todo-line>strong { font-weight:500; flex:1; min-width:120px; }
+.owner { margin-left:auto; }
+.agent-report { color:var(--muted); }
+.empty { color:var(--muted); font-size:13px; }
+footer { border-top:1px solid var(--line); padding:8px 0 24px; }
+details { border-bottom:1px solid var(--line); padding:8px 0; }
+summary { cursor:pointer; color:var(--muted); font-size:12px; padding:3px 0; }
+details[open]>summary { margin-bottom:10px; color:var(--ink); }
+.session-info>div { display:flex; gap:16px; margin:4px 0; }
+.session-info dt { color:var(--muted); flex:0 0 120px; }
+.session-info dd { margin:0; min-width:0; }
+.widgets { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.widgets dt { color:var(--muted); font-size:12px; }.widgets dd { margin:0; font-size:18px; }
+ol,ul { padding-left:20px; }
+@media(max-width:760px) { .columns { display:block; } .overview { grid-template-columns:repeat(3,minmax(0,1fr)); } .stat { padding:10px; border:0; } .stat:first-child { padding-left:10px; } main,body>aside,.copy-tools { padding-left:16px; padding-right:16px; } #agents { border-top:1px solid var(--line); } }
+@media(max-width:400px) { .overview { grid-template-columns:repeat(2,minmax(0,1fr)); } .widgets { grid-template-columns:1fr; gap:12px; } .session-info>div { display:block; } }
+@media print { body { background:white; } body>aside,.copy-tools { display:none; } .columns { display:block; } details::details-content { display:block; } details>* { display:block; } }
+</style>
+</head>
+<body>
+<aside id="connection" role="status">保存された作業記録です。内容は最終保存時点のものです。</aside>
+<div class="copy-tools">
+<button type="button" id="copy-markdown">Markdownをコピー</button>
+<span id="copy-status" role="status"></span>
+<div id="copy-fallback" hidden>
+<label for="markdown-text">手動コピー用Markdown（ボタンを押した時点の内容）</label>
+<textarea id="markdown-text" readonly spellcheck="false"></textarea>
+<button type="button" id="close-copy">閉じる</button>
+</div>
+</div>
+<main><!--CONTENT--></main>
+<script>
+function dashboardMarkdown(root) {
+  const escape = text => text.replace(/([!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])/g, '\\$1');
+  function render(node) {
+    if (node.nodeType === Node.TEXT_NODE) return escape(node.textContent);
+    if (node.nodeType !== Node.ELEMENT_NODE) return '';
+    const tag = node.tagName;
+    const content = () => Array.from(node.childNodes, render).join('');
+    if (/^H[1-6]$/.test(tag)) return '\n\n' + '#'.repeat(Number(tag[1])) + ' ' + content().trim() + '\n\n';
+    if (tag === 'BR') return '\n';
+    if (tag === 'DL') {
+      return '\n\n' + Array.from(node.children, row => {
+        const term = row.querySelector('dt');
+        const value = row.querySelector('dd');
+        if (!term || !value) return render(row);
+        const notes = Array.from(row.querySelectorAll('p'), p => escape(p.textContent)).join(' / ');
+        return '- **' + escape(term.textContent) + '**: ' + escape(value.textContent)
+          + (notes ? ' (' + notes + ')' : '');
+      }).join('\n') + '\n\n';
+    }
+    if (tag === 'UL' || tag === 'OL') {
+      return '\n\n' + Array.from(node.children, (item, index) => {
+        const text = Array.from(item.childNodes, render).join('').trim();
+        const state = item.dataset.todoStatus;
+        const prefix = state ? (state === 'done' ? '- [x] ' : '- [ ] ') : (tag === 'OL' ? (index + 1) + '. ' : '- ');
+        return prefix + text.replace(/\n/g, '\n' + ' '.repeat(prefix.startsWith('-') ? 2 : prefix.length));
+      }).join('\n') + '\n\n';
+    }
+    if (tag === 'SUMMARY') return '\n\n### ' + content().trim() + '\n\n';
+    if (tag === 'PROGRESS') return '';
+    if (tag === 'NAV') return '\n\n' + Array.from(node.children, item => '- ' + escape(item.querySelector('span').textContent) + ': ' + escape(item.querySelector('strong').textContent)).join('\n') + '\n\n';
+    if (tag === 'P') return '\n\n' + content().trim() + '\n\n';
+    if (['SECTION','ARTICLE','HEADER','MAIN','DETAILS','FOOTER'].includes(tag)) return '\n\n' + content() + '\n\n';
+    return content();
+  }
+  return render(root).trim().replace(/\n{3,}/g, '\n\n') + '\n';
+}
+const copyButton = document.getElementById('copy-markdown');
+const copyStatus = document.getElementById('copy-status');
+const fallback = document.getElementById('copy-fallback');
+const markdownText = document.getElementById('markdown-text');
+copyButton.addEventListener('click', async () => {
+  const markdown = dashboardMarkdown(document.querySelector('main').cloneNode(true));
+  copyButton.disabled = true;
+  copyStatus.textContent = 'コピー中…';
+  fallback.hidden = true;
+  try {
+    await navigator.clipboard.writeText(markdown);
+    copyStatus.textContent = 'Markdownをコピーしました。';
+  } catch (_) {
+    markdownText.value = markdown;
+    fallback.hidden = false;
+    copyStatus.textContent = '自動コピーできませんでした。下の欄を選択してコピーしてください。';
+    markdownText.focus();
+    markdownText.select();
+  } finally { copyButton.disabled = false; }
+});
+document.getElementById('close-copy').addEventListener('click', () => {
+  fallback.hidden = true;
+  copyButton.focus();
+});
+
+if (location.protocol === 'http:' || location.protocol === 'https:') {
+  const status = document.getElementById('connection');
+  let version = '';
+  async function refresh() {
+    try {
+      const response = await fetch('/view.json', {cache:'no-store', signal:AbortSignal.timeout(5000)});
+      if (!response.ok) throw new Error('refresh failed');
+      const next = await response.json();
+      if (next.version !== version) {
+        const main = document.querySelector('main');
+        const expanded = new Map(Array.from(main.querySelectorAll('details[id]'), el => [el.id, el.open]));
+        const active = document.activeElement;
+        const focusId = active?.closest('details[id]')?.id;
+        const focusHref = main.contains(active) ? active?.getAttribute('href') : null;
+        const scroll = window.scrollY;
+        main.innerHTML = next.html;
+        for (const el of main.querySelectorAll('details[id]')) {
+          if (expanded.has(el.id)) el.open = expanded.get(el.id);
+        }
+        if (focusId) document.getElementById(focusId)?.querySelector('summary')?.focus({preventScroll:true});
+        else if (focusHref && main.contains(document.activeElement) === false) {
+          Array.from(main.querySelectorAll('a[href]')).find(el => el.getAttribute('href') === focusHref)?.focus({preventScroll:true});
+        }
+        window.scrollTo({top:scroll, behavior:'instant'});
+        version = next.version;
+      }
+      document.getElementById('elapsed-time').textContent = next.elapsed;
+      status.textContent = '自動更新中 · 表示は最後に報告された状態です。更新がないことは稼働の保証ではありません。';
+    } catch (_) {
+      status.textContent = '接続できません。最後の表示を保持しています。自動で再接続します。';
+    } finally { setTimeout(refresh, 3000); }
+  }
+  refresh();
+}
+</script>
+</body>
+</html>

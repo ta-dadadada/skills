@@ -81,6 +81,9 @@ python3 meta/shiranui-hanten/scripts/validate_skill.py dev/* meta/*
 # local-intakeのランタイムテスト
 python3 -m unittest discover -s dev/local-intake/tests -v
 
+# session-dashboardのランタイムテスト
+python3 -m unittest discover -s dev/session-dashboard/tests -v
+
 # 空白エラーを確認
 git diff --check
 ```
@@ -96,7 +99,7 @@ python3 meta/shiranui-hanten/scripts/validate_skill.py dev/pr-handoff
 文書のリンクとコマンドは、実行・参照するディレクトリを基準に確認します。
 
 [CI](../.github/workflows/ci.yml)では、Python 3.11・3.12・3.13・3.14で
-全スキルのvalidatorを常に実行します。`local-intake` のテストとCLIのヘルプ確認は、
+全スキルのvalidatorを常に実行します。`local-intake` と `session-dashboard` のテストとCLIのヘルプ確認は、
 次のPython関連ファイルに差分がある場合のみ実行します。
 
 - Pythonソース: `*.py`・`*.pyi`。
@@ -110,6 +113,11 @@ Markdownなどだけの変更ではランタイムテストをスキップしま
 指示の静的レビューと実行比較は別の証拠として扱い、実測していない効果は保証しません。
 
 ## コミット・PR・公開前の確認
+
+ダッシュボードのMarkdownコピーを変更した場合は、Node.js 18以降で
+`node --test dev/session-dashboard/tests/test_markdown.cjs` も実行します。
+このテストはDOMの代替オブジェクトで出力と失敗経路を検証するため、
+実ブラウザでのコピー操作も確認します。現在のPython CIとは別の手動チェックです。
 
 - コミット件名は `feat:`・`fix:`・`docs:`・`refactor:`・`chore:` などの規約に従い、目的ごとにまとめます。
 - PRでは変更の目的、影響する配置先、実施した検証を説明し、発動条件やエージェントの挙動が変わる場合は変更前後の例を添えます。
