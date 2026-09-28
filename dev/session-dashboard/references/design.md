@@ -2,7 +2,8 @@
 
 This ops skill maintains one session's read-only dashboard and durable record.
 The main agent owns goals, plans, completion and acceptance judgments. The recorder
-applies submitted snapshots unchanged; deterministic local code validates versions,
+applies submitted snapshots unchanged and verifies reflection without main-agent
+rechecks; deterministic local code validates versions,
 serializes writes and renders HTML. Hooks record lifecycle observations only.
 Invocation is explicit; chat remains the response/approval surface.
 

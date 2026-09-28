@@ -60,10 +60,21 @@ when the reason is recorded. A change to the plan's structure, titles, ownership
 purpose, conditions or cancellations requires `reason`; ordinary progress may omit
 its text but still supplies the field. Keep timestamps as ISO 8601 text.
 
+## Receipt ownership
+
+The recorder verifies apply, committed revision and exports. The main agent keeps
+its last authored snapshot and confirmed cursor; it does not fetch state to check
+normal reflection. A required host completion reply is `APPLIED <id> <revision>`;
+no extra success message or state dump. Continue task work while waiting, but keep
+semantic submissions sequential until that cursor arrives. Final receipts include
+the export path and any unverified limits. No receipt means pending, not success.
+
 ## Failure and recovery
 
-- A stale report remains queued. The main agent reads `status`, withdraws the stale
-  report with an explanation, and submits a reconciled snapshot using a new ID.
+- A stale report remains queued. The recorder inspects `status` and returns only
+  the conflicting fields and revision. The main agent reconciles the meaning,
+  authorizes withdrawal with a reason, and submits a new ID. Read the full snapshot
+  only when the conflict or lost authoring context requires it.
 - `withdraw --report ID --reason TEXT` preserves an obsolete queued report and its
   withdrawal in history. It cannot withdraw already applied reports.
 - `status` includes pending IDs, latest receive/apply times, semantic revision,

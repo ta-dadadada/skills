@@ -21,7 +21,8 @@ metadata:
 
 Keep an explicitly requested session dashboard current while the main agent
 continues its work. The main agent owns purpose, plans and completion judgments;
-a recording subagent applies reports and maintains the display. The browser is
+a recording subagent applies reports, verifies persistence and exports, and maintains
+the display. The main agent does not recheck routine updates. The browser is
 read-only. Completion means that current reports are reflected, the durable record
 is readable, and remaining work or verification limits are explicit. Activating
 this skill does not replace the underlying task or its completion criteria.
@@ -50,8 +51,11 @@ consumer's working directory is the skill directory.
 Read [the protocol](references/protocol.md), then the applicable environment guide:
 [Codex](references/codex.md) or [Claude Code](references/claude-code.md). Follow the
 host's actual available tools rather than assuming tool names from another host.
-For an existing directory, inspect `status`, recover pending reports and restart
-only the missing display process; never initialize over existing data.
+For an existing directory, have the recorder inspect `status` and recover assigned
+pending reports. Return only the revision cursor and any decision needed; load the
+full snapshot in the main agent only if its authoring context was lost or a conflict
+requires reconciliation. Restart only the missing display process; never initialize
+over existing data. For denied operations, follow [execution permissions](references/execution-permissions.md).
 
 Include optional `session_context` with the actual host session start timestamp
 and session working directory when known. Unknown values stay null. Do not use
@@ -83,11 +87,22 @@ remains explicitly unverified while independent task work continues.
 
 The main agent submits snapshots for TODO starts/completions, plan changes,
 requests/resolutions, agent launches/reports and meaningful long-work updates.
-Read the current revision; preserve unaffected information and submit a new report
-with a unique ID. Persist the report before messaging the recorder with its ID.
-The recorder runs `apply` and returns the revision or exact failure. A pending
-receipt is not proof of reflection. Reconcile conflicts against current state;
-never force old snapshots over newer work.
+Preserve the last authored snapshot and the last confirmed revision cursor in
+working context. Use them to submit a report with a unique ID; do not read `status`,
+`state.json`, HTML, or the browser merely to verify each update. Persist the report
+before messaging the recorder with its ID, then continue independent task work.
+The recorder owns apply, persistence/export checks, and bounded recovery. Normal
+success needs no separate message or narrative: when the host requires a completion
+reply, return only `APPLIED <report-id> <revision>`. This receipt updates the cursor
+without a main-agent recheck. Surface only failures requiring a decision, permission,
+or reconciliation; do not forward state dumps or routine logs.
+
+Serialize semantic submissions: while a receipt is pending, retain later milestone
+changes locally and continue the task. Submit the next snapshot after the cursor
+arrives; do not guess a revision or poll. A pending receipt is not proof of reflection.
+On a stale revision, the recorder returns the conflicting fields and revision;
+the main agent resolves meaning and submits a new ID. Never force an old snapshot
+over newer work. A genuinely lost cursor may be recovered by the recorder.
 
 Keep phases or slices with their TODOs, owner, status and result. Include reasons
 for changed goals, completion conditions, plan structure, assignments or cancelled
@@ -116,10 +131,14 @@ unverified checks. Use interrupted/paused when work remains. Apply pending inten
 reports before stopping the recorder and this session's server. Withdraw obsolete
 pending reports explicitly through the main agent, preserving the reason.
 
-Run `export` and verify `report.html` opens without the server. Deliver the saved
-record path and unresolved items. Do not delete the session directory. On abrupt
-interruption, the journal and last export remain; on resume inspect pending reports
-and label uncertain statuses rather than inventing activity or completion.
+The recorder runs `export` and checks the final revision, pending reports, and saved
+HTML. Reuse unchanged offline-display evidence; do not reopen the browser after each
+update. If offline opening is blocked by browser policy, record it as unverified
+without an alternate route around that policy. Return one compact final receipt
+with revision, saved path and limits. The main agent delivers that path and limits
+without rereading the record. Do not delete the session directory. On interruption,
+the journal and last export remain; the recorder inspects pending reports on resume
+and labels uncertain statuses rather than inventing activity or completion.
 
 **Done when:** the final intended revision is exported, obsolete reports are
 accounted for, the saved HTML is readable offline, and the user has its location.
@@ -134,6 +153,8 @@ accounted for, the saved HTML is readable offline, and the user has its location
 | Last message means session complete | Preserve pauses and unfinished work |
 | Save only when shutting down | Save every report and reflected state |
 | Reuse a report ID with altered content | Reconcile and submit a new ID |
+| Main agent rereads state after every receipt | Recorder owns reflection checks; retain only the cursor |
+| Retry an unchanged denied command | Classify the denial and use the supported permission flow |
 
 ## Related
 

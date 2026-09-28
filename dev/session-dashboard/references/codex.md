@@ -6,7 +6,9 @@ Read the available subagent tool contracts at runtime. Create one recorder with
 [the assignment](recorder.md) and concrete script/directory/report paths. Retain its
 ID. For a running recorder, use the host's message mechanism; for an idle/completed
 recorder, use its continuation/follow-up mechanism. A message-only tool may not
-start an idle turn. Wait for a receipt before claiming the report was reflected.
+start an idle turn. Continue task work after dispatch. Use the recorder's compact
+receipt as the revision cursor; do not poll or reread state/browser to confirm it.
+Only claim reflection after that receipt, and surface decision-requiring failures.
 Do not substitute a new user-visible chat for a subagent.
 
 If the host provides no continuation, explicitly replace the recorder from the
@@ -14,6 +16,10 @@ saved state. If subagents are disabled, state that prerequisite. Run the loopbac
 server using the host's long-running command facility; open the printed URL using
 its browser facility. On resume confirm both server and recorder rather than
 assuming either survived the previous turn or application restart.
+
+For sandbox or permission failures, follow [execution permissions](execution-permissions.md).
+Use the host tool's exposed per-command escalation when permitted; do not assume
+Claude-specific flags exist in Codex.
 
 ## Optional automatic observations
 

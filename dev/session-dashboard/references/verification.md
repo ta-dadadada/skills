@@ -151,3 +151,19 @@ actual 200% zoom, direct saved-file and print checks retain their prior limitati
 Independent review found a missing text separator between TODO title and owner in
 Markdown export. The fix adds an explicit owner label and a regression test. The
 schema, storage, authority model and lifecycle inference rules remain unchanged.
+
+## 2026-09-28: recorder-owned verification and permission recovery
+
+Documentation change only: the recorder owns reflection/export checks; normal
+receipts carry only report ID and revision. The main retains authoring state and
+cursor, serializes submissions and intervenes only for semantic conflicts or
+permissions it must handle. Final export confirmation remains recorder-owned.
+Permission guidance distinguishes writable paths, supported host escalation,
+non-permission failures, and an unchanged denial. No sandbox settings or runtime
+script behavior were changed.
+
+Static review covers normal receipt, stale revision, export-after-commit failure,
+lost cursor, denied local bind and unsupported escalation. Claude guidance was
+checked against official sandbox documentation; no Claude session was executed.
+Package/link validation is required before handoff. The user's specific Claude
+error was not available, so no claim is made that its cause was reproduced.

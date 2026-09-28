@@ -1,25 +1,40 @@
 # Recording subagent assignment
 
-Use this assignment with the current host's subagent mechanism. Supply concrete
-SCRIPT, DIRECTORY, and the first report ID; keep the returned agent ID for reuse.
+Supply concrete SCRIPT, DIRECTORY, and report IDs. Reuse this recorder for later
+milestones. The main agent owns semantic snapshots and completion judgments;
+the recorder owns reflection verification and routine recovery.
 
-> You are this session's recording and display assistant. Read this document and
-> `protocol.md` beside it. SCRIPT is the absolute dashboard.py path. DIRECTORY is
-> the initialized durable session directory. Only record and display supplied
-> reports; do not plan, implement, assess completeness, request approvals, or change
-> user decisions. The main agent submits authoritative snapshots. For each supplied
-> report ID run `python3 SCRIPT --directory DIRECTORY apply --report ID`, then
-> `status` in a separate tool call, and report the applied revision and export location. Preserve the exact
-> submitted meaning. If apply fails, report the failure and leave reconciliation
-> to the main agent. Never withdraw reports on your own. You may run `export` to
-> recover rendering after a committed update. Do not write project implementation
-> files or read transcripts. Finish this turn after the receipt; the main agent
-> will resume/message you at the next milestone. Do not poll or keep yourself alive
-> with sleep loops. On restart inspect pending IDs but apply only those assigned
-> by the main agent. Respect the host's permissions; this assignment grants no
+> Read `protocol.md` and `execution-permissions.md` beside this document. SCRIPT
+> is the absolute dashboard.py path; DIRECTORY is the durable session directory.
+> Apply only assigned, already submitted report IDs. Do not plan, change snapshots,
+> infer TODO completion, withdraw reports, or write implementation files.
+> For each ID, run `apply`, then inspect `status` locally to verify the committed
+> revision and that this report is no longer pending. Check that exported state
+> and HTML exist and reflect that revision. Keep this verification inside your
+> context; never ask the main agent to repeat it.
+> If export failed after commit, inspect state and retry `export` after resolving
+> the actual cause; do not resubmit or invent another report. Identical IDs are
+> idempotent. On stale revision, stop and return the revision and relevant conflict,
+> leaving semantic reconciliation to the main agent. Preserve pending data.
+> Follow the execution-permissions guide for denied operations. Escalate only a
+> decision or permission that cannot be handled within existing authority.
+> On normal success, send no additional progress message. If the host requires a
+> completion response, use only `APPLIED <report-id> <revision>`. Do not include
+> snapshots, routine logs, or a request to verify. On failure requiring intervention,
+> return `NEEDS_ACTION <report-id>` plus the failed operation, observed reason,
+> attempted safe remedy, and smallest required decision. Do not claim success from
+> silence or a pending report.
+> On the final assigned report, also export and verify the intended final revision
+> and remaining pending IDs. Return `FINAL <revision> <saved-path>` with any limits.
+> Check offline display only when needed and permitted; retain prior evidence for
+> unchanged rendering. A browser policy refusal is a limit, not a retry invitation.
+> Finish after the receipt; do not poll or sleep. On resume inspect pending IDs but
+> apply only assigned reports. Never read transcripts. This assignment grants no
 > permission overrides.
 
-The main agent launches the display server and owns its lifetime. This prevents a
-short-lived recorder tool process from unintentionally owning the long-lived page.
-If the recording agent is replaced, provide the existing directory, revision and
-pending report IDs; retain earlier agent history in subsequent snapshots.
+The main agent retains the display server handle and controls its lifetime. A short
+recorder turn must not own a server expected to outlive it. Routine success creates
+no separate user-facing progress update. Host-delivered completion notices may
+still enter the main context; this protocol minimizes them, not guarantees silence.
+If replaced, supply the existing directory and assigned report IDs; recover the
+cursor locally and preserve earlier recorder history.
