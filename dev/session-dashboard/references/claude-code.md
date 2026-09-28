@@ -9,13 +9,33 @@ Current documentation describes `SendMessage` resuming completed subagents;
 check the actual available tool contract. Explore/Plan one-shot agents are not
 suitable recorders. Agent Teams is not required.
 
-A resumed recorder should apply only assigned reports and return a receipt.
+A resumed recorder applies only assigned reports and owns reflection verification.
+Use a minimal completion receipt; the main agent does not reread status or the page.
+Surface only failures needing a decision. See [execution permissions](execution-permissions.md).
 Run each documented command separately: compound shell commands can exceed
 a narrowly granted command permission even when each dashboard operation is allowed. A
 user-cancelled recorder must not be secretly resumed; explicitly create an allowed
 replacement if the user still wants the dashboard, or report the stopped state.
 Use a supervised background shell process for `serve`; preserve its handle and
 open the printed loopback URL. Do not assume subprocesses survive session exit.
+
+## Sandbox refusal
+
+Distinguish Bash permission denial from filesystem/network sandbox refusal using
+the returned error. Use the sandbox-provided temporary directory for disposable
+files, and the project session directory for durable files. Read-only skill scripts
+need not write beside their canonical source.
+
+If a necessary operation cannot run sandboxed, use the installed Bash tool's
+`dangerouslyDisableSandbox` retry only when exposed and allowed; it goes through
+the host permission flow. If `allowUnsandboxedCommands` is false, do not toggle it
+or change exclusions to defeat the restriction. Return the blocked operation and
+continue unaffected work. Background permission handling depends on the host; if
+it cannot prompt, forward one concrete request to the foreground owner rather than
+relaunching the same failing recorder.
+
+Official sandbox guidance checked 2026-09-28:
+[Sandboxing](https://code.claude.com/docs/en/sandboxing).
 
 ## Optional automatic observations
 
