@@ -16,8 +16,13 @@ Run each documented command separately: compound shell commands can exceed
 a narrowly granted command permission even when each dashboard operation is allowed. A
 user-cancelled recorder must not be secretly resumed; explicitly create an allowed
 replacement if the user still wants the dashboard, or report the stopped state.
-Use a supervised background shell process for `serve`; preserve its handle and
-open the printed loopback URL. Do not assume subprocesses survive session exit.
+The main Claude agent launches `serve` with its Bash tool using the supported
+background execution option, just as for a project development server. It retains
+the process handle and opens the printed loopback URL. A background Bash process
+is not a background subagent: never delegate this launch to the recorder. The main
+agent also owns restart, shutdown and any browser checks. Use existing permissions
+first; do not require a settings edit merely because the server is Python or
+long-running. Do not assume subprocesses survive session exit.
 
 ## Sandbox refusal
 

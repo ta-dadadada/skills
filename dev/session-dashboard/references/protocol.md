@@ -15,7 +15,9 @@ python3 scripts/dashboard.py --directory /path/to/session export
 
 The example snapshot contains fictional facts. Replace them before actual use.
 `serve` prints its loopback URL, chooses an available port, and stays in the foreground;
-use the host's supervised background execution and preserve the process handle.
+the main agent uses the host's background/long-running shell execution and preserves
+the process handle. The recorder applies reports and verifies exports on disk; it
+does not run `serve` or open the browser.
 No shell daemonization or separate model API service is required.
 
 ## Report envelope

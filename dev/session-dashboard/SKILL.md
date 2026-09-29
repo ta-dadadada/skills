@@ -21,9 +21,10 @@ metadata:
 
 Keep an explicitly requested session dashboard current while the main agent
 continues its work. The main agent owns purpose, plans and completion judgments;
-a recording subagent applies reports, verifies persistence and exports, and maintains
-the display. The main agent does not recheck routine updates. The browser is
-read-only. Completion means that current reports are reflected, the durable record
+a recording subagent applies reports and verifies persistence and exports. The
+main agent owns server startup, restart, shutdown and browser opening; these are
+not recorder tasks. The main agent does not recheck routine record updates.
+The browser is read-only. Completion means that current reports are reflected, the durable record
 is readable, and remaining work or verification limits are explicit. Activating
 this skill does not replace the underlying task or its completion criteria.
 
@@ -63,10 +64,14 @@ the recorder/script directory or dashboard launch time as substitutes. Preserve
 this context in subsequent snapshots, updating CWD when the session moves.
 
 Prepare an initial snapshot using [the example](assets/example.json) as a schema
-example, replacing every illustrative value with actual session facts. Run `init`,
-start `serve` under the host's supported process supervisor and open its printed
-loopback URL. Keep the handle so only this server can be stopped later. A server
-that cannot stay alive is a limitation to report, not a reason to claim live mode.
+example, replacing every illustrative value with actual session facts. The main
+agent runs `init`, then launches `serve` directly through the host shell's supported
+background/long-running execution, as it would a project development server. It
+opens the printed loopback URL and retains the process handle for restart/shutdown.
+Do not delegate server launch, browser opening or hosting setup to the recorder.
+Use existing execution permissions first; request a concrete permission only after
+an observed denial or a known restriction, not a speculative settings change.
+A server that cannot stay alive is a limitation to report, not a reason to claim live mode.
 
 ### 2. Assign the recorder
 
@@ -132,8 +137,9 @@ reports before stopping the recorder and this session's server. Withdraw obsolet
 pending reports explicitly through the main agent, preserving the reason.
 
 The recorder runs `export` and checks the final revision, pending reports, and saved
-HTML. Reuse unchanged offline-display evidence; do not reopen the browser after each
-update. If offline opening is blocked by browser policy, record it as unverified
+HTML on disk. If an offline browser check is needed, the main agent owns that
+check. Reuse unchanged offline-display evidence; do not reopen after each update.
+If offline opening is blocked by browser policy, record it as unverified
 without an alternate route around that policy. Return one compact final receipt
 with revision, saved path and limits. The main agent delivers that path and limits
 without rereading the record. Do not delete the session directory. On interruption,
