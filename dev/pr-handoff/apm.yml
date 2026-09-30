@@ -1,7 +1,7 @@
 name: pr-handoff
 description: Propose a PR description and logical commit plan for an existing diff
-  at implementation handoff, before opening a PR, or when preparing changes and session
-  decisions for review. Does not stage, commit, push, create a PR, or rewrite history.
+  at implementation handoff, before opening a PR, or when preparing changes and their
+  rationale for review. Does not stage, commit, push, create a PR, or rewrite history.
 license: MIT
 type: skill
 version: '0.1.0'
