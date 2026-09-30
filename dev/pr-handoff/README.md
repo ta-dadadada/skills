@@ -1,6 +1,6 @@
 # pr-handoff
 
-> Propose a PR description and logical commit plan for an existing diff at implementation handoff, before opening a PR, or when preparing changes and session decisions for review. Does not stage, commit, push, create a PR, or rewrite history.
+> Propose a PR description and logical commit plan for an existing diff at implementation handoff, before opening a PR, or when preparing changes and their rationale for review. Does not stage, commit, push, create a PR, or rewrite history.
 
 ## Install
 
