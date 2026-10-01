@@ -30,5 +30,9 @@ An environment refusal is not a task defect and does not cancel unrelated work.
    limit once per unchanged incident.
 
 The recorder handles recording/export denials locally. The main agent handles its
-own server launch and user-only approvals. Escalate only what needs that owner's
+own server launch/restart/shutdown, browser operations and user-only approvals.
+A recorder must not attempt server recovery or request hosting settings changes;
+return the observed display limitation to the main agent while continuing permitted
+recording. A server permission denial does not make record application unavailable.
+Escalate only what needs that owner's
 judgment; successful routine recovery produces only the normal compact receipt.

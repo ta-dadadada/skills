@@ -12,9 +12,10 @@ Only claim reflection after that receipt, and surface decision-requiring failure
 Do not substitute a new user-visible chat for a subagent.
 
 If the host provides no continuation, explicitly replace the recorder from the
-saved state. If subagents are disabled, state that prerequisite. Run the loopback
-server using the host's long-running command facility; open the printed URL using
-its browser facility. On resume confirm both server and recorder rather than
+saved state. If subagents are disabled, state that prerequisite. The main agent
+runs the loopback server using the host's long-running command facility and opens
+the printed URL using its browser facility. It owns restart/shutdown and browser
+checks; none of these operations are delegated to the recording subagent. On resume confirm both server and recorder rather than
 assuming either survived the previous turn or application restart.
 
 For sandbox or permission failures, follow [execution permissions](execution-permissions.md).

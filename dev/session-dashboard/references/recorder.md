@@ -26,8 +26,9 @@ the recorder owns reflection verification and routine recovery.
 > silence or a pending report.
 > On the final assigned report, also export and verify the intended final revision
 > and remaining pending IDs. Return `FINAL <revision> <saved-path>` with any limits.
-> Check offline display only when needed and permitted; retain prior evidence for
-> unchanged rendering. A browser policy refusal is a limit, not a retry invitation.
+> Verify exported files on disk only. Never launch, restart or stop `serve`, open
+> a browser, or configure hosting. If a browser check or server recovery is needed,
+> return the concrete need to the main agent; continue permitted recording work.
 > Finish after the receipt; do not poll or sleep. On resume inspect pending IDs but
 > apply only assigned reports. Never read transcripts. This assignment grants no
 > permission overrides.
