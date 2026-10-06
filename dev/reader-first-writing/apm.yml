@@ -1,0 +1,9 @@
+name: reader-first-writing
+description: Create or revise reports to reduce length and reading effort while preserving
+  necessary information and clear logical relationships. Use only when the user explicitly
+  invokes this skill. Develop the central question, abstract, and body in that order;
+  reconstruct conversations around their final judgments. Not for memorable rhetorical
+  effects, copywriting, or verbatim records.
+license: MIT
+type: skill
+version: '0.1.0'

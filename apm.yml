@@ -18,6 +18,7 @@ dependencies:
   - ta-dadadada/skills/dev/local-intake
   - ta-dadadada/skills/dev/pr-handoff
   - ta-dadadada/skills/dev/purpose-driven-software-design
+  - ta-dadadada/skills/dev/reader-first-writing
   - ta-dadadada/skills/dev/session-dashboard
   - ta-dadadada/skills/dev/session-goal
   - ta-dadadada/skills/dev/session-handover
