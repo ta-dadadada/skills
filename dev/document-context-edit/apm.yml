@@ -1,0 +1,11 @@
+name: document-context-edit
+description: Edit specifications, plans, skills, and other conversation-derived documents
+  so their intended readers can understand them without the originating chat. Use
+  only when the user explicitly requests this skill or asks to clarify session-specific
+  terms, insider references, or implicit premises in an existing document. Preserve
+  meaning, decisions, identifiers, and structure; flag unsupported interpretations.
+  Not for evaluating whether rules are necessary, redesigning documents, or automatic
+  cleanup during drafting.
+license: MIT
+type: skill
+version: '0.1.0'
