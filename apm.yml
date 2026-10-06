@@ -8,6 +8,7 @@ dependencies:
   - ta-dadadada/skills/dev/business-ui-design
   - ta-dadadada/skills/dev/characterization-testing
   - ta-dadadada/skills/dev/doc-sync
+  - ta-dadadada/skills/dev/document-context-edit
   - ta-dadadada/skills/dev/domain-modeling
   - ta-dadadada/skills/dev/frontend-ui-design
   - ta-dadadada/skills/dev/frontend-ui-implementation
