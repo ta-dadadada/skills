@@ -1,0 +1,9 @@
+name: nagakute-yomenai
+description: Rewrite an existing text after interviewing the user about its audience,
+  purpose, and central claim. Use only when the user explicitly invokes nagakute-yomenai
+  (for example, /nagakute-yomenai). Resolve missing intent before rewriting, then
+  reduce required reading while preserving essential meaning and conditions. Not for
+  automatic shortening, drafting from scratch, or verbatim reproduction.
+license: MIT
+type: skill
+version: '0.1.0'
