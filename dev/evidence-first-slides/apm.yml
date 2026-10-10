@@ -1,0 +1,10 @@
+name: evidence-first-slides
+description: Create or revise technical presentation slides, outlines, and reusable
+  slide templates with explicit evidence, claim-led headings, visible assumptions,
+  and an unambiguous reading order. Use only when the user explicitly invokes this
+  skill or asks for this evidence-first slide method. Complete the requested artifact
+  using available authoring tools; design-only requests end with a usable specification.
+  Not for advertising copy, slogan slides, or prose-only reports.
+license: MIT
+type: skill
+version: '0.1.0'
