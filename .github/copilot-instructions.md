@@ -1,7 +1,9 @@
 # Copilot instructions for this repository
 
-Write all review comments and PR summaries in Japanese. The repository
-content itself is English.
+Write all review comments and PR summaries in Japanese. Skill bodies,
+`references/`, and `knowledge/` are English; root operational documents
+(`README.md`, `CLAUDE.md`), `docs/`, and explicit `*-ja.md` localizations may
+be Japanese.
 
 ## What this repository is
 
@@ -19,7 +21,7 @@ project-installed skill with a same-name personal copy.
 ## Layout
 
 - `dev/<skill>/`, `meta/<skill>/` — one directory per skill: `SKILL.md`
-  (the skill) plus `README.md` (distribution).
+  (the skill), plus `README.md` (distribution) when the skill has one.
 - `knowledge/` — distilled English reference notes; conventions in
   `knowledge/README.md`.
 - `.local/` — gitignored scratch space; nothing under it may be committed
@@ -39,16 +41,17 @@ project-installed skill with a same-name personal copy.
 - Portability: relative links that resolve, no absolute paths, no
   tool-specific syntax (`${CLAUDE_SKILL_DIR}`, backtick command injection,
   `disable-model-invocation`), standard frontmatter fields only.
-- The `README.md` blockquote equals the frontmatter description verbatim.
+- When present, the `README.md` blockquote equals the frontmatter
+  description verbatim.
 - No secrets, tokens, or internal endpoints anywhere in a skill — skill
   contents leave the environment.
 - `python3 meta/shiranui-hanten/scripts/validate_skill.py <skill-dir>`
   must pass for every touched skill.
 - Runtime script changes must keep their focused automated tests passing. The
   CI workflow always validates every skill on Python 3.11, 3.12, 3.13, and
-  3.14. The `dev/local-intake` unittest suite runs on those versions only for
-  Python-related or CI workflow changes; see `docs/development-guide.md` for
-  the change filter.
+  3.14. The `dev/local-intake` and `dev/session-dashboard` unittest suites run
+  on those versions only for Python-related or CI workflow changes; see
+  `docs/development-guide.md` for the change filter.
 
 ## Rules to check when reviewing knowledge files
 

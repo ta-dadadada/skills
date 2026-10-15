@@ -5,7 +5,7 @@
 This repository distributes reusable Agent Skills rather than a compiled application. Each skill is a self-contained directory with a required `SKILL.md` and, when needed, a `README.md`, `references/`, or executable `scripts/` directory.
 
 - `dev/`: software-development workflow skills, such as `dev/pr-handoff/`.
-- `meta/`: skills for creating or improving other skills.
+- `meta/`: skills for creating, evaluating, or improving other skills, plus explicitly invoked working modes such as `meta/just-do-it/`.
 - `knowledge/`: distilled, reusable reference material; follow `knowledge/README.md` when adding content.
 - `.local/`: ignored scratch space. Never place files intended for review or release here.
 
@@ -44,13 +44,14 @@ There is no compiled build. Validate skill packages and test runtime utilities d
 python3 meta/shiranui-hanten/scripts/validate_skill.py dev/pr-handoff
 python3 meta/shiranui-hanten/scripts/validate_skill.py dev/* meta/*
 python3 -m unittest discover -s dev/local-intake/tests -v
+python3 -m unittest discover -s dev/session-dashboard/tests -v
 ```
 
-The validator checks frontmatter, names, description limits, relative links, portability warnings, and script executable bits. The `CI` workflow always runs the full validator on `ubuntu-slim` across Python 3.11, 3.12, 3.13, and 3.14. Runtime tests run on those versions only when Python sources, Python configuration or dependencies, or the CI workflow change; see `docs/development-guide.md` for the change filter. Use `git diff --check` before committing to catch whitespace errors.
+The validator checks frontmatter, names, description limits, relative links, portability warnings, and script executable bits. The `CI` workflow always runs the full validator on `ubuntu-slim` across Python 3.11, 3.12, 3.13, and 3.14. The `local-intake` and `session-dashboard` runtime tests run on those versions only when Python sources, Python configuration or dependencies, or the CI workflow change; see `docs/development-guide.md` for the change filter. Use `git diff --check` before committing to catch whitespace errors.
 
 ## Coding Style & Naming Conventions
 
-Write skill bodies, references, and `knowledge/` content in concise English. Root operational documents may be Japanese. Use Markdown headings, short paragraphs, fenced command examples, and relative links. Skill directory names and frontmatter names use lowercase kebab-case, for example `hypothesis-driven-debugging`. Python utilities use four-space indentation and snake_case identifiers. For any skill creation or revision, follow `meta/shiranui-hanten/SKILL.md` instead of a generic skill generator.
+Write skill bodies, references, and `knowledge/` content in concise English. Root operational documents and `docs/` may be Japanese. Use Markdown headings, short paragraphs, fenced command examples, and relative links. Skill directory names and frontmatter names use lowercase kebab-case, for example `hypothesis-driven-debugging`. Python utilities use four-space indentation and snake_case identifiers. For any skill creation or revision, follow `meta/shiranui-hanten/SKILL.md` instead of a generic skill generator.
 
 ## Testing Guidelines
 
