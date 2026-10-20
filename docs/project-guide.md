@@ -71,7 +71,7 @@ Agent Skillsを配布するプロジェクトです。開発の開始、業務�
 | [evidence-first-slides](../dev/evidence-first-slides/SKILL.md) | 技術発表の構成・見出し・根拠・配置を整え、資料やスライドテンプレートを作成・改訂します。 | 明示起動。事実と仮説、成立条件を区別し、主張を見出しに置きます。特定のツールや形式への依存はありません。 |
 | [reader-first-writing](../dev/reader-first-writing/SKILL.md) | 必要な情報を保ちながら、報告文書の文字数と読者の理解の負担を減らします。 | 明示起動。主題・アブスト・本文の順に作成・改稿し、必要に応じて短い本文と詳細を分けます。 |
 | [nagakute-yomenai](../dev/nagakute-yomenai/SKILL.md) | 読み手・目的・伝えたい主張をヒアリングしてから、既存の文章を書き直します。 | 明示起動。不明点への回答を待って改稿し、結論を左右する条件を残しながら必要な読書量を減らします。 |
-| [pr-handoff](../dev/pr-handoff/SKILL.md) | 既存差分と設計判断、検証結果から、PR説明文と論理的なコミット分割案を提案します。 | レビューに渡す説明とコミット案。stage・commit・push・PR作成は実行しません。 |
+| [pr-handoff](../dev/pr-handoff/SKILL.md) | 既存差分と設計判断、検証結果から、PRタイトル・説明文と論理的なコミット分割案を提案します。 | レビューに渡す説明とコミット案。stage・commit・push・PR作成は実行しません。 |
 | [session-dashboard](../dev/session-dashboard/SKILL.md) | セッションの目的・計画・進捗・判断依頼・サブエージェント状況をブラウザで表示し、記録として残します。 | 明示起動。Python 3.11以上、ローカルブラウザ、継続可能な記録担当サブエージェントを使用。返答はチャットで行います。 |
 | [session-handover](../dev/session-handover/SKILL.md) | 中断時に目的、進捗、確認済みの証拠、未コミット変更の意図、失敗した試み、次の行動を残します。 | Git管理から除外する `.agent-session.md`。完成した変更のレビュー準備や常時のメモには使いません。 |
 | [session-resume](../dev/session-resume/SKILL.md) | 引き継ぎ記録を最新の依頼とリポジトリ状態に照合し、有効な次の行動から作業を再開します。 | 合意済みの調査を繰り返さない再開。利用には `.agent-session.md` が必要です。 |
