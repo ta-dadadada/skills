@@ -72,7 +72,7 @@ A handoff explains the final change to a reviewer who did not attend the session
   - Keep actual before/after product behavior, relevant compatibility or migration facts, known limitations, and final verification results. These describe the change under review, not the session's editing history.
 - Replace session-specific names and vague references with the concrete component, behavior, or condition. Keep a local term only when the distinction matters to review and its supported meaning can be explained briefly. Do not substitute a link to the originating chat for essential context.
 - Make the opening explain the problem and intended outcome, then state the concrete change in 変更内容. A reviewer reading the title, 変更の目的, and 変更内容 should understand what changes and why. Keep conditions or uncertainty that affect that understanding beside the relevant claim; place supporting checks and rollout details in their own sections.
-- Use the repo's PR template when Step 1 found one, respecting its required headings. Otherwise use the following headings in this order, with Japanese content. Keep 変更の目的, 変更内容, and 検証 concise even for small changes. Include レビュー時の確認点 and 影響・展開方法 when substantive information applies; omit them rather than filling empty sections with check-proof boilerplate. The placeholders below describe the content to write, not text to copy:
+- Use the repo's PR template when Step 1 found one, respecting its required headings. Otherwise use the following headings in this order, with Japanese content. Keep 変更の目的, 変更内容, and 検証 concise even for small changes. Include 設計判断 whenever a supported choice among alternatives materially affects review (such as correctness, compatibility, performance, maintenance, or scope). Include レビュー時の確認点 and 影響・展開方法 when substantive information applies; omit them rather than filling empty sections with check-proof boilerplate. The placeholders below describe the content to write, not text to copy:
 
 ```markdown
 ## 変更の目的
@@ -87,6 +87,12 @@ Closes #<confirmed issue number>
 - Final behavior or implementation changes, grouped by purpose.
 - Relevant conditions, boundaries, and exclusions; avoid a mechanical file list.
 
+## 設計判断
+
+- The chosen approach, relevant alternatives, and the supported criteria or
+  constraints that explain why this approach was selected.
+- Material trade-offs, downsides, and conditions under which the choice holds.
+
 ## 検証
 
 - Actual checks and their recorded results.
@@ -96,7 +102,8 @@ Closes #<confirmed issue number>
 ## レビュー時の確認点
 
 - Concrete questions or attention points that help assess the change.
-- Supported design trade-offs or unresolved matters that need reviewer input.
+- Unresolved matters that need reviewer input; reference an established design
+  decision rather than repeating its rationale.
 
 ## 影響・展開方法
 
@@ -105,12 +112,13 @@ Closes #<confirmed issue number>
 ```
 
 - Include `Closes #<number>` in 変更の目的 only when the issue reference is confirmed and the change is intended to close it. A confirmed related issue alone does not establish closure; use a non-closing reference when that is all the evidence supports. Omit the issue line when unknown, without asking unless Step 3 makes it blocking.
-- Put additional design rationale in レビュー時の確認点 only when it helps assess the choice; do not repeat 変更の目的 or 変更内容. Request reviewer attention to a concrete supported concern, not a generic request to review everything. Do not invent a question merely to populate the section.
+- Distinguish why the change is needed (変更の目的) from why this implementation was selected (設計判断). Check the labelled intent candidates for important choices even when the chosen implementation is already described in 変更内容. Preserve supported selection reasons; excluding session history must not erase them. State the final comparison and criterion, not the order in which options were tried. Do not invent alternatives or reasons; omit 設計判断 when no additional supported choice needs explanation, without an empty-check sentence. If a repository template lacks a decision heading, retain material rationale in its closest appropriate section.
+- Use レビュー時の確認点 for concrete review requests and unresolved questions, separate from established design decisions. Do not repeat 変更の目的, 変更内容, or 設計判断. Request reviewer attention to a concrete supported concern, not a generic request to review everything. Do not invent a question merely to populate the section.
 - State impact and rollout claims only from available evidence. Claims such as "公開APIの変更なし" or "通常のデプロイで反映可能" require support; unknown material effects stay explicitly unverified rather than becoming assurances. Do not copy the example's issue, commands, test results, or rollout assumptions into an unrelated PR.
 
 - Read the title and description as an engineer absent from the session: can they identify the problem, final behavior, reason, and material limits without resolving private shorthand? Do the details add evidence or conditions rather than repeat the opening? Remove unnecessary session history and empty sections; retain facts that affect review. For example, replace "指摘を受けて第2案に戻した" with the supported final behavior and reason, such as "大量のCSV出力でブラウザーのメモリが不足するため、CSV生成前に件数の上限を確認する。" Use the reason only when the sources establish it.
 
-**Done when:** a concrete title and self-contained 変更の目的/変更内容 match the diff's scope, the repository template or default heading order is followed, every change claim traces to the diff, every reason to a labelled source or user answer, verification claims match recorded evidence, and the reader-facing filter and Japanese writing conventions are satisfied without empty or repetitive sections.
+**Done when:** a concrete title and self-contained 変更の目的/変更内容 match the diff's scope, the repository template or default heading order is followed, every change claim traces to the diff, every reason to a labelled source or user answer, material supported implementation choices retain their selection criteria and trade-offs, verification claims match recorded evidence, and the reader-facing filter and Japanese writing conventions are satisfied without empty or repetitive sections.
 
 ### Step 5 — Propose the commit split
 
