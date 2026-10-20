@@ -71,46 +71,46 @@ A handoff explains the final change to a reviewer who did not attend the session
   - Include an alternative only when the comparison helps a reviewer assess the final choice. State the options, selected approach, and supported reason without narrating their discovery order. For example, replace "We first tried C, then switched to D" with "D is selected over C because it meets constraint A." Omit alternatives with no remaining review value; do not invent a comparison or reason.
   - Keep actual before/after product behavior, relevant compatibility or migration facts, known limitations, and final verification results. These describe the change under review, not the session's editing history.
 - Replace session-specific names and vague references with the concrete component, behavior, or condition. Keep a local term only when the distinction matters to review and its supported meaning can be explained briefly. Do not substitute a link to the originating chat for essential context.
-- Make the opening explain the problem and intended outcome, then state the concrete change in What. A reviewer reading the title, Why, and What should understand what changes and why. Keep conditions or uncertainty that affect that understanding beside the relevant claim; place supporting checks and rollout details in their own sections.
-- Use the repo's PR template when Step 1 found one, respecting its required headings. Otherwise use the following headings in this order, with Japanese content. Keep Why, What, and Verification concise even for small changes. Include Review Notes and Impact / Rollout when substantive information applies; omit them rather than filling empty sections with check-proof boilerplate. The placeholders below describe the content to write, not text to copy:
+- Make the opening explain the problem and intended outcome, then state the concrete change in 変更内容. A reviewer reading the title, 変更の目的, and 変更内容 should understand what changes and why. Keep conditions or uncertainty that affect that understanding beside the relevant claim; place supporting checks and rollout details in their own sections.
+- Use the repo's PR template when Step 1 found one, respecting its required headings. Otherwise use the following headings in this order, with Japanese content. Keep 変更の目的, 変更内容, and 検証 concise even for small changes. Include レビュー時の確認点 and 影響・展開方法 when substantive information applies; omit them rather than filling empty sections with check-proof boilerplate. The placeholders below describe the content to write, not text to copy:
 
 ```markdown
-## Why
+## 変更の目的
 
 The concrete problem and intended outcome, connected by the supported reason.
 Explain only the background a reviewer needs; omit session chronology.
 
 Closes #<confirmed issue number>
 
-## What
+## 変更内容
 
 - Final behavior or implementation changes, grouped by purpose.
 - Relevant conditions, boundaries, and exclusions; avoid a mechanical file list.
 
-## Verification
+## 検証
 
 - Actual checks and their recorded results.
 - Relevant verification limits: distinguish missing execution records from
   confirmed non-execution, and expected benefits from measured outcomes.
 
-## Review Notes
+## レビュー時の確認点
 
 - Concrete questions or attention points that help assess the change.
 - Supported design trade-offs or unresolved matters that need reviewer input.
 
-## Impact / Rollout
+## 影響・展開方法
 
 - Known compatibility, public API, migration, and operational effects.
 - Supported deployment steps, prerequisites, and rollback considerations.
 ```
 
-- Include `Closes #<number>` in Why only when the issue reference is confirmed and the change is intended to close it. A confirmed related issue alone does not establish closure; use a non-closing reference when that is all the evidence supports. Omit the issue line when unknown, without asking unless Step 3 makes it blocking.
-- Put additional design rationale in Review Notes only when it helps assess the choice; do not repeat Why or What. Request reviewer attention to a concrete supported concern, not a generic request to review everything. Do not invent a question merely to populate the section.
+- Include `Closes #<number>` in 変更の目的 only when the issue reference is confirmed and the change is intended to close it. A confirmed related issue alone does not establish closure; use a non-closing reference when that is all the evidence supports. Omit the issue line when unknown, without asking unless Step 3 makes it blocking.
+- Put additional design rationale in レビュー時の確認点 only when it helps assess the choice; do not repeat 変更の目的 or 変更内容. Request reviewer attention to a concrete supported concern, not a generic request to review everything. Do not invent a question merely to populate the section.
 - State impact and rollout claims only from available evidence. Claims such as "公開APIの変更なし" or "通常のデプロイで反映可能" require support; unknown material effects stay explicitly unverified rather than becoming assurances. Do not copy the example's issue, commands, test results, or rollout assumptions into an unrelated PR.
 
 - Read the title and description as an engineer absent from the session: can they identify the problem, final behavior, reason, and material limits without resolving private shorthand? Do the details add evidence or conditions rather than repeat the opening? Remove unnecessary session history and empty sections; retain facts that affect review. For example, replace "指摘を受けて第2案に戻した" with the supported final behavior and reason, such as "大量のCSV出力でブラウザーのメモリが不足するため、CSV生成前に件数の上限を確認する。" Use the reason only when the sources establish it.
 
-**Done when:** a concrete title and self-contained Why/What match the diff's scope, the repository template or default heading order is followed, every change claim traces to the diff, every reason to a labelled source or user answer, verification claims match recorded evidence, and the reader-facing filter and Japanese writing conventions are satisfied without empty or repetitive sections.
+**Done when:** a concrete title and self-contained 変更の目的/変更内容 match the diff's scope, the repository template or default heading order is followed, every change claim traces to the diff, every reason to a labelled source or user answer, verification claims match recorded evidence, and the reader-facing filter and Japanese writing conventions are satisfied without empty or repetitive sections.
 
 ### Step 5 — Propose the commit split
 
@@ -151,7 +151,7 @@ git commit -m "feat(client): 待機時間を段階的に延ばすリトライ処
 | "Fill the design section so it does not look empty" | omit optional sections with no review value; invented decisions poison the review |
 | "The session mentioned X earlier" | session items that predate the current diff describe other work; only intent tied to these changes counts |
 | "The tests presumably pass" | only recorded runs with results count as verification; distinguish confirmed non-execution from missing execution records |
-| "Should be backward compatible" | unverified compatibility is labelled "not verified" under Impact / Rollout, not a guarantee |
+| "Should be backward compatible" | unverified compatibility is labelled "not verified" under 影響・展開方法, not a guarantee |
 | "One commit per file is simple" | files are storage units, not change units; split by purpose and dependency |
 | "Squash the leftovers into the last commit" | a commit of unrelated leftovers is unreviewable; every change belongs to a purpose |
 | "Draft the PR description first, ask later" | a finished-looking draft gets rubber-stamped; questions come before the artifact |
