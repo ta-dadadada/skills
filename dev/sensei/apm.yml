@@ -1,0 +1,8 @@
+name: sensei
+description: Create a one-page visual PDF in Japanese for readers new to a topic or
+  source material. Use when explicitly invoked or when the user asks for a beginner-friendly
+  visual handout, PDF, or one-page guide. Leave routine chat explanations and summaries
+  without a beginner audience to other workflows.
+license: MIT
+type: skill
+version: '0.1.0'
