@@ -6,7 +6,7 @@ license: MIT
 
 # Empirical Prompt Tuning
 
-Forked from [mizchi/skills: meta/empirical-prompt-tuning](https://github.com/mizchi/skills/tree/main/meta/empirical-prompt-tuning); substantially modified for this repository's conventions (added per-step `Done when:` criteria, reworked the `Related` section, and other changes below) and treated here as an independent skill.
+Forked from [mizchi/skills: meta/empirical-prompt-tuning](https://github.com/mizchi/skills/tree/main/meta/empirical-prompt-tuning), adapted to this repository's conventions and maintained as an independent skill.
 
 Author review can assess static consistency but cannot establish execution quality. Use fresh executors without authorial context, inspect their artifacts and observable actions, and separate evidence from self-report. Match the evaluation scope to the request: structural review, bounded comparison, or an explicitly requested tuning loop.
 

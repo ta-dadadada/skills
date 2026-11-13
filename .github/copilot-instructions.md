@@ -21,7 +21,8 @@ project-installed skill with a same-name personal copy.
 ## Layout
 
 - `dev/<skill>/`, `meta/<skill>/` — one directory per skill: `SKILL.md`
-  (the skill), plus `README.md` (distribution) when the skill has one.
+  (the skill), plus `references/` or `scripts/` when needed. Skills carry no
+  per-skill `README.md`.
 - `knowledge/` — distilled English reference notes; conventions in
   `knowledge/README.md`.
 - `.local/` — gitignored scratch space; nothing under it may be committed
@@ -41,8 +42,6 @@ project-installed skill with a same-name personal copy.
 - Portability: relative links that resolve, no absolute paths, no
   tool-specific syntax (`${CLAUDE_SKILL_DIR}`, backtick command injection,
   `disable-model-invocation`), standard frontmatter fields only.
-- When present, the `README.md` blockquote equals the frontmatter
-  description verbatim.
 - No secrets, tokens, or internal endpoints anywhere in a skill — skill
   contents leave the environment.
 - `python3 meta/shiranui-hanten/scripts/validate_skill.py <skill-dir>`

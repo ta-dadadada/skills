@@ -77,4 +77,4 @@ Empty collections explicitly report absence of information, not inferred success
 - Desktop/narrow keyboard and pointer paths work; refresh preserves disclosure,
   focus, scroll and manual-copy context; offline exports retain all content.
 - Package validation and runtime tests pass. Browser/AT/print claims are limited
-  to executed checks recorded in verification.md.
+  to checks actually executed.

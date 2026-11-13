@@ -1,9 +1,9 @@
 # Research provenance
 
-Extracted from two user-supplied Japanese productivity-UI research handoffs
-(received 2026-09-05). This package generalizes their interaction, input, state,
-accessibility requirements, and design review beyond business applications.
-Concrete semantics, ARIA, event/focus code, and runtime verification now belong
+Extracted from two user-supplied Japanese productivity-UI research handoffs.
+This package generalizes their interaction, input, state, accessibility
+requirements, and design review beyond business applications.
+Concrete semantics, ARIA, event/focus code, and runtime verification belong
 to `frontend-ui-implementation`; this package defines their expected outcomes.
 Record comparison, saved views, and business page archetypes belong to the
 separate `business-ui-design` skill.
