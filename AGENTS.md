@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository distributes reusable Agent Skills rather than a compiled application. Each skill is a self-contained directory with a required `SKILL.md` and, when needed, a `README.md`, `references/`, or executable `scripts/` directory.
+This repository distributes reusable Agent Skills rather than a compiled application. Each skill is a self-contained directory with a required `SKILL.md` and, when needed, a `references/` or executable `scripts/` directory. Skills carry no per-skill `README.md`; the root `README.md` and `docs/project-guide.md` describe installation and the skill inventory.
 
 - `dev/`: software-development workflow skills, such as `dev/pr-handoff/`.
 - `meta/`: skills for creating, evaluating, or improving other skills, plus explicitly invoked working modes such as `meta/just-do-it/`.

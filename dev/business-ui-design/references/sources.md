@@ -1,7 +1,7 @@
 # Research provenance
 
 This package distills two user-supplied Japanese research handoffs on productivity
-UI (received 2026-09-05). The handoffs combine product examples, design-system
+UI. The handoffs combine product examples, design-system
 guidance, and the researcher's own synthesis. The links below preserve that
 reading trail; their current contents were not independently audited for this
 package. Instructions here are the package's conditional design judgments, not

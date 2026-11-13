@@ -1,8 +1,8 @@
 # Implementation references and limits
 
-This package implements the design/implementation boundary requested by the user
-on 2026-09-05. Native semantics, naming, keyboard patterns, and runtime evidence
-are implementation responsibilities; the companion retains accessibility outcomes.
+Native semantics, naming, keyboard patterns, and runtime evidence are
+implementation responsibilities; the `frontend-ui-design` companion retains
+accessibility outcomes.
 
 Primary references consulted during authoring:
 
