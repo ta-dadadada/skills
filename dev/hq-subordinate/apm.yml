@@ -1,0 +1,11 @@
+name: hq-subordinate
+description: 'Work as a subordinate session under an HQ orchestrator: keep the user''s
+  and project''s usual rules in effect, confirm the brief''s done criteria, stay inside
+  its scope and authority, stop for approval before any commit, push, PR, or external
+  send, and end every turn with a one-line HQ status report. Use only when the session''s
+  brief starts with the marker line "HQ brief — task T<n> — follow the hq-subordinate
+  skill", or when the user explicitly invokes this skill. Not for ordinary sessions,
+  and not for acting as the orchestrator (hq-adjutant).'
+license: MIT
+type: skill
+version: '0.1.0'

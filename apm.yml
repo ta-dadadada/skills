@@ -13,6 +13,9 @@ dependencies:
   - ta-dadadada/skills/dev/evidence-first-slides
   - ta-dadadada/skills/dev/frontend-ui-design
   - ta-dadadada/skills/dev/frontend-ui-implementation
+  - ta-dadadada/skills/dev/hq-adjutant
+  - ta-dadadada/skills/dev/hq-dashboard
+  - ta-dadadada/skills/dev/hq-subordinate
   - ta-dadadada/skills/dev/hypothesis-driven-debugging
   - ta-dadadada/skills/dev/implementation-loop
   - ta-dadadada/skills/dev/issue-kickoff

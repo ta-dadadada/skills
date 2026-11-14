@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg:#f5f6f8; --panel:#ffffff; --ink:#1d2127; --muted:#69717c; --faint:#9aa1aa; --line:#dde1e6; --soft:#eef0f3;
+  --lane-a:#f8f9fb; --lane-b:#f1f3f6; --shadow:0 6px 24px rgba(15,23,42,.16);
+  --queued:#8a929c; --active:#2563c9; --waiting:#b7791f; --blocked:#c53030; --done:#2f855a; --dropped:#a0a7b0;
+  --waiting-bg:#fdf3e1; --blocked-bg:#fdeaea;
+  --k-approval:#b7791f; --k-decision:#7c4dbb; --k-review:#2563c9; --k-launch:#2f855a; --k-criteria:#c05621;
+  --e-dep:#2563c9; --e-spawn:#7c4dbb; --e-rel:#8a929c; --slide:.16s;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#121519; --panel:#1b1f25; --ink:#e3e6ea; --muted:#9aa3ad; --faint:#6b737d; --line:#2d333b; --soft:#242a31;
+    --lane-a:#171b20; --lane-b:#1d2228; --shadow:0 6px 24px rgba(0,0,0,.5);
+    --queued:#8b939d; --active:#6aa2ff; --waiting:#e5b250; --blocked:#ff7b7b; --done:#5fcf95; --dropped:#6b737d;
+    --waiting-bg:#2c2416; --blocked-bg:#311c1c;
+    --k-approval:#e5b250; --k-decision:#b791f0; --k-review:#6aa2ff; --k-launch:#5fcf95; --k-criteria:#f0965a;
+    --e-dep:#6aa2ff; --e-spawn:#b791f0; --e-rel:#8b939d;
+  }
+}
+@media (prefers-reduced-motion: reduce) { :root { --slide:0s; } }
+* { box-sizing:border-box; }
+html,body { height:100%; }
+body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.4 system-ui,-apple-system,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif; }
+button { font:inherit; color:inherit; }
+:focus-visible { outline:2px solid var(--active); outline-offset:2px; }
+.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.ic { fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.ic.fill { fill:currentColor; stroke:none; }
+.app { display:grid; grid-template-rows:auto auto minmax(0,1fr); height:100vh; }
+/* header bar */
+.bar { display:flex; align-items:center; gap:10px; padding:6px 14px; background:var(--panel); border-bottom:1px solid var(--line); min-width:0; }
+.bar h1 { font-size:14px; margin:0; font-weight:700; white-space:nowrap; cursor:default; }
+.chips { display:flex; gap:6px; flex-wrap:nowrap; }
+.chip { display:inline-flex; align-items:center; gap:4px; padding:1px 8px; border-radius:10px; background:var(--soft); color:var(--muted); font-size:12px; font-weight:600; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.chip.warn { background:var(--waiting-bg); color:var(--waiting); font-size:13px; }
+.chip.bad { background:var(--blocked-bg); color:var(--blocked); }
+.chip.ok { color:var(--done); }
+.progress { flex:1 1 160px; min-width:100px; height:10px; display:flex; border-radius:5px; overflow:hidden; background:var(--soft); }
+.progress span { display:block; height:100%; }
+.meta { color:var(--muted); font-size:12px; white-space:nowrap; }
+#updated.old { color:var(--blocked); }
+.dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--faint); }
+.dot.live { background:var(--done); } .dot.down { background:var(--blocked); }
+.iconbtn { display:inline-flex; align-items:center; gap:3px; border:0; background:transparent; border-radius:4px; padding:2px 5px; cursor:pointer; color:var(--muted); font-size:12px; }
+.iconbtn:hover,.iconbtn[aria-expanded="true"] { background:var(--soft); color:var(--ink); }
+.ticker { padding:2px 14px; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-bottom:1px solid var(--line); }
+/* main area */
+.main { display:grid; grid-template-columns:minmax(0,1fr) 380px; min-height:0; transition:grid-template-columns var(--slide) ease; }
+.main.side-collapsed { grid-template-columns:minmax(0,1fr) 32px; }
+.map { position:relative; overflow:auto; padding:8px 10px 4px; min-width:0; display:flex; flex-direction:column; }
+#graph { flex:1 0 auto; }
+#graph svg { display:block; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:11px; color:var(--muted); padding:4px 2px 2px; align-items:center; }
+.legend svg { vertical-align:middle; margin-right:3px; }
+.side { border-left:1px solid var(--line); background:var(--panel); overflow:auto; min-height:0; min-width:0; padding:4px 0; display:flex; flex-direction:column; }
+.side-head { display:flex; align-items:center; gap:2px; padding:0 6px 2px 4px; }
+.side h2 { font-size:13px; margin:0; display:flex; gap:5px; align-items:center; color:var(--waiting); font-variant-numeric:tabular-nums; }
+.side h2.zero { color:var(--faint); }
+#side-btn .chev { color:inherit; }
+.side-body { flex:none; display:grid; grid-template-rows:1fr; transition:grid-template-rows var(--slide) ease; }
+.side-body > .inner { overflow:hidden; min-height:0; }
+.side-collapsed .side { overflow:hidden; cursor:pointer; }
+.side-collapsed .side-head { flex-direction:column; padding:0; }
+.side-collapsed .side-body { grid-template-rows:0fr; visibility:hidden; transition:grid-template-rows var(--slide) ease, visibility 0s var(--slide); }
+.side-collapsed #side-btn .chev { transform:rotate(180deg); }
+ul.waits { list-style:none; margin:0; padding:0; }
+.wrow { list-style:none; }
+.wait { display:flex; align-items:center; gap:6px; height:24px; padding:0 8px 0 6px; cursor:pointer; border-left:3px solid transparent; white-space:nowrap; min-width:0; }
+.wait:hover,.wait:focus-visible,.wrow.open > .wait { background:var(--soft); }
+.wait.sel { border-left-color:var(--active); }
+.chev { flex:none; color:var(--muted); transition:transform var(--slide); display:inline-flex; }
+.wrow.open .chev { transform:rotate(90deg); }
+.kind { flex:none; font-size:11px; font-weight:600; padding:0 5px; border-radius:3px; color:#fff; line-height:16px; }
+.k-approval { background:var(--k-approval); } .k-decision { background:var(--k-decision); } .k-review { background:var(--k-review); }
+.k-launch { background:var(--k-launch); } .k-criteria { background:var(--k-criteria); }
+@media (prefers-color-scheme: dark) { .kind,.pill { color:#121519; } }
+.wid { flex:none; font-weight:700; font-variant-numeric:tabular-nums; }
+.tid { flex:none; color:var(--muted); font-variant-numeric:tabular-nums; }
+.wsum { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.wait .cp { visibility:hidden; }
+.wait:hover .cp,.wait:focus-within .cp,.wrow.open > .wait .cp { visibility:visible; }
+/* slide-open drawers: grid rows animate between 0fr and 1fr */
+.slide { display:grid; grid-template-rows:0fr; transition:grid-template-rows var(--slide) ease; }
+.slide.open { grid-template-rows:1fr; }
+.slide > .inner { overflow:hidden; min-height:0; }
+.wait-more { position:relative; padding:4px 28px 7px 27px; background:var(--soft); font-size:12px; border-left:3px solid var(--active); }
+.wait-more .full { display:none; white-space:pre-wrap; overflow-wrap:anywhere; margin:0 0 3px; }
+.wrow.trunc .wait-more .full { display:block; }
+.wait-more .line { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; color:var(--muted); }
+.x { position:absolute; top:3px; right:4px; }
+.empty { color:var(--muted); font-size:12px; padding:2px 12px; }
+.graph-empty { padding:40px 8px; color:var(--muted); }
+/* graph */
+.lane-bg-0 { fill:var(--lane-a); } .lane-bg-1 { fill:var(--lane-b); }
+.lane-label { fill:var(--muted); font-size:12px; font-weight:600; }
+.node { cursor:pointer; outline:none; }
+.node .card { fill:var(--panel); stroke:var(--line); stroke-width:1; }
+.node .rail { fill:var(--queued); }
+.node:hover .card { stroke:var(--muted); }
+.node:focus-visible .card,.node.sel .card { stroke:var(--active); stroke-width:2.5; }
+.node .t1 { fill:var(--ink); font-size:12px; font-weight:600; }
+.node .t1 .id { font-weight:700; }
+.node .t3 { fill:var(--muted); font-size:11px; }
+.node .stale { fill:var(--waiting); font-weight:600; }
+.node .steplbl { font-size:11px; font-weight:600; }
+.st-queued .rail,.st-queued .cur { fill:var(--queued); } .st-queued .steplbl { fill:var(--queued); }
+.st-active .rail,.st-active .cur { fill:var(--active); } .st-active .steplbl { fill:var(--active); }
+.st-waiting-user .rail,.st-waiting-user .cur { fill:var(--waiting); } .st-waiting-user .steplbl { fill:var(--waiting); }
+.st-waiting-user .card { fill:var(--waiting-bg); }
+.st-blocked .rail,.st-blocked .cur { fill:var(--blocked); } .st-blocked .steplbl { fill:var(--blocked); }
+.st-blocked .card { fill:var(--blocked-bg); }
+.st-done .rail { fill:var(--done); } .st-dropped .rail { fill:var(--dropped); }
+.st-done,.st-dropped { opacity:.62; }
+.st-dropped .t1 { text-decoration:line-through; fill:var(--muted); }
+.step { fill:var(--panel); stroke:var(--faint); stroke-width:1; }
+.step.past { fill:var(--faint); stroke:none; }
+.stepline { stroke:var(--line); stroke-width:1.5; }
+.badge-n { fill:var(--waiting); } .badge-t { fill:#fff; font-size:10px; font-weight:700; }
+.pr { fill:var(--active); font-size:10px; font-weight:600; }
+.edge { fill:none; stroke-width:1.6; }
+.edge.depends_on { stroke:var(--e-dep); }
+.edge.spawned_from { stroke:var(--e-spawn); stroke-dasharray:6 4; }
+.edge.related { stroke:var(--e-rel); stroke-dasharray:2 4; }
+.mk-depends_on { fill:var(--e-dep); } .mk-spawned_from { fill:var(--e-spawn); }
+.edge.dim { opacity:.25; } .edge.hot { stroke-width:2.6; opacity:1; }
+/* tooltip (preview only), detail drawer, history */
+#tip { position:fixed; z-index:20; max-width:340px; background:var(--panel); border:1px solid var(--line); border-radius:6px; box-shadow:var(--shadow); padding:7px 9px; font-size:12px; pointer-events:none; }
+#tip .h { font-weight:700; margin-bottom:2px; }
+#tip .r { color:var(--muted); }
+#tip .s { margin-top:3px; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+.detail { position:relative; margin:8px 8px; padding:8px 10px 10px; border:1px solid var(--active); border-radius:6px; background:var(--bg); font-size:12px; }
+.detail header { display:flex; align-items:center; gap:6px; padding-right:22px; }
+.detail header h2 { font-size:14px; margin:0; min-width:0; overflow-wrap:anywhere; }
+.detail .sub { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; margin:4px 0 2px; }
+.detail hr { border:0; border-top:1px solid var(--line); margin:6px 0; }
+.detail ul { list-style:none; padding:0; margin:0; }
+.detail li { padding:2px 0; overflow-wrap:anywhere; }
+.sess + .sess { border-top:1px dashed var(--line); margin-top:4px; padding-top:4px; }
+.sess .sum { white-space:pre-wrap; overflow-wrap:anywhere; margin-top:2px; }
+dl.f { display:grid; grid-template-columns:max-content 1fr; gap:2px 10px; margin:4px 0; }
+dl.f dt { color:var(--faint); } dl.f dd { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.pill { display:inline-block; font-size:11px; font-weight:600; padding:0 6px; border-radius:8px; color:#fff; line-height:17px; white-space:nowrap; }
+.p-queued { background:var(--queued); } .p-active { background:var(--active); } .p-waiting-user { background:var(--waiting); }
+.p-blocked { background:var(--blocked); } .p-done { background:var(--done); } .p-dropped { background:var(--dropped); }
+.stepper { display:flex; gap:3px; flex-wrap:wrap; }
+.stepper span { font-size:11px; padding:0 6px; border-radius:8px; border:1px solid var(--line); color:var(--faint); }
+.stepper span.past { color:var(--muted); background:var(--soft); }
+.stepper span.cur { color:#fff; border-color:transparent; }
+.mono { font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--soft); padding:0 4px; border-radius:3px; overflow-wrap:anywhere; }
+.copyable { display:inline-flex; align-items:center; gap:1px; max-width:100%; }
+.cp { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; padding:0; border:0; border-radius:3px; background:transparent; color:var(--faint); cursor:pointer; flex:none; }
+.cp:hover,.cp:focus-visible { color:var(--ink); background:var(--soft); }
+.cp.ok { color:var(--done); } .cp.fail { color:var(--blocked); }
+.art { color:var(--muted); margin-right:4px; }
+a { color:var(--active); }
+.drawer { position:fixed; z-index:15; top:64px; right:12px; width:440px; max-height:calc(100vh - 76px); overflow:auto; background:var(--panel); border:1px solid var(--line); border-radius:8px; box-shadow:var(--shadow); padding:10px 12px 12px; }
+.drawer ol { list-style:none; padding:0; margin:0; font-size:12px; }
+.drawer li { padding:3px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
+.drawer .ty { font-weight:600; margin:0 4px; }
+@media (max-width:900px) {
+  .app { height:auto; }
+  .main { grid-template-columns:1fr; }
+  .side { order:-1; border-left:0; border-bottom:1px solid var(--line); }
+  .main.side-collapsed { grid-template-columns:1fr; }
+  .side-collapsed .side-head { flex-direction:row; padding:0 6px 2px 4px; }
+  #side-btn .chev { transform:rotate(90deg); }
+  .side-collapsed #side-btn .chev { transform:rotate(-90deg); }
+  .bar { flex-wrap:wrap; }
+  .drawer { left:8px; right:8px; width:auto; top:auto; bottom:8px; max-height:70vh; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <h1 id="title">HQ</h1>
+    <div class="chips" id="chips"></div>
+    <div class="progress" id="progress" role="img"></div>
+    <span class="meta" id="updated"></span>
+    <span id="conn" role="status" aria-live="polite"><span class="dot" id="conn-dot"></span><span class="sr" id="conn-text"></span></span>
+    <button type="button" class="iconbtn" id="history-btn" aria-expanded="false" aria-controls="history"></button>
+  </div>
+  <div class="ticker" id="ticker"></div>
+  <div class="main">
+    <section class="map" id="map">
+      <div id="graph"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+    <aside class="side" id="side">
+      <div class="side-head"><button type="button" class="iconbtn" id="side-btn" aria-controls="side-body" aria-expanded="true"></button><h2 id="waits-h"></h2></div>
+      <div class="side-body" id="side-body"><div class="inner">
+        <ul class="waits" id="waits"></ul>
+        <div class="slide" id="detail-wrap" inert><div class="inner"><section class="detail" id="detail"></section></div></div>
+      </div></div>
+    </aside>
+  </div>
+</div>
+<div id="tip" hidden></div>
+<section class="drawer" id="history" hidden></section>
+<script id="hq-initial" type="application/json">null</script>
+<script>
+'use strict';
+// Read-only view. Ledger text reaches the DOM only through textContent / createTextNode.
+// Visible words are data; explanations live in title / aria-label only.
+const LABELS = {
+  en: {
+    map:'Progress map: rows are targets, columns follow dependencies', waits:'Waiting on you', none:'none', noTasks:'No tasks yet.',
+    readonly:'HQ dashboard (read-only; answer in the adjutant chat)', history:'History', noEvents:'No events yet.',
+    updated:'Last update', live:'Live', offlineData:'Server unreachable; showing data from', offlineNone:'Cannot reach the HQ server',
+    connecting:'Connecting', close:'Close', sideClose:'Collapse the waiting column', sideOpen:'Expand the waiting column', copy:'Copy', copied:'Copied', copyFail:'Copy failed; select the text instead',
+    chips:{active:'Active sessions (max 8)', waiting:'Waiting on you', blocked:'Blocked tasks', done:'Done tasks'},
+    goal:'goal', deliverable:'deliverable', doneWhen:'done when', authority:'authority', target:'Target', session:'Session',
+    noReport:'no report yet', stale:'No report for over 30 minutes', branch:'Branch', expand:'Show details',
+    ago:{now:'now', m:'m', h:'h', d:'d'},
+    steps:['queued','launched','working','waiting','done'], verify:'to verify',
+    kinds:{approval:'approval', decision:'decision', review:'review', launch:'launch', criteria:'criteria'},
+    status:{queued:'queued', active:'active', 'waiting-user':'waiting on you', blocked:'blocked', done:'done', dropped:'dropped',
+      starting:'starting', working:'working', idle:'idle', archived:'archived'},
+    edges:{depends_on:'depends on', spawned_from:'spawned from', related:'related'},
+    edgeHelp:{depends_on:'B → A: A depends on B', spawned_from:'B ⇢ A: A spawned from B', related:'related tasks'}
+  },
+  ja: {
+    map:'進捗マップ：行は対象、列は依存の順', waits:'あなたの対応待ち', none:'なし', noTasks:'タスクはまだありません。',
+    readonly:'HQ ダッシュボード（閲覧専用。返答は副官のチャットで）', history:'履歴', noEvents:'イベントはまだありません。',
+    updated:'最終更新', live:'自動更新中', offlineData:'サーバーに接続できません。表示は次の時点のもの：', offlineNone:'HQ サーバーに接続できません',
+    connecting:'接続中', close:'閉じる', sideClose:'対応待ちの列を閉じる', sideOpen:'対応待ちの列を開く', copy:'コピー', copied:'コピーしました', copyFail:'コピーできませんでした。選択してコピーしてください',
+    chips:{active:'稼働中のセッション（上限 8）', waiting:'あなたの対応待ち', blocked:'ブロック中のタスク', done:'完了したタスク'},
+    goal:'目的', deliverable:'成果物', doneWhen:'完了条件', authority:'事前承認', target:'対象', session:'セッション',
+    noReport:'報告なし', stale:'30 分以上報告がありません', branch:'ブランチ', expand:'詳細を表示',
+    ago:{now:'今', m:'分前', h:'時間前', d:'日前'},
+    steps:['待機','起動','作業','待ち','完了'], verify:'確認待ち',
+    kinds:{approval:'承認', decision:'判断', review:'レビュー', launch:'起動', criteria:'条件確認'},
+    status:{queued:'待機中', active:'進行中', 'waiting-user':'対応待ち', blocked:'ブロック', done:'完了', dropped:'取りやめ',
+      starting:'起動中', working:'作業中', idle:'停止中', archived:'アーカイブ'},
+    edges:{depends_on:'依存', spawned_from:'派生', related:'関連'},
+    edgeHelp:{depends_on:'B → A：A は B に依存', spawned_from:'B ⇢ A：A は B から派生', related:'関連するタスク'}
+  }
+};
+const MAX_ACTIVE = 8, STALE_MS = 30 * 60 * 1000, MAX_OPEN_WAITS = 2;
+const ACTIVE_SESSION = new Set(['starting','working','idle','waiting-user','blocked']);
+const WAIT_ORDER = ['approval','decision','review','launch','criteria'];
+const BAR_ORDER = ['done','active','waiting-user','blocked','queued','dropped'];
+const BAR_VAR = {done:'--done', active:'--active', 'waiting-user':'--waiting', blocked:'--blocked', queued:'--queued', dropped:'--dropped'};
+const SVGNS = 'http://www.w3.org/2000/svg';
+const ICONS = {
+  copy:[['rect', {x:5, y:5, width:8, height:9, rx:1.5}], ['path', {d:'M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10'}]],
+  ok:[['path', {d:'M3 8.5l3 3 7-7'}]],
+  fail:[['path', {d:'M8 3.5v5.5M8 12.2v.3'}]],
+  close:[['path', {d:'M4 4l8 8M12 4l-8 8'}]],
+  chev:[['path', {d:'M6 4l4 4-4 4'}]],
+  clock:[['circle', {cx:8, cy:8, r:6}], ['path', {d:'M8 4.5V8l2.5 1.5'}]],
+  flag:[['path', {d:'M4 14V2.5M4 3h7l-1.5 3 1.5 3H4'}]],
+  play:[['path', {d:'M5 3.5l7 4.5-7 4.5z', fill:'currentColor'}]],
+  stop:[['circle', {cx:8, cy:8, r:6}], ['path', {d:'M4 4l8 8'}]],
+  check:[['circle', {cx:8, cy:8, r:6}], ['path', {d:'M5.5 8.2l1.8 1.8 3.4-3.6'}]]
+};
+const $ = id => document.getElementById(id);
+let L = LABELS.en, lang = 'en', state = null, revision = null, selected = null, historyOpen = false, model = null;
+let detailSig = null, detailPending = false, waitsSig = null, waitsPending = false;
+const expanded = new Set();   // open wait drawers, oldest first
+
+function el(tag, attrs, ...kids) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === 'class') node.className = v; else node.setAttribute(k, v);
+  }
+  for (const kid of kids.flat(4)) if (kid !== null && kid !== undefined && kid !== '' && kid !== false) node.append(typeof kid === 'object' ? kid : document.createTextNode(String(kid)));
+  return node;
+}
+function sv(tag, attrs, ...kids) {
+  const node = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) if (v !== null && v !== undefined) node.setAttribute(k, v);
+  for (const kid of kids.flat(4)) if (kid !== null && kid !== undefined && kid !== '' && kid !== false) node.append(typeof kid === 'object' ? kid : document.createTextNode(String(kid)));
+  return node;
+}
+function icon(name, size) {
+  const s = sv('svg', {width:size || 14, height:size || 14, viewBox:'0 0 16 16', 'aria-hidden':'true', focusable:'false'});
+  for (const [tag, attrs] of ICONS[name]) s.append(sv(tag, {...attrs, class:'ic'}));
+  return s;
+}
+function setText(id, text) { $(id).textContent = text; }
+function units(ch) { return /[ᄀ-￿]/.test(ch) ? 2 : 1; }
+function clip(text, max) {
+  let n = 0, out = '';
+  for (const ch of String(text || '')) { n += units(ch); if (n > max) return out + '…'; out += ch; }
+  return out;
+}
+function oneLine(text) { return String(text || '').replace(/\s+/g, ' ').trim(); }
+function fmtTime(iso) {
+  const d = new Date(iso || '');
+  return isNaN(d) ? '' : d.toLocaleString(lang, {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
+}
+function ago(iso) {
+  const t = Date.parse(iso || '');
+  if (isNaN(t)) return '';
+  const m = Math.max(0, Math.floor((Date.now() - t) / 60000));
+  if (m < 1) return L.ago.now;
+  if (m < 60) return m + L.ago.m;
+  if (m < 48 * 60) return Math.floor(m / 60) + L.ago.h;
+  return Math.floor(m / 1440) + L.ago.d;
+}
+function when(iso) { return iso ? el('span', {class:'meta', title:fmtTime(iso)}, ago(iso)) : null; }
+function isUrl(ref) { return /^https?:\/\//i.test(ref || ''); }
+function chipText(a) {
+  if (a.kind === 'pr') { const m = /\/pull\/(\d+)/.exec(a.ref); return 'PR' + (m ? ' #' + m[1] : ''); }
+  if (a.kind === 'branch') return '⎇';
+  if (a.kind === 'doc' || a.kind === 'file') return '📄';
+  if (a.kind === 'url') return '🔗';
+  return '•';
+}
+
+// ---------- copy: compact icon buttons; the value itself stays selectable text
+async function copyText(text, btn) {
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch (_) {
+    const ta = el('textarea', {readonly:'', style:'position:fixed;left:-9999px;top:0'});
+    ta.value = text; document.body.append(ta); ta.select();
+    try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+    ta.remove();
+  }
+  const label = ok ? L.copied : L.copyFail;
+  btn.replaceChildren(icon(ok ? 'ok' : 'fail'));
+  btn.classList.add(ok ? 'ok' : 'fail');
+  btn.setAttribute('aria-label', label); btn.title = label;
+  setTimeout(() => {
+    btn.replaceChildren(icon('copy')); btn.classList.remove('ok', 'fail');
+    btn.setAttribute('aria-label', btn.dataset.label); btn.title = btn.dataset.label;
+  }, 1500);
+}
+function copyBtn(text) {
+  const label = `${L.copy}: ${clip(oneLine(text), 60)}`;
+  const btn = el('button', {type:'button', class:'cp', title:label, 'aria-label':label, 'data-label':label}, icon('copy'));
+  btn.addEventListener('click', e => { e.stopPropagation(); copyText(text, btn); });
+  return btn;
+}
+function copyable(text, mono) {
+  if (!text) return null;
+  return el('span', {class:'copyable'}, el('span', {class:mono === false ? '' : 'mono'}, text), copyBtn(text));
+}
+function closeBtn(onClose) {
+  const btn = el('button', {type:'button', class:'iconbtn x', title:L.close, 'aria-label':L.close}, icon('close', 12));
+  btn.addEventListener('click', e => { e.stopPropagation(); onClose(); });
+  return btn;
+}
+function selectionInside(node) {
+  const sel = getSelection();
+  return !!(sel && !sel.isCollapsed && sel.rangeCount && node.contains(sel.anchorNode));
+}
+
+// ---------- derived model
+function build(s) {
+  const tasks = new Map(s.tasks.map(t => [t.id, t]));
+  const sessionsBy = new Map(), artsBy = new Map(), waitsBy = new Map();
+  const push = (m, k, v) => { if (!m.has(k)) m.set(k, []); m.get(k).push(v); };
+  for (const x of s.sessions) push(sessionsBy, x.task_id, x);
+  for (const x of s.artifacts) push(artsBy, x.task_id, x);
+  const open = s.waits.filter(w => w.status === 'open');
+  for (const w of open) push(waitsBy, w.task_id, w);
+  for (const list of sessionsBy.values()) list.sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
+  return {tasks, sessionsBy, artsBy, waitsBy, open, sessions:new Map(s.sessions.map(x => [x.id, x]))};
+}
+function latestSession(id) {
+  const list = model.sessionsBy.get(id) || [];
+  return list.find(x => x.state !== 'archived') || list[0] || null;
+}
+function step(t) {
+  // 0 queued · 1 launched · 2 working · 3 waiting (or to verify) · 4 done
+  if (t.status === 'done') return [4, L.steps[4]];
+  if (t.status === 'dropped') return [-1, L.status.dropped];
+  if (t.status === 'waiting-user') return [3, L.steps[3]];
+  if (t.status === 'blocked') return [3, L.status.blocked];
+  const s = latestSession(t.id);
+  if (!s) return t.status === 'queued' ? [0, L.steps[0]] : [2, L.steps[2]];
+  if (s.state === 'starting') return [1, L.steps[1]];
+  if (s.state === 'done') return [3, L.verify];
+  if (s.state === 'waiting-user') return [3, L.steps[3]];
+  return t.status === 'queued' ? [0, L.steps[0]] : [2, L.steps[2]];
+}
+function reportTime(s) { return s ? (s.reported_at || s.created_at) : null; }
+function isStale(t) {
+  const s = latestSession(t.id);
+  if (!s || !['starting','working'].includes(s.state) || ['done','dropped'].includes(t.status)) return false;
+  const ts = Date.parse(reportTime(s));
+  return !isNaN(ts) && Date.now() - ts > STALE_MS;
+}
+
+// ---------- header
+function renderHeader() {
+  const counts = {}; for (const k of BAR_ORDER) counts[k] = 0;
+  for (const t of state ? state.tasks : []) counts[t.status] = (counts[t.status] || 0) + 1;
+  const total = state ? state.tasks.length : 0;
+  const active = state ? state.sessions.filter(x => ACTIVE_SESSION.has(x.state)).length : 0;
+  const waiting = model ? model.open.length : 0;
+  const chip = (cls, ic, value, label) => el('span', {class:'chip ' + cls, title:`${label}: ${value}`, 'aria-label':`${label}: ${value}`}, icon(ic, 12), String(value));
+  $('chips').replaceChildren(
+    chip(active > MAX_ACTIVE ? 'bad' : '', 'play', `${active}/${MAX_ACTIVE}`, L.chips.active),
+    chip(waiting ? 'warn' : '', 'flag', waiting, L.chips.waiting),
+    chip(counts.blocked ? 'bad' : '', 'stop', counts.blocked, L.chips.blocked),
+    chip('ok', 'check', `${counts.done}/${total - counts.dropped}`, L.chips.done));
+  const bar = $('progress');
+  bar.setAttribute('aria-label', BAR_ORDER.filter(k => counts[k]).map(k => `${L.status[k]} ${counts[k]}`).join(', ') || L.noTasks);
+  bar.replaceChildren(...BAR_ORDER.filter(k => counts[k]).map(k => el('span',
+    {style:`flex:${counts[k]};background:var(${BAR_VAR[k]})`, title:`${L.status[k]} ${counts[k]}`})));
+  const up = $('updated');
+  up.textContent = state ? fmtTime(state.generated_at) : '';
+  up.title = L.updated;
+  const hb = $('history-btn');
+  hb.replaceChildren(icon('clock', 13), state ? String(state.events_total) : '');
+  hb.title = L.history; hb.setAttribute('aria-label', L.history);
+  const latest = state && state.events[0];
+  const ticker = $('ticker');
+  ticker.textContent = latest ? `${fmtTime(latest.ts)} · ${latest.type}${latest.task_id ? ' ' + latest.task_id : ''} · ${oneLine(latest.text)}` : '';
+  ticker.title = latest ? latest.text : '';
+}
+
+// ---------- waiting column: one line per item; each opens a sliding drawer with full, copyable text
+function setWaitOpen(id, open) {
+  const li = document.querySelector(`#waits .wrow[data-wait="${CSS.escape(id)}"]`);
+  if (open) {
+    expanded.delete(id); expanded.add(id);
+    while (expanded.size > MAX_OPEN_WAITS) setWaitOpen(expanded.values().next().value, false);
+  } else expanded.delete(id);
+  if (!li) return;
+  const sum = li.querySelector('.wsum');
+  li.classList.toggle('trunc', sum.scrollWidth > sum.clientWidth + 1);   // repeat the text only if the row cut it off
+  li.classList.toggle('open', open);
+  li.querySelector('.slide').classList.toggle('open', open);
+  li.querySelector('.slide').inert = !open;
+  li.querySelector('.wait').setAttribute('aria-expanded', String(open));
+}
+function renderWaits(force) {
+  const list = $('waits');
+  const open = model ? model.open.slice().sort((a, b) => WAIT_ORDER.indexOf(a.kind) - WAIT_ORDER.indexOf(b.kind) || a.num - b.num) : [];
+  for (const id of [...expanded]) if (!open.some(w => w.id === id)) expanded.delete(id);
+  const sig = JSON.stringify([lang, open, open.map(w => model.tasks.get(w.task_id)?.title || ''),
+    open.map(w => model.sessions.get(w.session_id)?.name || '')]);
+  if (!force && sig === waitsSig) return;               // unchanged: keep DOM, open drawers, any text selection
+  if (!force && selectionInside(list)) { waitsPending = true; return; }
+  waitsSig = sig; waitsPending = false;
+  const head = $('waits-h');
+  head.replaceChildren(icon('flag', 13), open.length ? String(open.length) : '');
+  head.title = L.waits; head.setAttribute('aria-label', `${L.waits}: ${open.length}`);
+  head.classList.toggle('zero', !open.length);
+  if (!open.length) { list.replaceChildren(el('li', {class:'empty'}, L.none)); return; }
+  list.replaceChildren(...open.map(w => {
+    const t = model.tasks.get(w.task_id);
+    const sess = model.sessions.get(w.session_id);
+    const row = el('div', {class:'wait' + (t && selected === t.id ? ' sel' : ''), tabindex:'0', role:'button',
+      'aria-expanded':'false', 'aria-label':`${L.kinds[w.kind] || w.kind} ${w.id}${t ? ' ' + t.id : ''}: ${w.summary}`, title:w.summary, 'data-task':w.task_id || ''},
+      el('span', {class:'chev'}, icon('chev', 12)), el('span', {class:'kind k-' + w.kind}, L.kinds[w.kind] || w.kind),
+      el('span', {class:'wid'}, w.id), t ? el('span', {class:'tid'}, t.id) : null, el('span', {class:'wsum'}, oneLine(w.summary)), copyBtn(w.summary));
+    const toggle = () => {
+      if (String(getSelection() || '')) return;          // the user is selecting text, not clicking
+      const opening = !expanded.has(w.id);
+      setWaitOpen(w.id, opening);
+      if (opening && t) select(t.id, true);
+    };
+    row.addEventListener('click', toggle);
+    row.addEventListener('keydown', e => { if (e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(); } });
+    const more = el('div', {class:'wait-more'},
+      closeBtn(() => { setWaitOpen(w.id, false); row.focus({preventScroll:true}); }),
+      el('div', {class:'full'}, w.summary),
+      el('div', {class:'line'}, copyable(w.id), t ? [copyable(t.id), el('span', {}, t.title)] : null),
+      sess || w.created_at ? el('div', {class:'line'}, sess ? [sess.name ? el('span', {}, sess.name) : null, copyable(sess.id)] : null, when(w.created_at)) : null);
+    const slide = el('div', {class:'slide'}, el('div', {class:'inner'}, more));
+    slide.inert = true;
+    return el('li', {class:'wrow', 'data-wait':w.id}, row, slide);
+  }));
+  for (const id of [...expanded]) setWaitOpen(id, true);
+}
+
+// ---------- progress map: swimlane per target, column per dependency depth
+const NW = 188, NH = 62, DH = 26, GX = 44, GY = 8, LW = 112, LP = 8;
+function layout() {
+  const tasks = state.tasks;
+  const preds = new Map(tasks.map(t => [t.id, []]));
+  for (const e of state.edges) if (e.kind !== 'related' && preds.has(e.from) && preds.has(e.to)) preds.get(e.from).push(e.to);
+  const depth = new Map();
+  const visit = (id, seen) => {
+    if (depth.has(id)) return depth.get(id);
+    if (seen.has(id)) return 0;
+    seen.add(id);
+    let d = 0;
+    for (const p of preds.get(id)) d = Math.max(d, visit(p, seen) + 1);
+    seen.delete(id); depth.set(id, d); return d;
+  };
+  for (const t of tasks) visit(t.id, new Set());
+  const lanes = [];
+  for (const t of tasks.slice().sort((a, b) => a.num - b.num)) if (!lanes.includes(t.target)) lanes.push(t.target);
+  const maxDepth = Math.max(0, ...depth.values());
+  const pos = new Map(), laneBoxes = [];
+  let y = 0;
+  lanes.forEach((target, li) => {
+    const cells = new Map();
+    for (const t of tasks.filter(x => x.target === target)) {
+      const d = depth.get(t.id);
+      if (!cells.has(d)) cells.set(d, []);
+      cells.get(d).push(t);
+    }
+    let laneH = 0;
+    for (const [d, list] of cells) {
+      list.sort((a, b) => (['done','dropped'].includes(a.status) - ['done','dropped'].includes(b.status)) || a.num - b.num);
+      let cy = y + LP;
+      for (const t of list) {
+        const h = ['done','dropped'].includes(t.status) ? DH : NH;
+        pos.set(t.id, {x: LW + d * (NW + GX), y: cy, h, task: t});
+        cy += h + GY;
+      }
+      laneH = Math.max(laneH, cy - y - GY + LP);
+    }
+    laneBoxes.push({target, y, h: laneH, i: li});
+    y += laneH;
+  });
+  return {pos, laneBoxes, width: LW + (maxDepth + 1) * (NW + GX) - GX + 16, height: y};
+}
+function renderGraph() {
+  const host = $('graph');
+  hideTip();  // a removed node never fires mouseleave
+  const focused = host.contains(document.activeElement) ? document.activeElement.dataset.task : null;
+  $('map').setAttribute('aria-label', L.map);
+  if (!state || !state.tasks.length) { host.replaceChildren(el('p', {class:'graph-empty'}, L.noTasks)); return; }
+  const {pos, laneBoxes, width, height} = layout();
+  // Scale up to the available width (max 1.45x) so the map is the primary, readable view; scroll rather than shrink below 0.85x.
+  const root = sv('svg', {viewBox:`0 0 ${width} ${height}`, role:'group', 'aria-label':L.map,
+    style:`width:100%;height:auto;max-width:${Math.round(width * 1.45)}px;min-width:${Math.round(width * 0.85)}px`});
+  const defs = sv('defs');
+  for (const kind of ['depends_on','spawned_from']) defs.append(sv('marker', {id:'ar-' + kind, viewBox:'0 0 10 10', refX:'9', refY:'5', markerWidth:'7', markerHeight:'7', orient:'auto'}, sv('path', {d:'M0,0 L10,5 L0,10 z', class:'mk-' + kind})));
+  root.append(defs);
+  for (const lane of laneBoxes) {
+    root.append(sv('rect', {x:0, y:lane.y, width, height:lane.h, class:'lane-bg-' + (lane.i % 2)}));
+    root.append(sv('text', {x:8, y:lane.y + lane.h / 2 + 4, class:'lane-label'}, clip(lane.target, 15), sv('title', {}, `${L.target}: ${lane.target}`)));
+  }
+  const edgeLayer = sv('g');
+  root.append(edgeLayer);
+  for (const e of state.edges) {
+    // depends_on / spawned_from are drawn prerequisite → dependent (left to right).
+    const a = pos.get(e.to), b = pos.get(e.from);
+    if (!a || !b) continue;
+    const ay = a.y + a.h / 2, by = b.y + b.h / 2;
+    let d;
+    if (b.x > a.x) {
+      const x1 = a.x + NW, x2 = b.x - 2, c = Math.max(18, (x2 - x1) / 2);
+      d = `M${x1},${ay} C${x1 + c},${ay} ${x2 - c},${by} ${x2},${by}`;
+    } else {
+      const x1 = a.x + NW, x2 = b.x + NW + 2, bulge = 26 + Math.min(40, Math.abs(by - ay) / 4);
+      d = `M${x1},${ay} C${x1 + bulge},${ay} ${x2 + bulge},${by} ${x2},${by}`;
+    }
+    edgeLayer.append(sv('path', {d, class:`edge ${e.kind}`, 'data-a':e.from, 'data-b':e.to, 'marker-end': e.kind === 'related' ? null : `url(#ar-${e.kind})`},
+      sv('title', {}, `${e.from} ${L.edges[e.kind]} ${e.to}`)));
+  }
+  for (const p of pos.values()) root.append(nodeEl(p));
+  host.replaceChildren(root);
+  if (focused) host.querySelector(`.node[data-task="${CSS.escape(focused)}"]`)?.focus({preventScroll:true});
+  highlight();
+}
+function nodeEl({x, y, h, task: t}) {
+  const [cur, label] = step(t);
+  const final = h === DH;
+  const g = sv('g', {class:`node st-${t.status}${selected === t.id ? ' sel' : ''}`, tabindex:'0', role:'button', 'data-task':t.id,
+    'aria-label':`${t.id} ${t.title}: ${L.status[t.status] || t.status}`});
+  g.append(sv('rect', {x, y, width:NW, height:h, rx:5, class:'card'}), sv('rect', {x, y, width:4, height:h, rx:2, class:'rail'}));
+  g.append(sv('text', {x:x + 11, y:final ? y + 17 : y + 16, class:'t1'}, sv('tspan', {class:'id'}, t.id + ' '), clip(t.title, final ? 23 : 21)));
+  const waits = (model.waitsBy.get(t.id) || []).length;
+  if (waits) g.append(sv('circle', {cx:x + NW - 10, cy:y + 11, r:7, class:'badge-n'}), sv('text', {x:x + NW - 10, y:y + 14.5, 'text-anchor':'middle', class:'badge-t'}, String(waits)));
+  if (!final) {
+    const sx = x + 15, sy = y + 31;
+    g.append(sv('line', {x1:sx, y1:sy, x2:sx + 4 * 12, y2:sy, class:'stepline'}));
+    for (let i = 0; i < 5; i++) {
+      const isCur = i === cur;
+      g.append(sv('circle', {cx:sx + i * 12, cy:sy, r:isCur ? 4.5 : 3, class:isCur ? 'cur' : (i < cur ? 'step past' : 'step')}));
+    }
+    g.append(sv('text', {x:sx + 4 * 12 + 10, y:sy + 4, class:'steplbl'}, label));
+    const s = latestSession(t.id);
+    const pr = (model.artsBy.get(t.id) || []).find(a => a.kind === 'pr');
+    const stale = isStale(t);
+    g.append(sv('text', {x:x + 11, y:y + 52, class:'t3'}, s ? clip(s.name || s.id, pr ? 14 : 22) : ''));
+    const right = s ? (stale ? '⚠ ' : '') + ago(reportTime(s)) : '';
+    g.append(sv('text', {x:x + NW - 8, y:y + 52, 'text-anchor':'end', class:'t3' + (stale ? ' stale' : '')}, right, stale ? sv('title', {}, L.stale) : null));
+    if (pr) g.append(sv('text', {x:x + NW - 8 - Math.max(40, right.length * 6.5) - 6, y:y + 52, 'text-anchor':'end', class:'pr'}, chipText(pr)));
+  }
+  g.addEventListener('click', () => select(t.id, false));
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(t.id, false); } });
+  g.addEventListener('mouseenter', e => showTip(t, e.clientX, e.clientY));
+  g.addEventListener('mousemove', e => placeTip(e.clientX, e.clientY));
+  g.addEventListener('mouseleave', hideTip);
+  g.addEventListener('focus', () => { const r = g.getBoundingClientRect(); showTip(t, r.right, r.top); });
+  g.addEventListener('blur', hideTip);
+  return g;
+}
+function highlight() {
+  for (const p of document.querySelectorAll('#graph .edge')) {
+    p.classList.toggle('hot', !!selected && (p.dataset.a === selected || p.dataset.b === selected));
+    p.classList.toggle('dim', !!selected && p.dataset.a !== selected && p.dataset.b !== selected);
+  }
+}
+function renderLegend() {
+  $('legend').replaceChildren(...['depends_on','spawned_from','related'].map(kind => {
+    const sample = sv('svg', {width:'30', height:'10', 'aria-hidden':'true'});
+    if (kind !== 'related') sample.append(sv('defs', {}, sv('marker', {id:'lg-' + kind, viewBox:'0 0 10 10', refX:'9', refY:'5', markerWidth:'6', markerHeight:'6', orient:'auto'}, sv('path', {d:'M0,0 L10,5 L0,10 z', class:'mk-' + kind}))));
+    sample.append(sv('path', {d:'M2,5 L27,5', class:'edge ' + kind, 'marker-end': kind === 'related' ? null : `url(#lg-${kind})`}));
+    return el('span', {title:L.edgeHelp[kind]}, sample, L.edges[kind]);
+  }));
+}
+
+// ---------- hover tooltip: preview only (anything worth copying is in the pinned panel)
+function showTip(t, x, y) {
+  const s = latestSession(t.id), arts = model.artsBy.get(t.id) || [];
+  const tip = $('tip');
+  tip.replaceChildren(el('div', {class:'h'}, `${t.id} ${t.title}`),
+    t.goal ? el('div', {class:'r'}, oneLine(t.goal)) : null,
+    el('div', {class:'r'}, [t.target, s ? `${s.name || s.id} · ${L.status[s.state] || s.state} · ${ago(reportTime(s))}` : null].filter(Boolean).join(' · ')),
+    s && s.summary ? el('div', {class:'s'}, oneLine(s.summary)) : null,
+    arts.length ? el('div', {class:'r'}, arts.map(a => a.kind === 'pr' ? chipText(a) : `${chipText(a)} ${String(a.ref).split('/').pop()}`).join('  ')) : null);
+  tip.hidden = false;
+  placeTip(x, y);
+}
+function placeTip(x, y) {
+  const tip = $('tip');
+  if (tip.hidden) return;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.max(4, Math.min(x + 14, innerWidth - w - 4)) + 'px';
+  tip.style.top = Math.max(4, Math.min(y + 14, innerHeight - h - 4)) + 'px';
+}
+function hideTip() { $('tip').hidden = true; }
+
+// ---------- pinned detail panel: a drawer that stays until closed
+// ---------- collapsible side column (per-viewer preference; works without storage)
+const SIDE_KEY = 'hq-dashboard.side-collapsed';
+let sideCollapsed = false;
+function loadSidePref() { try { return localStorage.getItem(SIDE_KEY) === '1'; } catch (_) { return false; } }
+function saveSidePref(v) { try { localStorage.setItem(SIDE_KEY, v ? '1' : '0'); } catch (_) { /* storage unavailable */ } }
+function setSideCollapsed(collapsed, persist) {
+  sideCollapsed = collapsed;
+  document.querySelector('.main').classList.toggle('side-collapsed', collapsed);
+  $('side-body').inert = collapsed;
+  const btn = $('side-btn'), label = collapsed ? L.sideOpen : L.sideClose;
+  btn.setAttribute('aria-expanded', String(!collapsed));
+  btn.title = label; btn.setAttribute('aria-label', label);
+  if (!btn.firstChild) btn.append(el('span', {class:'chev'}, icon('chev', 13)));
+  if (persist) saveSidePref(collapsed);
+}
+$('side-btn').addEventListener('click', e => { e.stopPropagation(); setSideCollapsed(!sideCollapsed, true); });
+$('side').addEventListener('click', e => { if (sideCollapsed && !e.target.closest('#side-btn')) setSideCollapsed(false, true); });
+
+function select(id, scroll) {
+  if (sideCollapsed) setSideCollapsed(false, false);   // a pinned detail needs the column
+  const changed = selected !== id || !detailOpen();
+  selected = id;
+  hideTip();
+  for (const n of document.querySelectorAll('#graph .node')) n.classList.toggle('sel', n.dataset.task === id);
+  for (const w of document.querySelectorAll('#waits .wait')) w.classList.toggle('sel', w.dataset.task === id);
+  highlight();
+  renderDetail(changed);
+  if (scroll) document.querySelector(`#graph .node[data-task="${CSS.escape(id)}"]`)?.scrollIntoView({block:'nearest', inline:'nearest'});
+}
+function detailOpen() { return $('detail-wrap').classList.contains('open'); }
+function setDetailOpen(open) {
+  const wrap = $('detail-wrap');
+  wrap.classList.toggle('open', open);
+  wrap.inert = !open;
+}
+function closeDetail() {
+  const id = selected;
+  selected = null;
+  setDetailOpen(false);
+  detailSig = null;
+  for (const n of document.querySelectorAll('#graph .node.sel, #waits .wait.sel')) n.classList.remove('sel');
+  highlight();
+  if (id) document.querySelector(`#graph .node[data-task="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
+}
+function renderDetail(force) {
+  const box = $('detail');
+  const t = selected && model && model.tasks.get(selected);
+  if (!t) { setDetailOpen(false); detailSig = null; delete box.dataset.task; return; }
+  const sessions = model.sessionsBy.get(t.id) || [];
+  const arts = model.artsBy.get(t.id) || [];
+  const waits = model.waitsBy.get(t.id) || [];
+  const edges = state.edges.filter(e => e.from === t.id || e.to === t.id);
+  const sig = JSON.stringify([lang, t, sessions, arts, waits, edges, edges.map(e => model.tasks.get(e.from === t.id ? e.to : e.from)?.title)]);
+  // Polling must not disturb a pinned panel: skip when its data is unchanged, defer while text is selected in it.
+  if (!force && sig === detailSig && detailOpen()) return;
+  if (!force && selectionInside(box)) { detailPending = true; return; }
+  const keepScroll = box.dataset.task === t.id ? $('side').scrollTop : null;
+  const [cur, label] = step(t);
+  const field = (name, value) => value ? [el('dt', {}, name), el('dd', {}, value)] : null;
+  const rel = edges.map(e => {
+    const out = e.from === t.id, other = out ? e.to : e.from, o = model.tasks.get(other);
+    const sample = sv('svg', {width:'26', height:'10', 'aria-hidden':'true'}, sv('path', {d:'M2,5 L24,5', class:'edge ' + e.kind}));
+    return el('li', {title:`${e.from} ${L.edges[e.kind]} ${e.to}`}, sample, ` ${out ? '→' : '←'} `, copyable(other), o ? ` ${o.title}` : '');
+  });
+  box.replaceChildren(...[
+    closeBtn(closeDetail),
+    el('header', {}, copyable(t.id), el('h2', {}, t.title), el('span', {class:'pill p-' + t.status}, L.status[t.status] || t.status)),
+    el('div', {class:'sub'}, el('span', {class:'meta', title:L.target}, t.target),
+      cur >= 0 ? el('div', {class:'stepper'}, L.steps.map((name, i) => el('span',
+        {class: i === cur ? 'cur p-' + t.status : (i < cur ? 'past' : '')}, i === cur ? label : name))) : null),
+    el('dl', {class:'f'}, field(L.goal, t.goal), field(L.deliverable, t.deliverable), field(L.doneWhen, t.done_criteria), field(L.authority, t.authority)),
+    waits.length ? [el('hr'), el('ul', {}, waits.map(w => el('li', {},
+      el('span', {class:'kind k-' + w.kind}, L.kinds[w.kind] || w.kind), ' ', copyable(w.id), ' ', el('span', {}, w.summary), copyBtn(w.summary))))] : null,
+    sessions.length ? [el('hr'), sessions.map(s => el('div', {class:'sess'},
+      el('div', {}, s.name ? el('b', {}, s.name + ' ') : null, copyable(s.id), ' ', el('span', {class:'meta'}, L.status[s.state] || s.state), ' ',
+        s.reported_at ? when(s.reported_at) : el('span', {class:'meta'}, L.noReport)),
+      s.branch || s.cwd ? el('div', {}, s.branch ? [el('span', {class:'art', title:L.branch}, '⎇'), copyable(s.branch), ' '] : null, s.cwd ? copyable(s.cwd) : null) : null,
+      s.summary ? el('div', {class:'sum'}, el('span', {}, s.summary), copyBtn(s.summary)) : null))] : null,
+    arts.length ? [el('hr'), el('ul', {}, arts.map(a => el('li', {title:a.label},
+      el('span', {class:'art'}, chipText(a)),
+      isUrl(a.ref) ? el('span', {class:'copyable'}, el('a', {href:a.ref, target:'_blank', rel:'noopener noreferrer'}, a.ref), copyBtn(a.ref)) : copyable(a.ref))))] : null,
+    rel.length ? [el('hr'), el('ul', {}, rel)] : null].flat(4).filter(Boolean));
+  box.setAttribute('aria-label', `${t.id} ${t.title}`);
+  box.dataset.task = t.id;
+  box.dataset.builds = String(Number(box.dataset.builds || 0) + 1);
+  setDetailOpen(true);
+  if (keepScroll !== null) $('side').scrollTop = keepScroll;
+  else box.scrollIntoView({block:'nearest'});
+  detailSig = sig; detailPending = false;
+}
+
+// ---------- history drawer
+function renderHistory() {
+  const box = $('history');
+  $('history-btn').setAttribute('aria-expanded', String(historyOpen));
+  if (!historyOpen) { box.hidden = true; return; }
+  const events = state ? state.events : [];
+  box.setAttribute('aria-label', L.history);
+  box.replaceChildren(closeBtn(() => { historyOpen = false; renderHistory(); $('history-btn').focus(); }),
+    events.length ? el('ol', {}, events.map(e => el('li', {}, el('span', {class:'meta'}, fmtTime(e.ts)), el('span', {class:'ty'}, e.type),
+      [e.task_id, e.session_id].filter(Boolean).length ? el('span', {class:'meta'}, [e.task_id, e.session_id].filter(Boolean).join(' ') + ' ') : null, e.text)))
+      : el('p', {class:'empty'}, L.noEvents));
+  box.hidden = false;
+}
+
+// ---------- render and poll
+function applyLang(code) {
+  const base = String(code || 'en').split('-')[0];
+  lang = LABELS[code] ? code : (LABELS[base] ? base : 'en');
+  L = LABELS[lang];
+  document.documentElement.lang = code || 'en';
+  document.title = 'HQ';
+  $('title').title = L.readonly;
+  $('title').setAttribute('aria-label', L.readonly);
+  setSideCollapsed(sideCollapsed, false);
+}
+function render() {
+  applyLang(state ? state.lang : document.documentElement.lang);
+  model = state ? build(state) : null;
+  if (selected && model && !model.tasks.has(selected)) closeDetail();
+  renderHeader();
+  renderWaits();
+  renderGraph();
+  renderLegend();
+  renderDetail();
+  if (historyOpen) renderHistory();
+}
+function setConn(kind) {
+  const text = kind === 'live' ? L.live : kind === 'down'
+    ? (state ? `${L.offlineData} ${fmtTime(state.generated_at)}` : L.offlineNone) : L.connecting;
+  $('conn-dot').className = 'dot ' + (kind === 'live' ? 'live' : kind === 'down' ? 'down' : '');
+  $('conn').title = text;
+  setText('conn-text', text);
+  $('updated').classList.toggle('old', kind === 'down');
+}
+async function refresh() {
+  try {
+    const response = await fetch('/api/state' + (revision === null ? '' : '?since=' + encodeURIComponent(revision)), {cache:'no-store'});
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const data = await response.json();
+    if (!data.unchanged) { state = data; render(); }
+    revision = data.revision;
+    setConn('live');
+  } catch (_) {
+    setConn('down');
+  } finally {
+    setTimeout(refresh, 3000);
+  }
+}
+document.addEventListener('selectionchange', () => {
+  if (detailPending && !selectionInside($('detail'))) renderDetail();
+  if (waitsPending && !selectionInside($('waits'))) renderWaits();
+});
+$('history-btn').addEventListener('click', () => { historyOpen = !historyOpen; renderHistory(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (sideCollapsed) { if (historyOpen) { historyOpen = false; renderHistory(); $('history-btn').focus(); } return; }
+  const row = document.activeElement?.closest?.('#waits .wrow');
+  if (historyOpen) { historyOpen = false; renderHistory(); $('history-btn').focus(); }
+  else if (row && expanded.has(row.dataset.wait)) { setWaitOpen(row.dataset.wait, false); row.querySelector('.wait').focus(); }
+  else if (detailOpen()) closeDetail();
+  else if (expanded.size) setWaitOpen([...expanded].pop(), false);
+});
+sideCollapsed = loadSidePref();
+try { state = JSON.parse($('hq-initial').textContent); } catch (_) { state = null; }
+if (state && state.revision !== undefined) revision = state.revision; else state = null;
+render();
+setConn(state ? 'live' : 'connecting');
+setInterval(() => { if (state) { renderHeader(); renderGraph(); } }, 30000);  // keep ages fresh
+if (location.protocol === 'http:' || location.protocol === 'https:') refresh(); else setConn('down');
+</script>
+</body>
+</html>

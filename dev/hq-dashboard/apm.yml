@@ -1,0 +1,12 @@
+name: hq-dashboard
+description: 'Ledger CLI and read-only local browser dashboard for an HQ that commands
+  parallel host sessions: tasks, sessions, waiting-for-you items (approval, decision,
+  review, launch, criteria), artifacts, a task relationship graph, and an event log
+  in one SQLite ledger. Each update is one command with a JSON receipt; a session''s
+  turn-end note is recorded verbatim with `report`. Use when the hq-adjutant skill
+  initializes, resumes, serves, or updates its HQ ledger, or when the user explicitly
+  asks for the HQ dashboard. Not for one session''s own progress (session-dashboard),
+  collecting approvals in the browser, or planning and verifying the work itself.'
+license: MIT
+type: skill
+version: '0.1.0'

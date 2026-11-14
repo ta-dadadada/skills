@@ -45,9 +45,10 @@ python3 meta/shiranui-hanten/scripts/validate_skill.py dev/pr-handoff
 python3 meta/shiranui-hanten/scripts/validate_skill.py dev/* meta/*
 python3 -m unittest discover -s dev/local-intake/tests -v
 python3 -m unittest discover -s dev/session-dashboard/tests -v
+python3 -m unittest discover -s dev/hq-dashboard/tests -v
 ```
 
-The validator checks frontmatter, names, description limits, relative links, portability warnings, and script executable bits. The `CI` workflow always runs the full validator on `ubuntu-slim` across Python 3.11, 3.12, 3.13, and 3.14. The `local-intake` and `session-dashboard` runtime tests run on those versions only when Python sources, Python configuration or dependencies, or the CI workflow change; see `docs/development-guide.md` for the change filter. Use `git diff --check` before committing to catch whitespace errors.
+The validator checks frontmatter, names, description limits, relative links, portability warnings, and script executable bits. The `CI` workflow always runs the full validator on `ubuntu-slim` across Python 3.11, 3.12, 3.13, and 3.14. The `local-intake`, `session-dashboard`, and `hq-dashboard` runtime tests run on those versions only when Python sources, Python configuration or dependencies, the CI workflow, or `dev/hq-dashboard/assets/` change; see `docs/development-guide.md` for the change filter. Use `git diff --check` before committing to catch whitespace errors.
 
 ## Coding Style & Naming Conventions
 
