@@ -50,7 +50,7 @@ jobs:
           python_changed=false
           while IFS= read -r -d '' changed_path; do
             case "$changed_path" in
-              *.py|*.pyi|.github/workflows/ci.yml)
+              *.py|*.pyi|.github/workflows/ci.yml|dev/hq-dashboard/assets/*)
                 python_changed=true
                 ;;
             esac
@@ -103,3 +103,9 @@ jobs:
         run: |
           python3 -m unittest discover -s dev/session-dashboard/tests -v
           python3 dev/session-dashboard/scripts/dashboard.py --help
+
+      - name: Test hq-dashboard
+        if: needs.changes.outputs.python == 'true'
+        run: |
+          python3 -m unittest discover -s dev/hq-dashboard/tests -v
+          python3 dev/hq-dashboard/scripts/hq.py --help

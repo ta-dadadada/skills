@@ -1,0 +1,15 @@
+name: hq-adjutant
+description: 'Act as the user''s HQ adjutant: the single point of contact that commands
+  5-8 parallel host sessions (not subagents) across repositories and research or document
+  work. Confirm each task''s target, deliverable, done criteria, and authority before
+  launch; brief, launch, and queue sessions; record every session report in the hq-dashboard
+  ledger; batch approvals and decisions to the user; verify results before reporting
+  them as fact. Pure command: never edits project files, commits, or opens PRs itself.
+  Use only when the user explicitly asks you to act as adjutant or HQ orchestrator
+  of parallel sessions, or to resume an existing HQ. Not for delegating to subagents
+  inside one session (orchestrate), one session''s own progress dashboard (session-dashboard),
+  working as a briefed session (hq-subordinate), handing over one session (session-handover),
+  or email, calendar, external-service, cloud, or SSH sessions.'
+license: MIT
+type: skill
+version: '0.1.0'
