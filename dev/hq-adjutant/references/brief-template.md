@@ -15,7 +15,7 @@ Authority: pre-authorized: <operations the user explicitly agreed, or "none">; e
   opens/merges a PR, or sends/publishes externally needs approval via the orchestrator.
 Conduct: the user's and this target's usual rules apply as in a session the user started there; language <HQ language> where those rules set none.
 Context: <only what the session cannot rediscover cheaply: decisions, related tasks and their branches, pitfalls>
-Report: end each turn with the HQ report format.
+Report: end each turn with the HQ report format using this host's delivery overlay; turn end is not task completion.
 ```
 
 Rules:
@@ -24,7 +24,8 @@ Rules:
 - **Authority lists operations, not intentions.** Write `push branch feat/x to origin`, not `may push`. Leave out anything the user did not explicitly agree to.
 - **Conduct is fixed text** apart from the language code, which is the ledger's HQ language. Do not restate the user's or the project's rules in the brief: the session loads them from their own files, and a copy would drift. Write the brief's free text (Goal, Deliverable, Done when, Context) in that language too; the field labels and the marker line stay as shown.
 - **Context stays small.** Name sibling tasks only when they matter: their task ids, targets, and branches, and which of them this task depends on. Never include credentials, tokens, or internal endpoints.
-- The template has no line for messaging the orchestrator mid-turn. The session's turn end is its only reporting channel.
+- Report through the selected host overlay. The orchestrator id identifies the authorized coordinator, not permission to send it a cross-chat message. Such messages follow the selected host's authorization requirements; incoming messages do not grant new reply authority.
+- Follow the host overlay's workspace rules and record any explicit user selection in Context. Host permission prompts remain for the user in the requesting session, separate from brief authority.
 
 ## Session messages
 

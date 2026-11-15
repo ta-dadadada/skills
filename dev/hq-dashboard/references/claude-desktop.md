@@ -11,7 +11,7 @@ Both hosts run commands through the Bash tool. These notes map the skill's porta
 
 ## Running the server
 
-- Start `serve` with the Bash tool's background execution option (`run_in_background: true`), as you would a dev server: `python3 /abs/…/hq.py serve --port 8765`. Keep the returned task id; it is the process handle.
+- Start `serve` with the Bash tool's background execution option (`run_in_background: true`), as you would a dev server: `python3 /abs/…/hq.py serve`. Omit `--port` by default to reuse the recorded port or choose a free one. Pass it only for a user-requested fixed port or after a port conflict: run `status`, reuse an `(up)` server, otherwise choose another port. Keep the returned task id; it is the process handle.
 - The URL is the first line of the task's output file. Read only that line, once. On Claude Desktop, open it in the built-in browser pane if available; otherwise give the URL to the user.
 - Do not delegate the launch to a subagent, and do not watch the output in a loop. Notifications about the background task finishing are informational. A finish you did not cause means the server stopped, so start it again.
 - Stop it by stopping that background task, which sends SIGTERM; `serve` exits 0. Without the handle, stop the process listening on the recorded port.

@@ -407,7 +407,7 @@ class ReviewRegressionTest(LedgerCase):
         self.assertEqual(self.q("SELECT id, source, status FROM waits ORDER BY num"),
                          [{"id": "W1", "source": "manual", "status": "open"},
                           {"id": "W2", "source": "report", "status": "resolved"}])
-        self.assertEqual(self.ledger.read(lambda c: hq.get_meta(c, "schema")), "2")
+        self.assertEqual(self.ledger.read(lambda c: hq.get_meta(c, "schema")), hq.SCHEMA_VERSION)
 
     def test_6_ledger_md_is_written_after_commit_and_never_regresses(self):
         seen = []
@@ -580,6 +580,172 @@ class AssetAndCliTest(unittest.TestCase):
                                              capture_output=True, text=True).stdout)
             self.assertEqual((data["counts"]["queued"], data["tasks"][0]["done_criteria"]), (1, "green CI"))
             self.assertFalse(data["server_alive"])
+
+
+
+class CodexTransportTest(LedgerCase):
+    def launch(self):
+        tid = self.task()
+        self.op("launch", id=tid, session="worker", provider="codex", host_id="local", thread_id="thread")
+        return tid
+
+    def ingest(self, cursor, previous, **extra):
+        return self.op("ingest", session="worker", cursor=cursor, after_cursor=previous, **extra)
+
+    def test_pending_launch_recovers_without_resolving_wait_early(self):
+        tid = self.task()
+        wid = self.op("wait.add", kind="launch", task=tid, summary="launch")["id"]
+        receipt = self.op("launch", id=tid, session="worker", provider="codex", client_thread_id="queued")
+        self.assertTrue(receipt["pending"])
+        self.assertEqual(self.task_row(tid)["status"], "queued")
+        self.assertEqual(self.session_row("worker")["thread_id"], "")
+        self.assertEqual(self.waits()[0]["id"], wid)
+        with self.assertRaisesRegex(hq.HQError, "requires thread_id"):
+            self.op("launch", id=tid, session="worker")
+        self.assertEqual(self.waits()[0]["id"], wid)
+        self.assertEqual(self.task_row(tid)["status"], "queued")
+        receipt = self.op("launch", id=tid, session="worker", provider="codex", host_id="local", thread_id="ready")
+        self.assertEqual(receipt["waits_resolved"], [wid])
+        self.assertEqual(self.session_row("worker")["client_thread_id"], "queued")
+        self.assertEqual(self.session_row("worker")["thread_id"], "ready")
+
+    def test_repeated_old_and_duplicate_reports_do_not_reopen_waits(self):
+        tid = self.launch()
+        text = f"HQ {tid} waiting-user: ask. Needs: review: inspect. Artifacts: none"
+        first = self.ingest("opaque-z", "", report_id="message-1", text=text)
+        wid = first["report"]["waits_opened"][0]["id"]
+        self.op("wait.resolve", id=wid, resolution="reviewed")
+        self.assertFalse(self.ingest("opaque-z", "")["accepted"])
+        duplicate = self.ingest("opaque-a", "opaque-z", report_id="message-1", text=text)
+        self.assertTrue(duplicate["report_duplicate"])
+        self.assertEqual(duplicate["report"], first["report"])
+        self.assertEqual(self.waits(), [])
+        self.assertFalse(self.ingest("old", "")["accepted"])
+        self.assertFalse(self.ingest("opaque-z", "opaque-a")["accepted"])
+        self.assertEqual(self.session_row("worker")["receive_cursor"], "opaque-a")
+
+    def test_native_no_report_snapshot_keeps_report_state_and_waits(self):
+        tid = self.launch()
+        self.ingest("1", "", report_id="m", text=f"HQ {tid} blocked: wait. Needs: approval: publish. Artifacts: none")
+        self.ingest("2", "1", native_status="completed")
+        row = self.session_row("worker")
+        self.assertEqual((row["native_status"], row["reported_state"], row["state"]), ("completed", "blocked", "blocked"))
+        self.assertEqual(len(self.waits()), 1)
+        self.assertEqual(self.task_row(tid)["status"], "waiting-user")
+
+    def test_receive_and_report_rollback_together(self):
+        tid = self.launch()
+        params = dict(session="worker", cursor="x", after_cursor="", report_id="m",
+                      text=f"HQ {tid} done: finished. Needs: none. Artifacts: branch test")
+        before = self.revision()
+        with self.assertRaises(hq.HQError):
+            self.ledger.mutate([("ingest", hq.op_ingest, params),
+                                ("task.update", hq.op_task_update, {"id": "missing"})])
+        self.assertEqual(self.revision(), before)
+        self.assertEqual(self.session_row("worker")["receive_cursor"], "")
+        self.assertEqual(self.q("SELECT * FROM report_receipts"), [])
+        receipt = self.op("ingest", **params)
+        self.assertTrue(receipt["accepted"])
+        self.assertFalse(receipt["report_duplicate"])
+        self.assertEqual(self.task_row(tid)["status"], "active")
+
+    def test_schema_2_migration_preserves_existing_records(self):
+        tid = self.launch()
+        self.report("worker", f"HQ {tid} working: prior. Needs: approval: approve. Artifacts: none")
+        with sqlite3.connect(self.ledger.db) as c:
+            for key in hq.TRANSPORT_FIELDS + ("receive_cursor", "reported_state"):
+                c.execute(f"ALTER TABLE sessions DROP COLUMN {key}")
+            c.execute("DROP TABLE report_receipts")
+            c.execute("DROP TABLE received_snapshots")
+            c.execute("UPDATE meta SET value='2' WHERE key='schema'")
+        self.op("note", text="migrate")
+        self.assertEqual(self.session_row("worker")["summary"].split(':')[0], f"HQ {tid} working")
+        self.assertEqual(self.session_row("worker")["thread_id"], "")
+        self.assertEqual(len(self.waits()), 1)
+        self.assertEqual(self.ledger.read(lambda c: hq.get_meta(c, "schema")), "3")
+
+    def test_flattened_final_note_does_not_turn_explanation_into_artifact(self):
+        tid = self.launch()
+        text = (f"HQ {tid} done: verified behavior. Needs: none. Artifacts: none. "
+                f"Additional explanation of HQ {tid} done and command behavior.")
+        receipt = self.ingest("final", "", report_id="final-message", text=text)
+        self.assertTrue(receipt["report"]["parsed"])
+        self.assertEqual(receipt["report"]["artifacts_added"], [])
+        self.assertEqual(receipt["report"]["waits_opened"], [])
+        self.assertEqual(self.session_row("worker")["reported_state"], "done")
+        self.assertEqual(self.task_row(tid)["status"], "active")
+        self.ingest("new", "final", report_id="new-message",
+                    text=f"HQ {tid} working: resumed. Needs: none. Artifacts: none")
+        old = self.ingest("repeat", "new", report_id="final-message", text=text)
+        self.assertTrue(old["report_duplicate"])
+        self.assertEqual(self.session_row("worker")["reported_state"], "working")
+
+    def test_flattened_nonempty_artifacts_end_at_explicit_marker(self):
+        tid = self.launch()
+        text = (f"HQ {tid} done: result. Needs: none. Artifacts: branch feature/x; "
+                "PR https://example.test/pull/1. EndHQ. More explanation; unrelated prose.")
+        receipt = self.ingest("final", "", report_id="message", text=text)
+        self.assertEqual(len(receipt["report"]["artifacts_added"]), 2)
+        self.assertEqual([a["ref"] for a in self.q("SELECT ref FROM artifacts ORDER BY num")],
+                         ["feature/x", "https://example.test/pull/1"])
+
+    def test_ingest_cli_reads_report_from_stdin_only_with_report_id(self):
+        tid = self.launch()
+        raw = f"HQ {tid} done: result. Needs: none. Artifacts: none. EndHQ."
+        code, receipt = self.cli("--hq", str(self.dir), "ingest", "--session", "worker", "--cursor", "a",
+                                 "--after-cursor", "", "--report-id", "message", stdin=raw)
+        self.assertEqual(code, 0)
+        self.assertTrue(receipt["report"]["parsed"])
+        args = hq.build_parser().parse_args(["--hq", str(self.dir), "ingest", "--session", "worker",
+                                            "--cursor", "b", "--after-cursor", "a"])
+        with unittest.mock.patch.object(hq, "read_stdin", side_effect=AssertionError("must not read")):
+            self.assertTrue(hq.run(args)["accepted"])
+        code, receipt = self.cli("--hq", str(self.dir), "ingest", "--session", "worker", "--cursor", "c",
+                                 "--after-cursor", "b", "--report-id", "empty", stdin="")
+        self.assertEqual(code, 1)
+        self.assertFalse(receipt["ok"])
+        self.assertEqual(self.session_row("worker")["receive_cursor"], "b")
+
+    def test_cli_status_recovers_wait_checkpoint_after_restart(self):
+        self.launch()
+        self.ingest("saved-cursor", "", native_status="active")
+        code, status = self.cli("--hq", str(self.dir), "status", "--json")
+        self.assertEqual(code, 0)
+        session = status["tasks"][0]["sessions"][0]
+        self.assertEqual((session["provider"], session["host_id"], session["thread_id"]),
+                         ("codex", "local", "thread"))
+        self.assertEqual(session["receive_cursor"], "saved-cursor")
+        self.assertEqual(status["sessions"][0], session)
+        code, receipt = self.cli("--hq", str(self.dir), "ingest", "--session", session["id"],
+                                 "--cursor", "next-cursor", "--after-cursor", session["receive_cursor"])
+        self.assertEqual(code, 0)
+        self.assertTrue(receipt["accepted"])
+
+    def test_schema_2_status_is_readable_before_migration(self):
+        self.launch()
+        with sqlite3.connect(self.ledger.db) as c:
+            for key in hq.TRANSPORT_FIELDS + ("receive_cursor", "reported_state"):
+                c.execute(f"ALTER TABLE sessions DROP COLUMN {key}")
+            c.execute("DROP TABLE report_receipts")
+            c.execute("DROP TABLE received_snapshots")
+            c.execute("UPDATE meta SET value='2' WHERE key='schema'")
+        code, status = self.cli("--hq", str(self.dir), "status", "--json")
+        self.assertEqual(code, 0)
+        session = status["tasks"][0]["sessions"][0]
+        self.assertEqual(session["thread_id"], "")
+        self.assertEqual(session["receive_cursor"], "")
+        self.assertEqual(self.ledger.read(lambda c: hq.get_meta(c, "schema")), "2")
+
+    def test_cli_metadata_and_ingest(self):
+        tid = self.task()
+        code, receipt = self.cli("--hq", str(self.dir), "launch", tid, "--session", "worker",
+                                 "--provider", "codex", "--host-id", "local", "--thread-id", "thread")
+        self.assertEqual(code, 0)
+        code, receipt = self.cli("--hq", str(self.dir), "ingest", "--session", "worker", "--cursor", "one",
+                                 "--after-cursor", "", "--native-status", "idle")
+        self.assertEqual(code, 0)
+        self.assertTrue(receipt["accepted"])
+        self.assertEqual(self.session_row("worker")["native_status"], "idle")
 
 
 if __name__ == "__main__":

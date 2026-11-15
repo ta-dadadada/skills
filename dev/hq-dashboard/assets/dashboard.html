@@ -216,7 +216,7 @@ const LABELS = {
     updated:'Last update', live:'Live', offlineData:'Server unreachable; showing data from', offlineNone:'Cannot reach the HQ server',
     connecting:'Connecting', close:'Close', sideClose:'Collapse the waiting column', sideOpen:'Expand the waiting column', copy:'Copy', copied:'Copied', copyFail:'Copy failed; select the text instead',
     chips:{active:'Active sessions (max 8)', waiting:'Waiting on you', blocked:'Blocked tasks', done:'Done tasks'},
-    goal:'goal', deliverable:'deliverable', doneWhen:'done when', authority:'authority', target:'Target', session:'Session',
+    goal:'goal', deliverable:'deliverable', doneWhen:'done when', authority:'authority', target:'Target', session:'Session', chatId:'Chat ID', pendingChat:'Pending setup ID', host:'Host', provider:'Provider',
     noReport:'no report yet', stale:'No report for over 30 minutes', branch:'Branch', expand:'Show details',
     ago:{now:'now', m:'m', h:'h', d:'d'},
     steps:['queued','launched','working','waiting','done'], verify:'to verify',
@@ -232,7 +232,7 @@ const LABELS = {
     updated:'最終更新', live:'自動更新中', offlineData:'サーバーに接続できません。表示は次の時点のもの：', offlineNone:'HQ サーバーに接続できません',
     connecting:'接続中', close:'閉じる', sideClose:'対応待ちの列を閉じる', sideOpen:'対応待ちの列を開く', copy:'コピー', copied:'コピーしました', copyFail:'コピーできませんでした。選択してコピーしてください',
     chips:{active:'稼働中のセッション（上限 8）', waiting:'あなたの対応待ち', blocked:'ブロック中のタスク', done:'完了したタスク'},
-    goal:'目的', deliverable:'成果物', doneWhen:'完了条件', authority:'事前承認', target:'対象', session:'セッション',
+    goal:'目的', deliverable:'成果物', doneWhen:'完了条件', authority:'事前承認', target:'対象', session:'セッション', chatId:'チャットID', pendingChat:'起動待ちID', host:'ホスト', provider:'実行環境',
     noReport:'報告なし', stale:'30 分以上報告がありません', branch:'ブランチ', expand:'詳細を表示',
     ago:{now:'今', m:'分前', h:'時間前', d:'日前'},
     steps:['待機','起動','作業','待ち','完了'], verify:'確認待ち',
@@ -344,6 +344,14 @@ function copyBtn(text) {
 function copyable(text, mono) {
   if (!text) return null;
   return el('span', {class:'copyable'}, el('span', {class:mono === false ? '' : 'mono'}, text), copyBtn(text));
+}
+function nativeSessionDetails(s) {
+  if (!s || !(s.provider || s.host_id || s.thread_id || s.client_thread_id)) return null;
+  return el('div', {class:'native-session'},
+    s.provider ? el('div', {}, el('span', {class:'meta'}, L.provider + ': '), copyable(s.provider)) : null,
+    s.host_id ? el('div', {}, el('span', {class:'meta'}, L.host + ': '), copyable(s.host_id)) : null,
+    s.thread_id ? el('div', {}, el('span', {class:'meta'}, L.chatId + ': '), copyable(s.thread_id)) :
+      s.client_thread_id ? el('div', {}, el('span', {class:'meta'}, L.pendingChat + ': '), copyable(s.client_thread_id)) : null);
 }
 function closeBtn(onClose) {
   const btn = el('button', {type:'button', class:'iconbtn x', title:L.close, 'aria-label':L.close}, icon('close', 12));
@@ -469,7 +477,8 @@ function renderWaits(force) {
       closeBtn(() => { setWaitOpen(w.id, false); row.focus({preventScroll:true}); }),
       el('div', {class:'full'}, w.summary),
       el('div', {class:'line'}, copyable(w.id), t ? [copyable(t.id), el('span', {}, t.title)] : null),
-      sess || w.created_at ? el('div', {class:'line'}, sess ? [sess.name ? el('span', {}, sess.name) : null, copyable(sess.id)] : null, when(w.created_at)) : null);
+      sess || w.created_at ? el('div', {class:'line'}, sess ? [sess.name ? el('span', {}, sess.name) : null, copyable(sess.id)] : null, when(w.created_at)) : null,
+      nativeSessionDetails(sess));
     const slide = el('div', {class:'slide'}, el('div', {class:'inner'}, more));
     slide.inert = true;
     return el('li', {class:'wrow', 'data-wait':w.id}, row, slide);
@@ -708,6 +717,7 @@ function renderDetail(force) {
     sessions.length ? [el('hr'), sessions.map(s => el('div', {class:'sess'},
       el('div', {}, s.name ? el('b', {}, s.name + ' ') : null, copyable(s.id), ' ', el('span', {class:'meta'}, L.status[s.state] || s.state), ' ',
         s.reported_at ? when(s.reported_at) : el('span', {class:'meta'}, L.noReport)),
+      nativeSessionDetails(s),
       s.branch || s.cwd ? el('div', {}, s.branch ? [el('span', {class:'art', title:L.branch}, '⎇'), copyable(s.branch), ' '] : null, s.cwd ? copyable(s.cwd) : null) : null,
       s.summary ? el('div', {class:'sum'}, el('span', {}, s.summary), copyBtn(s.summary)) : null))] : null,
     arts.length ? [el('hr'), el('ul', {}, arts.map(a => el('li', {title:a.label},

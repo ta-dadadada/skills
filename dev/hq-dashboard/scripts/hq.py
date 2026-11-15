@@ -34,9 +34,17 @@ MD_EVENTS = 30
 MD_FINISHED = 50
 API_EVENTS = 200
 API_RESOLVED_WAITS = 50
-SCHEMA_VERSION = "2"  # 2: waits.source (report | manual)
+SCHEMA_VERSION = "3"  # 3: 接続情報と受信位置を原子的に保存
+TRANSPORT_FIELDS = ("provider", "host_id", "thread_id", "client_thread_id", "native_status")
 MD_MARK_RE = re.compile(rb"<!-- hq-ledger revision (\d+) -->")
 LANG_RE = re.compile(r"^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$")
+
+TRANSPORT_SCHEMA = """
+CREATE TABLE report_receipts (session_id TEXT NOT NULL, report_id TEXT NOT NULL,
+  receipt TEXT NOT NULL, PRIMARY KEY(session_id, report_id));
+CREATE TABLE received_snapshots (session_id TEXT NOT NULL, cursor TEXT NOT NULL,
+  PRIMARY KEY(session_id, cursor));
+"""
 
 SCHEMA = """
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -47,7 +55,11 @@ CREATE TABLE tasks (id TEXT PRIMARY KEY, num INTEGER NOT NULL, title TEXT NOT NU
 CREATE TABLE sessions (id TEXT PRIMARY KEY, task_id TEXT, name TEXT NOT NULL DEFAULT '',
   title TEXT NOT NULL DEFAULT '', cwd TEXT NOT NULL DEFAULT '', branch TEXT NOT NULL DEFAULT '',
   state TEXT NOT NULL, summary TEXT NOT NULL DEFAULT '', reported_at TEXT,
-  created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+  created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+  provider TEXT NOT NULL DEFAULT '', host_id TEXT NOT NULL DEFAULT '',
+  thread_id TEXT NOT NULL DEFAULT '', client_thread_id TEXT NOT NULL DEFAULT '',
+  native_status TEXT NOT NULL DEFAULT '', receive_cursor TEXT NOT NULL DEFAULT '',
+  reported_state TEXT NOT NULL DEFAULT '');
 CREATE INDEX sessions_task ON sessions(task_id);
 CREATE TABLE edges (from_task TEXT NOT NULL, kind TEXT NOT NULL, to_task TEXT NOT NULL,
   created_at TEXT NOT NULL, PRIMARY KEY (from_task, kind, to_task));
@@ -144,7 +156,7 @@ class Ledger:
         try:
             c.execute("PRAGMA journal_mode=WAL")
             c.execute("BEGIN IMMEDIATE")
-            for statement in SCHEMA.split(";"):
+            for statement in (SCHEMA + TRANSPORT_SCHEMA).split(";"):
                 if statement.strip():
                     c.execute(statement)
             ts = now()
@@ -256,7 +268,10 @@ def set_meta(c, key, value):
 
 def migrate(c):
     """Upgrade an older ledger inside the caller's write transaction."""
-    if get_meta(c, "schema", "1") == "1":
+    version = get_meta(c, "schema", "1")
+    if version not in ("1", "2", SCHEMA_VERSION):
+        raise HQError(f"unsupported ledger schema {version}")
+    if version == "1":
         # Origin of existing waits: those recorded by `wait add` left a wait.add event that
         # starts with their id; the rest of the approval/decision/review waits with a session
         # can only have come from `report`.
@@ -264,6 +279,14 @@ def migrate(c):
         c.execute("UPDATE waits SET source='report' WHERE kind IN ('approval','decision','review')"
                   " AND session_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM events e WHERE e.type='wait.add'"
                   " AND (e.text = waits.id OR e.text LIKE waits.id || ' %'))")
+    columns = {r[1] for r in c.execute("PRAGMA table_info(sessions)")}
+    for key in TRANSPORT_FIELDS + ("receive_cursor", "reported_state"):
+        if key not in columns:
+            c.execute(f"ALTER TABLE sessions ADD COLUMN {key} TEXT NOT NULL DEFAULT ''")
+    c.execute("CREATE TABLE IF NOT EXISTS report_receipts (session_id TEXT NOT NULL,"
+              " report_id TEXT NOT NULL, receipt TEXT NOT NULL, PRIMARY KEY(session_id, report_id))")
+    c.execute("CREATE TABLE IF NOT EXISTS received_snapshots (session_id TEXT NOT NULL, cursor TEXT NOT NULL,"
+              " PRIMARY KEY(session_id, cursor))")
     set_meta(c, "schema", SCHEMA_VERSION)
 
 
@@ -364,7 +387,7 @@ def op_task_update(c, p):
 
 def upsert_session(c, sid, task_id, p, state_default="starting"):
     """Insert or update a session; returns (created, state)."""
-    fields = {k: text_param(p, k) for k in ("name", "title", "cwd", "branch")}
+    fields = {k: text_param(p, k) for k in ("name", "title", "cwd", "branch") + TRANSPORT_FIELDS}
     state = enum_param(p, "state", SESSION_STATES)
     summary = text_param(p, "summary")
     ts = now()
@@ -376,6 +399,10 @@ def upsert_session(c, sid, task_id, p, state_default="starting"):
                   (sid, task_id, fields["name"] or "", fields["title"] or "", fields["cwd"] or "",
                    fields["branch"] or "", state, (summary or "")[:SUMMARY_LIMIT],
                    ts if summary else None, ts, ts))
+        transport = {k: v for k, v in fields.items() if k in TRANSPORT_FIELDS and v is not None}
+        if transport:
+            c.execute(f"UPDATE sessions SET {', '.join(f'{k}=?' for k in transport)} WHERE id=?",
+                      (*transport.values(), sid))
         return True, state
     changes = {k: v for k, v in fields.items() if v is not None}
     if task_id is not None:
@@ -526,8 +553,17 @@ def op_launch(c, p):
     if task["status"] in FINAL_TASK:
         raise HQError(f"{task_id} is {task['status']}; set it back with task update {task_id} --status queued"
                       " before launching")
-    created, _ = upsert_session(c, sid, task_id, {**{k: p.get(k) for k in ("name", "title", "cwd", "branch")},
+    created, _ = upsert_session(c, sid, task_id, {**{k: p.get(k) for k in ("name", "title", "cwd", "branch") + TRANSPORT_FIELDS},
                                                   "state": "starting"})
+    effective = need_session(c, sid)
+    pending_launch = bool(p.get("client_thread_id") and not effective["thread_id"])
+    if effective["provider"] == "codex" and not effective["thread_id"] and not pending_launch:
+        raise HQError("Codex launch requires thread_id; pass client_thread_id explicitly to record a pending launch")
+    if pending_launch:
+        add_event(c, "launch.pending", f"{task_id} queued as {sid}", task_id, sid)
+        return {"ok": True, "task": task_id, "session": sid, "state": "starting",
+                "task_status": task["status"], "created": created, "pending": True,
+                "waits_resolved": []}
     resolved = [r[0] for r in c.execute(
         "SELECT id FROM waits WHERE status='open' AND task_id=? AND kind IN ('criteria','launch') ORDER BY num",
         (task_id,))]
@@ -598,6 +634,7 @@ def parse_report(text):
         return None
     nxt = STATUS_RE.search(t, m.end())
     region = t[m.end(): nxt.start() if nxt else len(t)]
+    region = re.split(r"\bEndHQ\.", region, maxsplit=1)[0]
     first_end = region.find("\n")
     first_end = len(region) if first_end < 0 else first_end
     marks = sorted((mm.start(), mm.end(), name) for name, rx in (("needs", NEEDS_RE), ("artifacts", ARTS_RE))
@@ -633,7 +670,7 @@ def parse_needs(text, fallback):
 
 
 def parse_artifacts(text):
-    if not text or is_none(text):
+    if not text or is_none(text) or re.match(r"^\s*(?:none|なし|無し)[.。](?:\s|$)", text, re.I):
         return []
     found = []
     for raw in ART_SPLIT_RE.split(text):
@@ -699,6 +736,8 @@ def op_report(c, p):
         state = parsed["state"] if parsed else session["state"]
         c.execute("UPDATE sessions SET task_id=?, state=?, summary=?, reported_at=?, updated_at=? WHERE id=?",
                   (task_id, state, summary, ts, ts, sid))
+    if parsed:
+        c.execute("UPDATE sessions SET reported_state=? WHERE id=?", (parsed["state"], sid))
     opened, resolved, added = [], [], []
     if parsed:
         needs = None
@@ -757,12 +796,55 @@ def op_report(c, p):
     return receipt
 
 
+def op_ingest(c, p):
+    """Atomically accept one ordered transport snapshot and its optional report."""
+    sid = text_param(p, "session", True)
+    session = need_session(c, sid)
+    cursor = text_param(p, "cursor", True)
+    previous = text_param(p, "after_cursor")
+    if previous is None:
+        raise HQError("missing after_cursor (use an empty string for the first snapshot)")
+    seen = c.execute("SELECT 1 FROM received_snapshots WHERE session_id=? AND cursor=?", (sid, cursor)).fetchone()
+    if seen or cursor == session["receive_cursor"] or previous != session["receive_cursor"]:
+        return {"ok": True, "session": sid, "accepted": False, "cursor": session["receive_cursor"],
+                "reason": "duplicate-or-stale", "report": None}
+    raw = p.get("text")
+    report_id = text_param(p, "report_id")
+    if raw is not None and (not isinstance(raw, str) or not raw.strip() or not report_id):
+        raise HQError("a report requires non-empty text and report_id")
+    if report_id and raw is None:
+        raise HQError("report_id requires text")
+    receipt = None
+    duplicate = False
+    if raw is not None:
+        saved = c.execute("SELECT receipt FROM report_receipts WHERE session_id=? AND report_id=?",
+                          (sid, report_id)).fetchone()
+        if saved:
+            receipt = json.loads(saved[0])
+            duplicate = True
+        else:
+            receipt = op_report(c, {"session": sid, "text": raw})
+            c.execute("INSERT INTO report_receipts VALUES (?, ?, ?)",
+                      (sid, report_id, json.dumps(receipt, ensure_ascii=False)))
+    c.execute("INSERT INTO received_snapshots VALUES (?, ?)", (sid, cursor))
+    changes = {"receive_cursor": cursor, "updated_at": now()}
+    native = text_param(p, "native_status")
+    if native is not None:
+        changes["native_status"] = native
+    c.execute(f"UPDATE sessions SET {', '.join(f'{k}=?' for k in changes)} WHERE id=?",
+              (*changes.values(), sid))
+    add_event(c, "ingest", f"snapshot received; report {'duplicate' if duplicate else 'received' if receipt else 'absent'}",
+              session["task_id"], sid)
+    return {"ok": True, "session": sid, "accepted": True, "cursor": cursor,
+            "report_duplicate": duplicate, "report": receipt}
+
+
 # op name → (function, required keys, optional keys)
 OPS = {
     "task.add": (op_task_add, {"title", "target", "deliverable", "done"}, {"goal", "authority", "status"}),
     "task.update": (op_task_update, {"id"}, {"title", "goal", "target", "deliverable", "done", "authority",
                                              "status"}),
-    "session.upsert": (op_session_upsert, {"id", "task"}, {"name", "title", "cwd", "branch", "state", "summary"}),
+    "session.upsert": (op_session_upsert, {"id", "task"}, {"name", "title", "cwd", "branch", "state", "summary"} | set(TRANSPORT_FIELDS)),
     "edge.add": (op_edge_add, {"from", "kind", "to"}, set()),
     "edge.remove": (op_edge_remove, {"from", "kind", "to"}, set()),
     "wait.add": (op_wait_add, {"kind", "summary"}, {"task", "session"}),
@@ -770,7 +852,8 @@ OPS = {
     "artifact.add": (op_artifact_add, {"task", "kind", "label", "ref"}, set()),
     "note": (op_note, {"text"}, {"task", "session"}),
     "report": (op_report, {"session", "text"}, {"task"}),
-    "launch": (op_launch, {"id", "session"}, {"name", "cwd", "branch", "title"}),
+    "launch": (op_launch, {"id", "session"}, {"name", "cwd", "branch", "title"} | set(TRANSPORT_FIELDS)),
+    "ingest": (op_ingest, {"session", "cursor", "after_cursor"}, {"native_status", "report_id", "text"}),
     "lang": (op_lang, {"code"}, set()),
 }
 
@@ -806,6 +889,14 @@ def rows(c, sql, args=()):
     return [dict(r) for r in c.execute(sql, args)]
 
 
+def session_rows(c):
+    result = rows(c, "SELECT * FROM sessions ORDER BY created_at, id")
+    for session in result:
+        for key in TRANSPORT_FIELDS + ("receive_cursor", "reported_state"):
+            session.setdefault(key, "")
+    return result
+
+
 def snapshot(c, events_limit=API_EVENTS):
     events_total = c.execute("SELECT COUNT(*) FROM events").fetchone()[0]
     return {
@@ -814,7 +905,7 @@ def snapshot(c, events_limit=API_EVENTS):
         "generated_at": now(),
         "server_url": get_meta(c, "server_url"),
         "tasks": rows(c, "SELECT * FROM tasks ORDER BY num"),
-        "sessions": rows(c, "SELECT * FROM sessions ORDER BY created_at, id"),
+        "sessions": session_rows(c),
         "edges": rows(c, "SELECT from_task AS 'from', kind, to_task AS 'to' FROM edges ORDER BY created_at"),
         "waits": rows(c, "SELECT * FROM waits WHERE status='open' ORDER BY num")
         + rows(c, "SELECT * FROM waits WHERE status='resolved' ORDER BY resolved_at DESC, num DESC LIMIT ?",
@@ -832,9 +923,9 @@ def status_data(c):
     for r in c.execute("SELECT status, COUNT(*) FROM tasks GROUP BY status"):
         counts[r[0]] = r[1]
     live = rows(c, "SELECT * FROM tasks WHERE status NOT IN ('done','dropped') ORDER BY num")
+    sessions = session_rows(c)
     for task in live:
-        task["sessions"] = rows(c, "SELECT id, name, state, branch, cwd, summary, reported_at FROM sessions"
-                                   " WHERE task_id=? ORDER BY created_at", (task["id"],))
+        task["sessions"] = [s for s in sessions if s["task_id"] == task["id"]]
         task["artifacts"] = rows(c, "SELECT id, kind, label, ref FROM artifacts WHERE task_id=? ORDER BY num",
                                  (task["id"],))
         task["edges_out"] = rows(c, "SELECT kind, to_task AS 'to' FROM edges WHERE from_task=?", (task["id"],))
@@ -844,7 +935,7 @@ def status_data(c):
     return {
         "ok": True, "lang": get_meta(c, "lang", "en"), "revision": int(get_meta(c, "revision", "0")),
         "server_url": get_meta(c, "server_url"), "counts": counts, "active_sessions": active_sessions,
-        "open_waits": open_waits, "tasks": live,
+        "open_waits": open_waits, "tasks": live, "sessions": sessions,
         "finished_tasks": rows(c, "SELECT id, title, status, target FROM tasks WHERE status IN ('done','dropped')"
                                   " ORDER BY num"),
     }
@@ -900,6 +991,10 @@ def status_text(data, hq):
             name = f" ({s['name']})" if s["name"] else ""
             out.append(f"    session {s['id']}{name} [{s['state']}] reported {s['reported_at'] or '-'}: "
                        f"{one_line(s['summary'], 160) or '-'}")
+            if s.get("provider"):
+                identity = " ".join(f"{key}={s[key]}" for key in TRANSPORT_FIELDS + ("receive_cursor", "reported_state")
+                                    if s.get(key))
+                out.append(f"      transport {identity}")
         for a in t["artifacts"]:
             out.append(f"    artifact {a['id']} [{a['kind']}] {a['ref']}")
     if not data["tasks"]:
@@ -1118,10 +1213,15 @@ def build_parser():
     p.add_argument("--session", required=True)
     p.add_argument("--task")
     p.add_argument("--text")
+    p = cmd(sub, "ingest", "atomically receive an ordered transport snapshot and optional report")
+    for flag in ("--session", "--cursor", "--after-cursor"):
+        p.add_argument(flag, required=True)
+    for flag in ("--native-status", "--report-id", "--text"):
+        p.add_argument(flag)
     p = cmd(sub, "launch", "record a started session: task active, session starting, criteria/launch waits resolved")
     p.add_argument("id")
     p.add_argument("--session", required=True)
-    for flag in ("--name", "--cwd", "--branch", "--title"):
+    for flag in ("--name", "--cwd", "--branch", "--title") + tuple("--" + k.replace("_", "-") for k in TRANSPORT_FIELDS):
         p.add_argument(flag)
 
     task = cmd(sub, "task", "add or update a task")
@@ -1143,7 +1243,7 @@ def build_parser():
     p = cmd(session_sub, "upsert", "create or update a session by host id")
     p.add_argument("id", metavar="SID")
     p.add_argument("--task", required=True)
-    for flag in ("--name", "--title", "--cwd", "--branch", "--summary"):
+    for flag in ("--name", "--title", "--cwd", "--branch", "--summary") + tuple("--" + k.replace("_", "-") for k in TRANSPORT_FIELDS):
         p.add_argument(flag)
     p.add_argument("--state", choices=SESSION_STATES)
 
@@ -1222,12 +1322,17 @@ def run(args):
         except json.JSONDecodeError as exc:
             raise HQError(f"invalid JSON: {exc}") from None
         return {"ok": True, "results": ledger.mutate(batch_ops(data))}
-    if command == "report":
+    if command == "ingest":
+        keys = ("session", "cursor", "after_cursor", "native_status", "report_id", "text")
+        params, name = params_from(args, {k: k for k in keys}), "ingest"
+        if args.report_id is not None and args.text is None:
+            params["text"] = read_stdin()
+    elif command == "report":
         params = params_from(args, {"session": "session", "task": "task"})
         params["text"] = args.text if args.text is not None else read_stdin()
         name = "report"
     elif command == "launch":
-        params = params_from(args, {k: k for k in ("id", "session", "name", "cwd", "branch", "title")})
+        params = params_from(args, {k: k for k in ("id", "session", "name", "cwd", "branch", "title") + TRANSPORT_FIELDS})
         name = "launch"
     elif command == "lang":
         params, name = {"code": args.code}, "lang"
@@ -1238,7 +1343,7 @@ def run(args):
         params = params_from(args, {k: k for k in keys + ("id",)})
         name = f"task.{args.action}"
     elif command == "session":
-        keys = ("id", "task", "name", "title", "cwd", "branch", "state", "summary")
+        keys = ("id", "task", "name", "title", "cwd", "branch", "state", "summary") + TRANSPORT_FIELDS
         params, name = params_from(args, {k: k for k in keys}), "session.upsert"
     elif command == "edge":
         params, name = {"from": args.src, "kind": args.kind, "to": args.dst}, f"edge.{args.action}"
