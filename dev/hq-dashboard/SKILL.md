@@ -5,7 +5,8 @@ description: >-
   parallel host sessions: tasks, sessions, waiting-for-you items (approval,
   decision, review, launch, criteria), artifacts, a task relationship graph,
   and an event log in one SQLite ledger. Each update is one command with a JSON
-  receipt; a session's turn-end note is recorded verbatim with `report`. Use
+  receipt; a session's turn-end note is recorded verbatim with `report` or atomic host
+  `ingest`. Use
   when the hq-adjutant skill initializes, resumes, serves, or updates its HQ
   ledger, or when the user explicitly asks for the HQ dashboard. Not for one
   session's own progress (session-dashboard), collecting approvals in the
@@ -15,14 +16,15 @@ compatibility: >-
   Python 3.11+ standard library only (sqlite3, http.server), a writable HQ
   folder, a local browser, and loopback HTTP on 127.0.0.1. No third-party
   packages or network services. Claude Code / Claude Desktop notes are in
-  references/claude-desktop.md.
+  references/claude-desktop.md; Codex desktop notes are in
+  references/codex-desktop.md.
 metadata:
   author: ta-dadadada
 ---
 
 # HQ Dashboard
 
-The ledger is the HQ's state of record; the dashboard is a read-only window on it. Every routine update is **one** CLI call whose input you already hold verbatim. The CLI parses, assigns ids, appends the event, and rewrites `ledger.md`; its receipt proves the dashboard is current. Updating the dashboard never costs a second call, a re-read, or a page check.
+The ledger is the HQ's state of record; the dashboard is a read-only window on it. Every routine update is **one** CLI call whose input you already hold verbatim. A host snapshot uses `ingest` to commit its cursor and optional report atomically; a direct notification uses `report`. The CLI parses, assigns ids, appends the event, and rewrites `ledger.md`; its receipt proves the dashboard is current. Updating the dashboard never costs a second call, a re-read, or a page check.
 
 The skill's work is complete when the ledger exists, the dashboard URL is live or its failure is reported, every received session note and user answer has an `"ok":true` receipt, and at shutdown the server is stopped with the ledger intact.
 
@@ -47,7 +49,7 @@ The skill's work is complete when the ledger exists, the dashboard URL is live o
 
 ## Workflow
 
-React to session notes and user turns only. Never poll the ledger or the page in an LLM loop.
+Record session notes and authorized bounded host collection results. Never poll the ledger or the page in an LLM loop. At activation, select [Claude execution](references/claude-desktop.md) or [Codex execution](references/codex-desktop.md); host collection belongs to the adjutant overlay.
 
 ### 1. Initialize or resume
 
@@ -81,6 +83,7 @@ React to session notes and user turns only. Never poll the ledger or the page in
 | Event | The one command |
 |---|---|
 | A session's turn-end note arrives | `report --session <id>` with the note piped verbatim through a quoted heredoc (below) |
+| A host snapshot arrives | `ingest --session <ledger-id> --cursor <returned-cursor> --after-cursor <saved-cursor> [--native-status S] [--report-id R --text NOTE]`; omit text for progress-only snapshots; see the CLI reference |
 | A session was started for a task | `launch T<n> --session <id> [--name N] [--cwd C] [--branch B] [--title T]` |
 | The user answers a wait item | `wait resolve W<n> --resolution 'user: "<their exact words>"'` |
 | A new task is proposed | `task add --title … --target … --deliverable … --done … [--goal] [--authority] [--status queued]` |
@@ -100,6 +103,7 @@ HQ_NOTE
 
 - `report` finds the `HQ T<n> <state>: … Needs: … Artifacts: …` line anywhere in the note. It sets the session state and summary, opens a wait for each `Needs` item, and resolves the approval, decision, and review waits that earlier reports of that session opened and this note no longer restates; waits you added with `wait add` stay open. It records artifacts and sets the task to `waiting-user`, `blocked`, or `active`. A session's `done` never completes the task, and a report never moves a session to another task; a mismatch comes back as a warning.
 - **The receipt is the proof.** After `"ok":true` do not run `status`, fetch the page or `/api/state`, open the browser, run `export`, or restart the server. The server reads SQLite on every request, the page polls, and `ledger.md` was already rewritten. Build your reply from the receipt alone: `waits_opened`, `waits_resolved`, `artifacts_added`, `state`, `parsed`.
+- Snapshot collection: keep provider, host id, operational thread id, pending client id, and native status separate from the stable ledger session id. Use `ingest` for atomic cursor/report recording and stale/duplicate handling; never feed a native status or progress summary to the HQ report parser. A host attention/approval state does not grant authority or resolve a user wait.
 - `"parsed":false` means the note had no usable status line. The summary and an event were still recorded. Ask the session for a report line and treat its state as unknown. Read any `warnings` before replying.
 - Record first, verify later. A report is recorded as *reported*. Checking claims is the caller's job, done before telling the user something is done or presenting an approval.
 
@@ -129,3 +133,5 @@ HQ_NOTE
 - `hq-subordinate`: defines the report line that `report` parses.
 - `session-dashboard`: one session's own progress dashboard, not cross-session.
 - Claude Code and Claude Desktop launch, allowlist, and restart notes: [references/claude-desktop.md](references/claude-desktop.md).
+
+- Codex desktop shell execution, permissions, and lifetime notes: [references/codex-desktop.md](references/codex-desktop.md).

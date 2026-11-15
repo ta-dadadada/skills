@@ -22,7 +22,7 @@ A note from `local_a1` arrives. The first action is `report` with the note piped
  "waits_resolved":[],"artifacts_added":["A2"]}
 ```
 
-Before presenting W4, you confirm that the branch exists and that its diff matches the claim. The reply:
+Before presenting W4, you confirm that the branch exists and that its diff matches the claim. In this example, the user has already authorized forwarding answers to T3 within this engagement. Without that scoped messaging authorization, leave a communication wait open and do not promise forwarding. The reply:
 
 ```
 Waiting on you
@@ -37,7 +37,7 @@ Next moves
 
 ## Example: user's turn answering approvals
 
-The user writes: `W4 yes, W5 not yet`. Run `wait resolve W4 --resolution 'user: "W4 yes, W5 not yet"'`. Then message T3's session with the approval template, quoting those words. Leave W5 open. The reply:
+The user writes: `W4 yes, W5 not yet`. Run `wait resolve W4 --resolution 'user: "W4 yes, W5 not yet"'`. The user has already authorized forwarding answers to T3 within this engagement, so message its session with the approval template, quoting those words. Without that scoped messaging authorization, keep a communication wait open and do not send; resolving W4 does not grant messaging authority. Leave W5 open. The reply below assumes the authorized message was sent:
 
 ```
 Waiting on you

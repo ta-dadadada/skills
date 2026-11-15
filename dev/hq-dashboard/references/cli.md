@@ -7,7 +7,7 @@ Call it as `python3 <abs>/hq.py [--hq DIR] <command> …`. HQ folder: `--hq` > `
 | Record | Id | Fields and enums |
 |---|---|---|
 | task | `T1, T2, …` | `title, goal, target, deliverable, done_criteria` (flag `--done`), `authority`; `status` ∈ `queued, active, waiting-user, blocked, done, dropped` |
-| session | host id | `task_id` (may be null for an unknown session reported without a task), `name, title, cwd, branch`, `state` ∈ `starting, working, idle, waiting-user, blocked, done, archived`, `summary` (≤ 400 chars), `reported_at` |
+| session | stable ledger id | `task_id` (may be null for an unknown session reported without a task), `name, title, cwd, branch`, `state` ∈ `starting, working, idle, waiting-user, blocked, done, archived`, `summary` (≤ 400 chars), `reported_at`; provider metadata: `provider, host_id, thread_id, client_thread_id, native_status`; `receive_cursor` and the report receipt history are persisted separately |
 | edge | `(from, kind, to)` | `kind` ∈ `depends_on, spawned_from, related`. `A depends_on B`: B blocks A. Same-target grouping is derived, not stored |
 | wait | `W1, …` | `kind` ∈ `approval, decision, review, launch, criteria`; optional `task_id`, `session_id`; `summary`; `status` ∈ `open, resolved`; `resolution`; `source` ∈ `report, manual` (who opened it; ledgers from schema 1 are migrated on the next write: waits with a `wait.add` event become `manual`, other approval/decision/review waits with a session become `report`) |
 | artifact | `A1, …` | `task_id`, `kind` ∈ `branch, pr, doc, file, url, other`, `label`, `ref`; deduplicated by `ref` per task |
@@ -22,19 +22,20 @@ Ids are never reused. Times are ISO-8601 UTC. Ledger metadata holds `lang`, `rev
 | `init [--lang CODE]` | `{"ok":true,"created":true\|false,"hq":…,"lang":…}`. It never overwrites. If an existing ledger's lang differs, the receipt adds a `note` |
 | `lang CODE` | `{"ok":true,"lang":"ja"}` |
 | `serve [--port N]` | Prints the URL line first, then runs in the foreground until stopped. A busy port returns an `ok:false` error. Without `--port`, it reuses the last port, else picks a free one |
-| `status [--json]` | Text: dashboard URL with `(up)` or `(down…)`, counts, open waits, every task that is not done with its confirmed fields, edges, sessions, and artifacts, then finished task ids. `--json` returns the same data with `server_alive` |
+| `status [--json]` | Text: dashboard URL with `(up)` or `(down…)`, counts, open waits, every task that is not done with its confirmed fields, edges, sessions, and artifacts, then finished task ids. `--json` returns the same data with `server_alive`; its top-level `sessions` includes all sessions, including those of finished tasks, with full transport metadata. Nested `tasks[].sessions` also includes that metadata |
 | `export` | `{"ok":true,"path":…/ledger.md}`. Rarely needed, since every mutation rewrites it |
 | `task add --title --target --deliverable --done [--goal] [--authority] [--status]` | `{"ok":true,"id":"T3","status":"queued"}` |
 | `task update ID [fields…] [--status]` | `{"ok":true,"id":"T3","status":…,"changed":[…]}`. With `--status done` or `dropped`, the same transaction resolves every open wait of the task (`task closed: done` / `task closed: dropped`) and sets its `starting`/`working`/`idle`/`waiting-user`/`blocked` sessions to `done` (archived ones stay); the receipt adds `waits_resolved` and `sessions_closed` |
-| `session upsert SID --task ID [--name --title --cwd --branch --state --summary]` | `{"ok":true,"id":SID,"task":…,"state":…,"created":bool}`. A new session defaults to `starting`; `--summary` also sets `reported_at` |
+| `session upsert SID --task ID [--name --title --cwd --branch --state --summary --provider --host-id --thread-id --client-thread-id --native-status]` | `{"ok":true,"id":SID,"task":…,"state":…,"created":bool}`. A new session defaults to `starting`; `--summary` also sets `reported_at` |
 | `edge add FROM KIND TO` | `{"ok":true,"edge":[…],"created":bool}`. A duplicate is a no-op |
 | `edge remove FROM KIND TO` | `{"ok":true,"edge":[…],"removed":true}`. A missing edge is an error |
 | `wait add --kind K --summary S [--task] [--session]` | `{"ok":true,"id":"W4","kind":…,"created":bool}`. An identical open wait is returned, not duplicated |
 | `wait resolve WID [--resolution R]` | `{"ok":true,"id":"W4","status":"resolved","kind":…,"task":…,"session":…}`. An already resolved wait returns `"already_resolved":true` and its earlier `resolution`, unchanged |
 | `artifact add --task --kind --label --ref` | `{"ok":true,"id":"A2","created":bool}` |
 | `note --text T [--task] [--session]` | `{"ok":true,"event":N}` |
-| `launch ID --session SID [--name --cwd --branch --title]` | `{"ok":true,"task":…,"session":…,"state":"starting","task_status":…,"created":bool,"waits_resolved":[…]}`. It resolves the task's open `criteria` and `launch` waits with `launched as SID`; `task_status` is `waiting-user` if approval/decision/review waits stay open, else `active`. A `done` or `dropped` task is refused: set it back with `task update ID --status queued` first |
+| `launch ID --session SID [--name --cwd --branch --title --provider --host-id --thread-id --client-thread-id --native-status]` | `{"ok":true,"task":…,"session":…,"state":"starting","task_status":…,"created":bool,"waits_resolved":[…]}`. For a ready launch it resolves the task's open `criteria` and `launch` waits with `launched as SID`; `task_status` is `waiting-user` if approval/decision/review waits stay open, else `active`. A `done` or `dropped` task is refused: set it back with `task update ID --status queued` first |
 | `report --session SID [--task ID] [--text T]` | See below |
+| `ingest --session SID --cursor CUR --after-cursor PREV [--native-status S] [--report-id ID --text NOTE]` | See the transport section below; inspect `accepted`, then nested `report` |
 | `apply [--file F]` | `{"ok":true,"results":[…]}` or one error naming `op N (name)`. All ops run in one transaction |
 
 Unknown task, session, or wait ids are errors. The exceptions: `session upsert` creates the session, and `report` creates an unknown session.
@@ -44,7 +45,9 @@ Unknown task, session, or wait ids are errors. The exceptions: `session upsert` 
 The text comes from `--text` or stdin. Pipe the note verbatim. Parsing:
 
 1. Before parsing, full-width spaces and colons (`　`, `：`) are normalized. The first `HQ T<n> <state>:` anywhere in the text is the status line. `<state>` ∈ `working, waiting-user, blocked, done`.
-2. `Needs:` and `Artifacts:` (exact capitalisation) are found on the status line, whatever punctuation precedes them (`.`, `。`, `；`, or none), or anywhere after it, blank lines included, up to the next `HQ T<n>` status line. Each value runs to the end of its line; a keyword alone on its line takes the following non-blank lines (a list). Trailing `. 。 ; ；` are stripped.
+2. `Needs:` and `Artifacts:` (exact capitalisation) are found on the status line, whatever punctuation precedes them (`.`, `。`, `；`, or none), or anywhere after it, blank lines included, up to the next `HQ T<n>` status line. Each value runs to the end of its line; a keyword alone on its line takes the following non-blank lines (a list). Trailing `. 。 ; ；` are stripped. An optional literal `EndHQ.` terminates
+   the structured report before later prose, even when a host flattens line
+   breaks; Codex briefs require this sentinel after the `Artifacts:` field.
 3. Task, in precedence order: explicit `--task`, then the session's existing task, then the line's `T<n>`. A report never moves a session silently: if the line names another task (or an unknown one), the report is applied to the session's task with a warning naming both ids; `--task` moves it, also with a warning. With no `--task`, no mapping, and an unknown line task, the report counts as unparsed, with a warning.
 4. Session: `state` and `reported_at` are set, and `summary` gets the first 400 characters of the text. An unknown session is created and linked to the task.
 5. Needs:
@@ -72,6 +75,51 @@ Receipt:
 
 The receipt adds `"warnings":[…]` only when something needs attention: a created session, a missing or unclear `Needs:`, an unknown task in the line, artifacts without a task, or a `ledger.md` write failure.
 
+## `ingest`: host snapshot transport
+
+Use `ingest --session SID --cursor CUR --after-cursor PREV
+[--native-status S] [--report-id ID --text NOTE]` for an existing session.
+Use the last saved cursor as `PREV`, or an empty string on first collection.
+This command atomically compares that cursor, records the optional verbatim
+report, and advances the stored cursor. A stale snapshot must not overwrite
+newer state; an already recorded report id must not apply the report again.
+Inspect the receipt before continuing. A rejected stale snapshot requires
+reconciliation with saved state, not a forced overwrite.
+
+Omit both `--report-id` and `--text` for a progress-only snapshot: only transport cursor and native
+status change, without parsing an HQ line or modifying waits. Native status is
+observation metadata, not the ledger state or task completion. Preserve the
+original report text. `--report-id` is required whenever text is supplied.
+When `--report-id` is present but `--text` is omitted, the CLI reads the report
+from stdin, so a quoted heredoc can preserve its text literally. Without
+`--report-id`, snapshot-only ingestion never waits for stdin. Use a stable report
+identity when supplied by the host; otherwise use an exact raw-text hash or a
+stable assistant-final identity. A wait cursor is not a report identity. Do not invent host turn ids or re-ingest older finals just because a new
+read used a different retrieval cursor. See the host overlay for collection.
+
+Receipt examples (the nested report uses the `report` receipt above):
+
+```json
+{"ok":true,"session":"S1","accepted":true,"cursor":"opaque:2","report_duplicate":false,"report":null}
+{"ok":true,"session":"S1","accepted":false,"cursor":"opaque:2","reason":"duplicate-or-stale","report":null}
+```
+
+An accepted report snapshot has a nested `report` object. `report_duplicate:true`
+means that object is the earlier receipt, not a new application: do not describe
+its old waits as newly opened or its old artifacts as newly added.
+`accepted:false` preserves the current receive cursor; reconcile rather than
+retrying with a guessed predecessor. Opaque cursors are never numerically sorted.
+
+Provider metadata on `launch` and `session upsert` identifies the transport,
+not authorization. A pending `client_thread_id` cannot substitute for an
+operational `thread_id`. A `launch` with `--client-thread-id` and no `--thread-id` returns
+`pending:true` and preserves task status and criteria/launch waits. Keep a
+launch wait open and reuse the same ledger session id for the ready `launch`
+with `--thread-id` and `--host-id` once exact identity is known. For provider
+`codex`, ready launch requires an operational thread id; repeating `launch` on
+a pending session without either explicit `--client-thread-id` or a ready
+`--thread-id` is refused, so it cannot accidentally clear launch waits.
+
 ## `apply`
 
 A JSON array of objects, from `--file` or stdin. Each object has `"op"` plus keys that mirror the flags in snake_case. Unknown keys, missing keys, and non-string values are errors. Later ops may refer to ids that earlier ops created.
@@ -80,14 +128,15 @@ A JSON array of objects, from `--file` or stdin. Each object has `"op"` plus key
 |---|---|---|
 | `task.add` | `title, target, deliverable, done` | `goal, authority, status` |
 | `task.update` | `id` | `title, goal, target, deliverable, done, authority, status` |
-| `session.upsert` | `id, task` | `name, title, cwd, branch, state, summary` |
+| `session.upsert` | `id, task` | `name, title, cwd, branch, state, summary, provider, host_id, thread_id, client_thread_id, native_status` |
 | `edge.add`, `edge.remove` | `from, kind, to` | |
 | `wait.add` | `kind, summary` | `task, session` |
 | `wait.resolve` | `id` | `resolution` |
 | `artifact.add` | `task, kind, label, ref` | |
 | `note` | `text` | `task, session` |
 | `report` | `session, text` | `task` |
-| `launch` | `id, session` | `name, cwd, branch, title` |
+| `launch` | `id, session` | `name, cwd, branch, title, provider, host_id, thread_id, client_thread_id, native_status` |
+| `ingest` | `session, cursor, after_cursor` | `native_status, report_id, text` |
 | `lang` | `code` | |
 
 ## `ledger.md`
@@ -115,7 +164,7 @@ The page has four parts. Visible words are data; explanations are in `title` and
 - **Waiting-on-you column:** one 24 px line per item.
   - Each item has a chevron and opens as a sliding drawer with an × button. At most two are open at once.
   - The drawer repeats the summary only when the line truncates it. It shows the W and T ids and the session id with copy icons.
-- **Detail panel:** a sliding drawer under the waits with an × button. It holds copyable ids, branches, cwd, URLs, wait operations, and summaries. It stays open until × or Esc closes it, or another node is clicked. Polling never rebuilds it while its data is unchanged, and defers a rebuild while text is selected inside it.
+- **Detail panel:** a sliding drawer under the waits with an × button. Native session metadata adds separate copyable provider, host, and operational chat id fields; a client id is labeled pending setup and appears only without an operational chat id. Ledger session ids remain distinct, and legacy sessions keep their original display. It holds copyable ids, branches, cwd, URLs, wait operations, and summaries. It stays open until × or Esc closes it, or another node is clicked. Polling never rebuilds it while its data is unchanged, and defers a rebuild while text is selected inside it.
 
 - **Side column toggle:** an icon button collapses the whole side column (waits and detail) to a thin rail that keeps the waiting count, so the map takes the full width. Clicking the rail, or pinning a node's detail, expands it again. The collapsed state is remembered per viewer in `localStorage`; the page works without it. Below 900 px the toggle collapses the section vertically.
 

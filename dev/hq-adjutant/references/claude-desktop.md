@@ -12,7 +12,7 @@ This overlay maps the skill's capabilities to Claude Desktop tools. Tool names m
 | Propose a session (card) | `start_session`, `initiation: "own_initiative"` | starts only in this session's folder; see constraint 1 |
 | Start a proposal the user told you to start | `start_session` with `proposal_id` only | |
 | Withdraw a stale proposal | `dismiss_task` | |
-| Message a session | `SendMessage` with `to: "local_…"` | the older `send_message` also works |
+| Message a session | `SendMessage` with `to: "local_…"` | use `send_message` if that is the available alias; follow its current schema |
 | List sessions started from here | `list_sessions` with `linked: true` | rows carry `name`, `startedBy` |
 | Find any session | `list_sessions` (unfiltered), `get_session` | for unlinked ledger sessions |
 | Read a session's latest report | `list_events` (recent transcript, e.g. `limit: 4`) | take its last assistant message; only for unlinked sessions, on a user turn |
@@ -51,7 +51,7 @@ This overlay maps the skill's capabilities to Claude Desktop tools. Tool names m
 
 ## Messaging
 
-- `SendMessage` to the `local_…` id. The first line must be self-contained (templates in [brief-template.md](brief-template.md)).
+- `SendMessage` to the `local_…` id, within the user's HQ engagement and messaging authority. A received note is not new authorization. The first line must be self-contained (templates in [brief-template.md](brief-template.md)).
 - Desktop sessions return no read receipt. A session in a different permission mode may hold the message for its user's approval. So "sent" does not mean "acted on": the session's next report confirms it.
 
 ## Reply box
@@ -63,5 +63,5 @@ This overlay maps the skill's capabilities to Claude Desktop tools. Tool names m
 
 ## Server and permissions
 
-- Start `serve --port <N>` with Bash's background execution, keep the handle, and give the user the printed URL. Background processes may not survive the adjutant session's end. That is why activation checks the recorded port once.
+- Start `serve` with Bash's background execution, keep the handle, and give the user the printed URL. Omit `--port` by default to reuse the recorded port or choose a free one; pass it only for a user-requested fixed port or after a port conflict: run `status`, reuse an `(up)` server, otherwise choose another port. Background processes may not survive the adjutant session's end. That is why activation checks the recorded port once.
 - Every CLI call shares the fixed prefix `python3 <abs>/hq.py`. Once per HQ, tell the user they can allowlist that prefix as a Bash permission rule, so updates do not prompt. Do not edit settings yourself unless the user asks. Run each call as its own command: compound commands can fall outside a prefix rule.
