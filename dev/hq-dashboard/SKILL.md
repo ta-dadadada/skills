@@ -67,11 +67,10 @@ Record session notes and authorized bounded host collection results. Never poll 
   - Without `--port`, `serve` reuses the last recorded port, so open tabs reconnect on their own. The first stdout line is the URL. Open it, or give it to the user.
   - A `cannot listen` error means the port is busy. Run `status`: if it says `(up)`, a server is already running; otherwise pass another `--port`.
 - The server binds 127.0.0.1 only and serves `GET /` and `GET /api/state`. Never bind it elsewhere or proxy it.
-- The page fits one screen:
-  - a header with counts and a progress bar;
-  - a progress map with one swimlane per target, laid out in dependency order;
-  - a one-line-per-item waiting-on-you column, where each item opens as a drawer;
-  - a pinned detail drawer, where ids, branches, URLs, and operations can be copied.
+- The page opens on a task overview with status counts and full, wrapping titles.
+  Open waits and blocked tasks appear in the attention group. Switch to the
+  relationship map to see dependencies, or open a task to pin its details.
+  The waiting-on-you column shows open requests and their context.
 
   It polls every 3 seconds and redraws when the ledger revision changes. A pinned panel and any text selected in it are kept.
 - After a reboot or a replaced session, a `(down…)` status means: start `serve` again. The ledger needs no repair.
