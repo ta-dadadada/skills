@@ -157,15 +157,14 @@ Treat it as read-only. The SQLite file is the state of record.
 - `GET /api/state[?since=REV]`: the full snapshot: `revision, lang, generated_at, server_url, tasks, sessions, edges`, `waits` (open, plus the latest 50 resolved), `artifacts`, and `events` (the latest 200) with `events_total`. When `since` equals the current revision, it returns `{"revision":N,"unchanged":true}`.
 - Other paths return 404. Other methods return 405 with `Allow: GET`. A `Host` other than `127.0.0.1:<port>` or `localhost:<port>` returns 403.
 
-The page has four parts. Visible words are data; explanations are in `title` and `aria-label` only, in `en` and `ja`.
+The page supports English and Japanese labels.
 
-- **Header bar:** icon chips for active sessions out of 8, waiting on you, blocked, and done; a progress bar segmented by task status; the last-update time; a connection dot; and a history toggle.
-- **Progress map:** one swimlane per target; columns follow `depends_on` and `spawned_from` order. Each task node shows its lifecycle stepper, its latest session, the time since the last report (warning after 30 minutes without a report while `starting` or `working`), a PR chip, and an open-wait badge. Hovering shows a preview tooltip. Clicking or pressing Enter pins the detail panel.
-- **Waiting-on-you column:** one 24 px line per item.
-  - Each item has a chevron and opens as a sliding drawer with an × button. At most two are open at once.
-  - The drawer repeats the summary only when the line truncates it. It shows the W and T ids and the session id with copy icons.
+- **Header:** active sessions out of 8, a shortcut to open waits, a bar with labeled counts by task status, the last-update time, connection status, and history.
+- **Overview:** the default view groups tasks into needs attention, in progress, queued, and closed. A task with an open wait appears under needs attention even if its ledger status is active or queued. Cards show the full title, target, status, and available wait, PR, verification, and last-report information. Reports older than 30 minutes are flagged while the session is starting or working.
+- **Relationships:** one swimlane per target; columns follow `depends_on` and `spawned_from` order. Nodes show a wrapped title preview and the lifecycle step. Selecting a task in either view pins its full details. Switching views keeps the selection.
+- **Waiting-on-you column:** summaries wrap. Each item expands to show task and session context with copyable ids. At most two items are expanded at once.
 - **Detail panel:** a sliding drawer under the waits with an × button. Native session metadata adds separate copyable provider, host, and operational chat id fields; a client id is labeled pending setup and appears only without an operational chat id. Ledger session ids remain distinct, and legacy sessions keep their original display. It holds copyable ids, branches, cwd, URLs, wait operations, and summaries. It stays open until × or Esc closes it, or another node is clicked. Polling never rebuilds it while its data is unchanged, and defers a rebuild while text is selected inside it.
 
-- **Side column toggle:** an icon button collapses the whole side column (waits and detail) to a thin rail that keeps the waiting count, so the map takes the full width. Clicking the rail, or pinning a node's detail, expands it again. The collapsed state is remembered per viewer in `localStorage`; the page works without it. Below 900 px the toggle collapses the section vertically.
+- **Side column toggle:** collapse the waits and detail to a rail that keeps the waiting count. Open it again from the rail, the header's open-waits shortcut, or any task. The collapsed state is remembered per viewer in `localStorage`. On narrow screens, the section is below the task view and collapses vertically.
 
 Esc closes, in order: the history drawer, the focused wait drawer, the detail panel, and then the last-opened wait drawer. Esc never collapses or expands the side column; while it is collapsed, Esc only closes the history drawer. Slide transitions are disabled under `prefers-reduced-motion`.

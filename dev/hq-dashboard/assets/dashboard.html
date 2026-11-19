@@ -30,73 +30,117 @@ html,body { height:100%; }
 body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.4 system-ui,-apple-system,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif; }
 button { font:inherit; color:inherit; }
 :focus-visible { outline:2px solid var(--active); outline-offset:2px; }
-.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 .ic { fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
-.ic.fill { fill:currentColor; stroke:none; }
-.app { display:grid; grid-template-rows:auto auto minmax(0,1fr); height:100vh; }
-/* header bar */
-.bar { display:flex; align-items:center; gap:10px; padding:6px 14px; background:var(--panel); border-bottom:1px solid var(--line); min-width:0; }
-.bar h1 { font-size:14px; margin:0; font-weight:700; white-space:nowrap; cursor:default; }
-.chips { display:flex; gap:6px; flex-wrap:nowrap; }
-.chip { display:inline-flex; align-items:center; gap:4px; padding:1px 8px; border-radius:10px; background:var(--soft); color:var(--muted); font-size:12px; font-weight:600; white-space:nowrap; font-variant-numeric:tabular-nums; }
-.chip.warn { background:var(--waiting-bg); color:var(--waiting); font-size:13px; }
-.chip.bad { background:var(--blocked-bg); color:var(--blocked); }
-.chip.ok { color:var(--done); }
-.progress { flex:1 1 160px; min-width:100px; height:10px; display:flex; border-radius:5px; overflow:hidden; background:var(--soft); }
-.progress span { display:block; height:100%; }
-.meta { color:var(--muted); font-size:12px; white-space:nowrap; }
+.app { display:grid; grid-template-rows:auto minmax(0,1fr); height:100dvh; }
+.masthead { background:var(--panel); border-bottom:1px solid var(--line); padding:14px 24px; display:grid; gap:12px; }
+.bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; min-width:0; }
+.bar h1 { font-size:22px; letter-spacing:-.045em; margin:0; line-height:1; }
+.sync { margin-inline-start:auto; display:flex; align-items:center; flex-wrap:wrap; gap:6px 10px; }
+.chips { display:flex; gap:6px; flex-wrap:wrap; }
+.chip { display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:5px; background:var(--soft); font-size:12px; }
+.chip strong { font-size:14px; font-variant-numeric:tabular-nums; }
+.chip.warn { background:var(--waiting-bg); }
+.chip.bad { background:var(--blocked-bg); }
+#wait-link { color:var(--ink); text-decoration:none; }
+#wait-link:hover { text-decoration:underline; }
+.summary { display:grid; gap:6px; }
+.progress { height:7px; display:flex; border-radius:4px; overflow:hidden; background:var(--soft); }
+.progress span { display:block; min-width:2px; }
+.progress span + span { border-inline-start:2px solid var(--panel); }
+.status-counts { display:flex; flex-wrap:wrap; gap:3px 16px; color:var(--muted); font-size:12px; }
+.status-count { display:inline-flex; align-items:center; gap:5px; }
+.status-count b { color:var(--ink); font-variant-numeric:tabular-nums; }
+.meta { color:var(--muted); font-size:12px; }
 #updated.old { color:var(--blocked); }
-.dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--faint); }
+.dot { display:inline-block; flex:none; width:8px; height:8px; border-radius:50%; background:var(--tone,var(--faint)); }
 .dot.live { background:var(--done); } .dot.down { background:var(--blocked); }
-.iconbtn { display:inline-flex; align-items:center; gap:3px; border:0; background:transparent; border-radius:4px; padding:2px 5px; cursor:pointer; color:var(--muted); font-size:12px; }
+#conn { display:inline-flex; align-items:center; gap:5px; }
+.iconbtn { display:inline-flex; align-items:center; gap:4px; border:0; background:transparent; border-radius:4px; padding:4px 6px; cursor:pointer; color:var(--muted); font-size:12px; }
 .iconbtn:hover,.iconbtn[aria-expanded="true"] { background:var(--soft); color:var(--ink); }
-.ticker { padding:2px 14px; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-bottom:1px solid var(--line); }
+.ticker { color:var(--muted); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ticker:empty { display:none; }
 /* main area */
 .main { display:grid; grid-template-columns:minmax(0,1fr) 380px; min-height:0; transition:grid-template-columns var(--slide) ease; }
 .main.side-collapsed { grid-template-columns:minmax(0,1fr) 32px; }
-.map { position:relative; overflow:auto; padding:8px 10px 4px; min-width:0; display:flex; flex-direction:column; }
-#graph { flex:1 0 auto; }
+.workspace { min-width:0; min-height:0; display:flex; flex-direction:column; }
+.view-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:14px 20px 8px; }
+.view-bar h2 { font-size:18px; margin:0; }
+.view-switch { display:flex; gap:2px; padding:3px; border-radius:7px; background:var(--soft); }
+.view-switch button { border:1px solid transparent; border-radius:5px; background:transparent; color:var(--muted); padding:5px 10px; cursor:pointer; font-size:12px; font-weight:650; }
+.view-switch button:hover { color:var(--ink); }
+.view-switch button[aria-pressed="true"] { background:var(--panel); color:var(--ink); border-color:var(--line); }
+.overview,.map { overflow:auto; min-width:0; flex:1; }
+.overview { padding:4px 20px 24px; }
+.group { margin-bottom:20px; }
+.group-head { display:flex; gap:8px; align-items:center; padding:8px 0; margin-bottom:8px; border-bottom:1px solid var(--line); }
+.group-head h3 { font-size:14px; margin:0; }
+.group-head .count { padding:0 7px; border-radius:5px; background:var(--soft); color:var(--muted); font-size:12px; font-weight:650; }
+.task-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%, 295px),1fr)); gap:10px; list-style:none; padding:0; margin:0; }
+.task-grid li { min-width:0; }
+.task-card { display:flex; flex-direction:column; align-items:stretch; gap:7px; width:100%; height:100%; min-width:0; text-align:start; padding:11px 13px 12px; border:1px solid var(--line); border-inline-start:3px solid var(--tone); border-radius:8px; background:var(--panel); cursor:pointer; }
+.task-card:hover { border-color:var(--tone); }
+.task-card.sel { border-color:var(--active); box-shadow:inset 0 0 0 1px var(--active); }
+.task-top,.task-meta { display:flex; align-items:baseline; flex-wrap:wrap; gap:3px 9px; min-width:0; }
+.task-top { justify-content:space-between; align-items:center; }
+.task-code { color:var(--muted); font:600 12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; }
+.task-state { display:inline-flex; gap:5px; align-items:center; font-size:11px; font-weight:700; background:var(--soft); border-radius:4px; padding:2px 6px; }
+.st-waiting-user .task-state { background:var(--waiting-bg); }
+.st-blocked .task-state { background:var(--blocked-bg); }
+.task-title { font-size:15px; font-weight:650; line-height:1.5; overflow-wrap:anywhere; white-space:pre-line; }
+.task-meta { margin-top:auto; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+.task-meta .alert { color:var(--ink); font-weight:650; }
+.task-bottom { flex-basis:100%; }
+.map { padding:4px 20px 16px; }
 #graph svg { display:block; }
-.legend { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:11px; color:var(--muted); padding:4px 2px 2px; align-items:center; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:11px; color:var(--muted); padding:6px 2px; align-items:center; }
 .legend svg { vertical-align:middle; margin-right:3px; }
-.side { border-left:1px solid var(--line); background:var(--panel); overflow:auto; min-height:0; min-width:0; padding:4px 0; display:flex; flex-direction:column; }
-.side-head { display:flex; align-items:center; gap:2px; padding:0 6px 2px 4px; }
-.side h2 { font-size:13px; margin:0; display:flex; gap:5px; align-items:center; color:var(--waiting); font-variant-numeric:tabular-nums; }
-.side h2.zero { color:var(--faint); }
-#side-btn .chev { color:inherit; }
+.st-queued { --tone:var(--queued); }
+.st-active { --tone:var(--active); }
+.st-waiting-user { --tone:var(--waiting); }
+.st-blocked { --tone:var(--blocked); }
+.st-done { --tone:var(--done); }
+.st-dropped { --tone:var(--dropped); }
+.side { border-left:1px solid var(--line); background:var(--panel); overflow:auto; min-height:0; min-width:0; display:flex; flex-direction:column; }
+.side-head { display:flex; align-items:center; gap:7px; padding:14px 12px 10px; }
+.side h2 { font-size:14px; margin:0; display:flex; gap:7px; align-items:center; font-variant-numeric:tabular-nums; }
+.side-count { display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border-radius:5px; background:var(--waiting-bg); }
+.side h2.zero .side-count { background:var(--soft); }
 .side-body { flex:none; display:grid; grid-template-rows:1fr; transition:grid-template-rows var(--slide) ease; }
 .side-body > .inner { overflow:hidden; min-height:0; }
 .side-collapsed .side { overflow:hidden; cursor:pointer; }
-.side-collapsed .side-head { flex-direction:column; padding:0; }
+.side-collapsed .side-head { flex-direction:column; padding:14px 2px; }
+.side-collapsed .side-label { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+.side-collapsed .side-count { flex-direction:column; padding:3px; }
 .side-collapsed .side-body { grid-template-rows:0fr; visibility:hidden; transition:grid-template-rows var(--slide) ease, visibility 0s var(--slide); }
 .side-collapsed #side-btn .chev { transform:rotate(180deg); }
-ul.waits { list-style:none; margin:0; padding:0; }
-.wrow { list-style:none; }
-.wait { display:flex; align-items:center; gap:6px; height:24px; padding:0 8px 0 6px; cursor:pointer; border-left:3px solid transparent; white-space:nowrap; min-width:0; }
-.wait:hover,.wait:focus-visible,.wrow.open > .wait { background:var(--soft); }
-.wait.sel { border-left-color:var(--active); }
+ul.waits { list-style:none; margin:0 12px 8px; padding:0; display:grid; gap:6px; }
+.wrow { border:1px solid var(--line); border-radius:7px; }
+.wrow.open,.wrow:has(.wait.sel) { border-color:var(--active); }
+.wait { display:flex; align-items:flex-start; gap:3px; padding:3px; }
+.wait-toggle { display:grid; grid-template-columns:auto minmax(0,1fr); width:100%; gap:0 5px; padding:4px; border:0; border-radius:4px; text-align:start; background:transparent; cursor:pointer; }
+.wait-toggle:hover { background:var(--soft); }
+.wait .cp { margin-top:4px; }
 .chev { flex:none; color:var(--muted); transition:transform var(--slide); display:inline-flex; }
+.wait-toggle > .chev { margin-top:2px; }
 .wrow.open .chev { transform:rotate(90deg); }
+.wait-label { display:flex; flex-wrap:wrap; gap:3px 6px; align-items:center; }
 .kind { flex:none; font-size:11px; font-weight:600; padding:0 5px; border-radius:3px; color:#fff; line-height:16px; }
 .k-approval { background:var(--k-approval); } .k-decision { background:var(--k-decision); } .k-review { background:var(--k-review); }
 .k-launch { background:var(--k-launch); } .k-criteria { background:var(--k-criteria); }
 @media (prefers-color-scheme: dark) { .kind,.pill { color:#121519; } }
-.wid { flex:none; font-weight:700; font-variant-numeric:tabular-nums; }
-.tid { flex:none; color:var(--muted); font-variant-numeric:tabular-nums; }
-.wsum { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
-.wait .cp { visibility:hidden; }
-.wait:hover .cp,.wait:focus-within .cp,.wrow.open > .wait .cp { visibility:visible; }
+.wid { font-weight:700; font-variant-numeric:tabular-nums; }
+.tid { color:var(--muted); font-variant-numeric:tabular-nums; }
+.wsum { grid-column:2; margin-top:3px; overflow-wrap:anywhere; white-space:pre-line; }
 /* slide-open drawers: grid rows animate between 0fr and 1fr */
 .slide { display:grid; grid-template-rows:0fr; transition:grid-template-rows var(--slide) ease; }
 .slide.open { grid-template-rows:1fr; }
+#detail-wrap { transition:none; }
 .slide > .inner { overflow:hidden; min-height:0; }
 .wait-more { position:relative; padding:4px 28px 7px 27px; background:var(--soft); font-size:12px; border-left:3px solid var(--active); }
-.wait-more .full { display:none; white-space:pre-wrap; overflow-wrap:anywhere; margin:0 0 3px; }
-.wrow.trunc .wait-more .full { display:block; }
-.wait-more .line { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; color:var(--muted); }
+.wait-more .line { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; color:var(--muted); overflow-wrap:anywhere; }
 .x { position:absolute; top:3px; right:4px; }
 .empty { color:var(--muted); font-size:12px; padding:2px 12px; }
-.graph-empty { padding:40px 8px; color:var(--muted); }
+.tasks-empty { padding:32px 4px; color:var(--muted); }
 /* graph */
 .lane-bg-0 { fill:var(--lane-a); } .lane-bg-1 { fill:var(--lane-b); }
 .lane-label { fill:var(--muted); font-size:12px; font-weight:600; }
@@ -105,24 +149,16 @@ ul.waits { list-style:none; margin:0; padding:0; }
 .node .rail { fill:var(--queued); }
 .node:hover .card { stroke:var(--muted); }
 .node:focus-visible .card,.node.sel .card { stroke:var(--active); stroke-width:2.5; }
-.node .t1 { fill:var(--ink); font-size:12px; font-weight:600; }
-.node .t1 .id { font-weight:700; }
+.node .map-title { color:var(--ink); font-size:14px; font-weight:650; line-height:18px; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 .node .t3 { fill:var(--muted); font-size:11px; }
 .node .stale { fill:var(--waiting); font-weight:600; }
-.node .steplbl { font-size:11px; font-weight:600; }
-.st-queued .rail,.st-queued .cur { fill:var(--queued); } .st-queued .steplbl { fill:var(--queued); }
-.st-active .rail,.st-active .cur { fill:var(--active); } .st-active .steplbl { fill:var(--active); }
-.st-waiting-user .rail,.st-waiting-user .cur { fill:var(--waiting); } .st-waiting-user .steplbl { fill:var(--waiting); }
+.node .steplbl { fill:var(--ink); font-size:11px; font-weight:650; }
+.node .rail,.node .cur { fill:var(--tone); }
 .st-waiting-user .card { fill:var(--waiting-bg); }
-.st-blocked .rail,.st-blocked .cur { fill:var(--blocked); } .st-blocked .steplbl { fill:var(--blocked); }
 .st-blocked .card { fill:var(--blocked-bg); }
-.st-done .rail { fill:var(--done); } .st-dropped .rail { fill:var(--dropped); }
-.st-done,.st-dropped { opacity:.62; }
-.st-dropped .t1 { text-decoration:line-through; fill:var(--muted); }
 .step { fill:var(--panel); stroke:var(--faint); stroke-width:1; }
 .step.past { fill:var(--faint); stroke:none; }
 .stepline { stroke:var(--line); stroke-width:1.5; }
-.badge-n { fill:var(--waiting); } .badge-t { fill:#fff; font-size:10px; font-weight:700; }
 .pr { fill:var(--active); font-size:10px; font-weight:600; }
 .edge { fill:none; stroke-width:1.6; }
 .edge.depends_on { stroke:var(--e-dep); }
@@ -132,12 +168,14 @@ ul.waits { list-style:none; margin:0; padding:0; }
 .edge.dim { opacity:.25; } .edge.hot { stroke-width:2.6; opacity:1; }
 /* tooltip (preview only), detail drawer, history */
 #tip { position:fixed; z-index:20; max-width:340px; background:var(--panel); border:1px solid var(--line); border-radius:6px; box-shadow:var(--shadow); padding:7px 9px; font-size:12px; pointer-events:none; }
+#tip { overflow-wrap:anywhere; }
 #tip .h { font-weight:700; margin-bottom:2px; }
 #tip .r { color:var(--muted); }
 #tip .s { margin-top:3px; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
 .detail { position:relative; margin:8px 8px; padding:8px 10px 10px; border:1px solid var(--active); border-radius:6px; background:var(--bg); font-size:12px; }
-.detail header { display:flex; align-items:center; gap:6px; padding-right:22px; }
-.detail header h2 { font-size:14px; margin:0; min-width:0; overflow-wrap:anywhere; }
+.detail header { display:grid; justify-items:start; gap:6px; }
+.detail .detail-meta { display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding-right:22px; }
+.detail header h2 { display:block; font-size:16px; margin:0; min-width:0; max-width:100%; overflow-wrap:anywhere; white-space:pre-line; }
 .detail .sub { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; margin:4px 0 2px; }
 .detail hr { border:0; border-top:1px solid var(--line); margin:6px 0; }
 .detail ul { list-style:none; padding:0; margin:0; }
@@ -164,43 +202,70 @@ a { color:var(--active); }
 .drawer ol { list-style:none; padding:0; margin:0; font-size:12px; }
 .drawer li { padding:3px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
 .drawer .ty { font-weight:600; margin:0 4px; }
-@media (max-width:900px) {
+@media (max-width:850px) {
   .app { height:auto; }
-  .main { grid-template-columns:1fr; }
-  .side { order:-1; border-left:0; border-bottom:1px solid var(--line); }
-  .main.side-collapsed { grid-template-columns:1fr; }
-  .side-collapsed .side-head { flex-direction:row; padding:0 6px 2px 4px; }
+  .main,.main.side-collapsed { grid-template-columns:minmax(0,1fr); }
+  .side { border-left:0; border-top:1px solid var(--line); }
+  .side-collapsed .side-head { flex-direction:row; padding:8px 12px; }
+  .side-collapsed .side-label { position:static; width:auto; height:auto; clip-path:none; }
+  .side-collapsed .side-count { flex-direction:row; padding:2px 6px; }
   #side-btn .chev { transform:rotate(90deg); }
   .side-collapsed #side-btn .chev { transform:rotate(-90deg); }
-  .bar { flex-wrap:wrap; }
+  .masthead { padding:12px 14px; }
+  .view-bar { padding-inline:14px; }
+  .overview,.map { padding-inline:14px; }
   .drawer { left:8px; right:8px; width:auto; top:auto; bottom:8px; max-height:70vh; }
+}
+@media (max-width:440px) {
+  .sync { margin-inline-start:0; }
+  .status-counts { gap:3px 10px; }
 }
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="bar">
-    <h1 id="title">HQ</h1>
-    <div class="chips" id="chips"></div>
-    <div class="progress" id="progress" role="img"></div>
-    <span class="meta" id="updated"></span>
-    <span id="conn" role="status" aria-live="polite"><span class="dot" id="conn-dot"></span><span class="sr" id="conn-text"></span></span>
-    <button type="button" class="iconbtn" id="history-btn" aria-expanded="false" aria-controls="history"></button>
-  </div>
-  <div class="ticker" id="ticker"></div>
-  <div class="main">
-    <section class="map" id="map">
-      <div id="graph"></div>
-      <div class="legend" id="legend"></div>
+  <header class="masthead">
+    <div class="bar">
+      <h1 id="title">HQ</h1>
+      <div class="chips">
+        <span class="chip" id="sessions-count"></span>
+        <a class="chip" id="wait-link" href="#side"></a>
+      </div>
+      <div class="sync">
+        <span id="conn" role="status" class="meta"><span class="dot" id="conn-dot"></span><span id="conn-text"></span></span>
+        <span class="meta" id="updated"></span>
+        <button type="button" class="iconbtn" id="history-btn" aria-expanded="false" aria-controls="history"></button>
+      </div>
+    </div>
+    <div class="summary">
+      <div class="progress" id="progress" aria-hidden="true"></div>
+      <div class="status-counts" id="status-counts"></div>
+    </div>
+    <div class="ticker" id="ticker"></div>
+  </header>
+  <main class="main">
+    <section class="workspace" aria-labelledby="tasks-h">
+      <div class="view-bar">
+        <h2 id="tasks-h"></h2>
+        <div class="view-switch" role="group" id="view-switch">
+          <button type="button" id="overview-btn" aria-pressed="true" aria-controls="overview"></button>
+          <button type="button" id="map-btn" aria-pressed="false" aria-controls="map"></button>
+        </div>
+      </div>
+      <div class="overview" id="overview"></div>
+      <section class="map" id="map" hidden>
+        <div class="legend" id="legend"></div>
+        <div id="graph"></div>
+      </section>
     </section>
-    <aside class="side" id="side">
+    <aside class="side" id="side" aria-labelledby="waits-h">
       <div class="side-head"><button type="button" class="iconbtn" id="side-btn" aria-controls="side-body" aria-expanded="true"></button><h2 id="waits-h"></h2></div>
       <div class="side-body" id="side-body"><div class="inner">
         <ul class="waits" id="waits"></ul>
         <div class="slide" id="detail-wrap" inert><div class="inner"><section class="detail" id="detail"></section></div></div>
       </div></div>
     </aside>
-  </div>
+  </main>
 </div>
 <div id="tip" hidden></div>
 <section class="drawer" id="history" hidden></section>
@@ -208,16 +273,17 @@ a { color:var(--active); }
 <script>
 'use strict';
 // Read-only view. Ledger text reaches the DOM only through textContent / createTextNode.
-// Visible words are data; explanations live in title / aria-label only.
 const LABELS = {
   en: {
-    map:'Progress map: rows are targets, columns follow dependencies', waits:'Waiting on you', none:'none', noTasks:'No tasks yet.',
+    tasks:'Tasks', overview:'Overview', mapView:'Relationships', views:'Task view',
+    groups:{attention:'Needs attention', active:'In progress', queued:'Queued', closed:'Closed'},
+    map:'Relationship map: rows are targets, columns follow dependencies', waits:'Waiting on you', none:'none', noTasks:'No tasks yet.',
     readonly:'HQ dashboard (read-only; answer in the adjutant chat)', history:'History', noEvents:'No events yet.',
     updated:'Last update', live:'Live', offlineData:'Server unreachable; showing data from', offlineNone:'Cannot reach the HQ server',
     connecting:'Connecting', close:'Close', sideClose:'Collapse the waiting column', sideOpen:'Expand the waiting column', copy:'Copy', copied:'Copied', copyFail:'Copy failed; select the text instead',
-    chips:{active:'Active sessions (max 8)', waiting:'Waiting on you', blocked:'Blocked tasks', done:'Done tasks'},
+    activeSessions:'Active sessions',
     goal:'goal', deliverable:'deliverable', doneWhen:'done when', authority:'authority', target:'Target', session:'Session', chatId:'Chat ID', pendingChat:'Pending setup ID', host:'Host', provider:'Provider',
-    noReport:'no report yet', stale:'No report for over 30 minutes', branch:'Branch', expand:'Show details',
+    noReport:'no report yet', stale:'No report for over 30 minutes', branch:'Branch',
     ago:{now:'now', m:'m', h:'h', d:'d'},
     steps:['queued','launched','working','waiting','done'], verify:'to verify',
     kinds:{approval:'approval', decision:'decision', review:'review', launch:'launch', criteria:'criteria'},
@@ -227,13 +293,15 @@ const LABELS = {
     edgeHelp:{depends_on:'B → A: A depends on B', spawned_from:'B ⇢ A: A spawned from B', related:'related tasks'}
   },
   ja: {
-    map:'進捗マップ：行は対象、列は依存の順', waits:'あなたの対応待ち', none:'なし', noTasks:'タスクはまだありません。',
+    tasks:'タスク', overview:'状況一覧', mapView:'関係マップ', views:'タスクの表示',
+    groups:{attention:'要対応', active:'進行中', queued:'待機中', closed:'終了'},
+    map:'関係マップ：行は対象、列は依存の順', waits:'あなたの対応待ち', none:'なし', noTasks:'タスクはまだありません。',
     readonly:'HQ ダッシュボード（閲覧専用。返答は副官のチャットで）', history:'履歴', noEvents:'イベントはまだありません。',
     updated:'最終更新', live:'自動更新中', offlineData:'サーバーに接続できません。表示は次の時点のもの：', offlineNone:'HQ サーバーに接続できません',
     connecting:'接続中', close:'閉じる', sideClose:'対応待ちの列を閉じる', sideOpen:'対応待ちの列を開く', copy:'コピー', copied:'コピーしました', copyFail:'コピーできませんでした。選択してコピーしてください',
-    chips:{active:'稼働中のセッション（上限 8）', waiting:'あなたの対応待ち', blocked:'ブロック中のタスク', done:'完了したタスク'},
+    activeSessions:'稼働セッション',
     goal:'目的', deliverable:'成果物', doneWhen:'完了条件', authority:'事前承認', target:'対象', session:'セッション', chatId:'チャットID', pendingChat:'起動待ちID', host:'ホスト', provider:'実行環境',
-    noReport:'報告なし', stale:'30 分以上報告がありません', branch:'ブランチ', expand:'詳細を表示',
+    noReport:'報告なし', stale:'30 分以上報告がありません', branch:'ブランチ',
     ago:{now:'今', m:'分前', h:'時間前', d:'日前'},
     steps:['待機','起動','作業','待ち','完了'], verify:'確認待ち',
     kinds:{approval:'承認', decision:'判断', review:'レビュー', launch:'起動', criteria:'条件確認'},
@@ -246,8 +314,10 @@ const LABELS = {
 const MAX_ACTIVE = 8, STALE_MS = 30 * 60 * 1000, MAX_OPEN_WAITS = 2;
 const ACTIVE_SESSION = new Set(['starting','working','idle','waiting-user','blocked']);
 const WAIT_ORDER = ['approval','decision','review','launch','criteria'];
-const BAR_ORDER = ['done','active','waiting-user','blocked','queued','dropped'];
-const BAR_VAR = {done:'--done', active:'--active', 'waiting-user':'--waiting', blocked:'--blocked', queued:'--queued', dropped:'--dropped'};
+const BAR_ORDER = ['waiting-user','blocked','active','queued','done','dropped'];
+const TASK_GROUPS = {
+  attention:['waiting-user','blocked'], active:['active'], queued:['queued'], closed:['done','dropped']
+};
 const SVGNS = 'http://www.w3.org/2000/svg';
 const ICONS = {
   copy:[['rect', {x:5, y:5, width:8, height:9, rx:1.5}], ['path', {d:'M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10'}]],
@@ -257,12 +327,11 @@ const ICONS = {
   chev:[['path', {d:'M6 4l4 4-4 4'}]],
   clock:[['circle', {cx:8, cy:8, r:6}], ['path', {d:'M8 4.5V8l2.5 1.5'}]],
   flag:[['path', {d:'M4 14V2.5M4 3h7l-1.5 3 1.5 3H4'}]],
-  play:[['path', {d:'M5 3.5l7 4.5-7 4.5z', fill:'currentColor'}]],
-  stop:[['circle', {cx:8, cy:8, r:6}], ['path', {d:'M4 4l8 8'}]],
-  check:[['circle', {cx:8, cy:8, r:6}], ['path', {d:'M5.5 8.2l1.8 1.8 3.4-3.6'}]]
+  play:[['path', {d:'M5 3.5l7 4.5-7 4.5z', fill:'currentColor'}]]
 };
 const $ = id => document.getElementById(id);
 let L = LABELS.en, lang = 'en', state = null, revision = null, selected = null, historyOpen = false, model = null;
+let view = 'overview', waitOrigin = null;
 let detailSig = null, detailPending = false, waitsSig = null, waitsPending = false;
 const expanded = new Set();   // open wait drawers, oldest first
 
@@ -402,34 +471,32 @@ function isStale(t) {
 
 // ---------- header
 function renderHeader() {
-  const counts = {}; for (const k of BAR_ORDER) counts[k] = 0;
-  for (const t of state ? state.tasks : []) counts[t.status] = (counts[t.status] || 0) + 1;
-  const total = state ? state.tasks.length : 0;
+  const counts = Object.fromEntries(BAR_ORDER.map(k => [k, 0]));
+  for (const t of state?.tasks || []) counts[t.status]++;
   const active = state ? state.sessions.filter(x => ACTIVE_SESSION.has(x.state)).length : 0;
   const waiting = model ? model.open.length : 0;
-  const chip = (cls, ic, value, label) => el('span', {class:'chip ' + cls, title:`${label}: ${value}`, 'aria-label':`${label}: ${value}`}, icon(ic, 12), String(value));
-  $('chips').replaceChildren(
-    chip(active > MAX_ACTIVE ? 'bad' : '', 'play', `${active}/${MAX_ACTIVE}`, L.chips.active),
-    chip(waiting ? 'warn' : '', 'flag', waiting, L.chips.waiting),
-    chip(counts.blocked ? 'bad' : '', 'stop', counts.blocked, L.chips.blocked),
-    chip('ok', 'check', `${counts.done}/${total - counts.dropped}`, L.chips.done));
-  const bar = $('progress');
-  bar.setAttribute('aria-label', BAR_ORDER.filter(k => counts[k]).map(k => `${L.status[k]} ${counts[k]}`).join(', ') || L.noTasks);
-  bar.replaceChildren(...BAR_ORDER.filter(k => counts[k]).map(k => el('span',
-    {style:`flex:${counts[k]};background:var(${BAR_VAR[k]})`, title:`${L.status[k]} ${counts[k]}`})));
+  const sessions = $('sessions-count');
+  sessions.classList.toggle('bad', active > MAX_ACTIVE);
+  sessions.replaceChildren(icon('play', 12), L.activeSessions, el('strong', {}, `${active}/${MAX_ACTIVE}`));
+  const link = $('wait-link');
+  link.classList.toggle('warn', waiting > 0);
+  link.replaceChildren(icon('flag', 12), L.waits, el('strong', {}, waiting));
+  $('progress').replaceChildren(...BAR_ORDER.filter(k => counts[k]).map(k => el('span',
+    {class:'st-' + k, style:`flex:${counts[k]};background:var(--tone)`, title:`${L.status[k]} ${counts[k]}`})));
+  $('status-counts').replaceChildren(...BAR_ORDER.map(k => el('span', {class:'status-count st-' + k},
+    el('span', {class:'dot', 'aria-hidden':'true'}), L.status[k], el('b', {}, counts[k]))));
   const up = $('updated');
   up.textContent = state ? fmtTime(state.generated_at) : '';
   up.title = L.updated;
   const hb = $('history-btn');
-  hb.replaceChildren(icon('clock', 13), state ? String(state.events_total) : '');
-  hb.title = L.history; hb.setAttribute('aria-label', L.history);
+  hb.replaceChildren(icon('clock', 13), L.history);
   const latest = state && state.events[0];
   const ticker = $('ticker');
   ticker.textContent = latest ? `${fmtTime(latest.ts)} · ${latest.type}${latest.task_id ? ' ' + latest.task_id : ''} · ${oneLine(latest.text)}` : '';
   ticker.title = latest ? latest.text : '';
 }
 
-// ---------- waiting column: one line per item; each opens a sliding drawer with full, copyable text
+// ---------- waiting column: wrapped summaries with expandable context
 function setWaitOpen(id, open) {
   const li = document.querySelector(`#waits .wrow[data-wait="${CSS.escape(id)}"]`);
   if (open) {
@@ -437,12 +504,10 @@ function setWaitOpen(id, open) {
     while (expanded.size > MAX_OPEN_WAITS) setWaitOpen(expanded.values().next().value, false);
   } else expanded.delete(id);
   if (!li) return;
-  const sum = li.querySelector('.wsum');
-  li.classList.toggle('trunc', sum.scrollWidth > sum.clientWidth + 1);   // repeat the text only if the row cut it off
   li.classList.toggle('open', open);
   li.querySelector('.slide').classList.toggle('open', open);
   li.querySelector('.slide').inert = !open;
-  li.querySelector('.wait').setAttribute('aria-expanded', String(open));
+  li.querySelector('.wait-toggle').setAttribute('aria-expanded', String(open));
 }
 function renderWaits(force) {
   const list = $('waits');
@@ -454,40 +519,110 @@ function renderWaits(force) {
   if (!force && selectionInside(list)) { waitsPending = true; return; }
   waitsSig = sig; waitsPending = false;
   const head = $('waits-h');
-  head.replaceChildren(icon('flag', 13), open.length ? String(open.length) : '');
-  head.title = L.waits; head.setAttribute('aria-label', `${L.waits}: ${open.length}`);
+  head.replaceChildren(el('span', {class:'side-label'}, L.waits),
+    el('span', {class:'side-count'}, icon('flag', 13), open.length));
   head.classList.toggle('zero', !open.length);
-  if (!open.length) { list.replaceChildren(el('li', {class:'empty'}, L.none)); return; }
+  const focused = list.contains(document.activeElement) ? document.activeElement.closest('.wrow')?.dataset.wait : null;
+  if (!open.length) {
+    list.replaceChildren(el('li', {class:'empty'}, L.none));
+    if (focused) $('side-btn').focus({preventScroll:true});
+    return;
+  }
   list.replaceChildren(...open.map(w => {
     const t = model.tasks.get(w.task_id);
     const sess = model.sessions.get(w.session_id);
-    const row = el('div', {class:'wait' + (t && selected === t.id ? ' sel' : ''), tabindex:'0', role:'button',
-      'aria-expanded':'false', 'aria-label':`${L.kinds[w.kind] || w.kind} ${w.id}${t ? ' ' + t.id : ''}: ${w.summary}`, title:w.summary, 'data-task':w.task_id || ''},
-      el('span', {class:'chev'}, icon('chev', 12)), el('span', {class:'kind k-' + w.kind}, L.kinds[w.kind] || w.kind),
-      el('span', {class:'wid'}, w.id), t ? el('span', {class:'tid'}, t.id) : null, el('span', {class:'wsum'}, oneLine(w.summary)), copyBtn(w.summary));
-    const toggle = () => {
-      if (String(getSelection() || '')) return;          // the user is selecting text, not clicking
+    const button = el('button', {type:'button', class:'wait-toggle', 'aria-controls':'wait-' + w.id, 'aria-expanded':'false'},
+      el('span', {class:'chev'}, icon('chev', 12)),
+      el('span', {class:'wait-label'}, el('span', {class:'kind k-' + w.kind}, L.kinds[w.kind] || w.kind),
+        el('span', {class:'wid'}, w.id), t ? el('span', {class:'tid'}, t.id) : null),
+      el('span', {class:'wsum'}, w.summary));
+    button.addEventListener('click', () => {
       const opening = !expanded.has(w.id);
       setWaitOpen(w.id, opening);
-      if (opening && t) select(t.id, true);
-    };
-    row.addEventListener('click', toggle);
-    row.addEventListener('keydown', e => { if (e.target === row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(); } });
+      if (opening && t) select(t.id, w.id);
+    });
+    const row = el('div', {class:'wait' + (t && selected === t.id ? ' sel' : ''), 'data-task':w.task_id || ''},
+      button, copyBtn(w.summary));
     const more = el('div', {class:'wait-more'},
-      closeBtn(() => { setWaitOpen(w.id, false); row.focus({preventScroll:true}); }),
-      el('div', {class:'full'}, w.summary),
+      closeBtn(() => { setWaitOpen(w.id, false); button.focus(); }),
       el('div', {class:'line'}, copyable(w.id), t ? [copyable(t.id), el('span', {}, t.title)] : null),
       sess || w.created_at ? el('div', {class:'line'}, sess ? [sess.name ? el('span', {}, sess.name) : null, copyable(sess.id)] : null, when(w.created_at)) : null,
       nativeSessionDetails(sess));
-    const slide = el('div', {class:'slide'}, el('div', {class:'inner'}, more));
+    const slide = el('div', {class:'slide', id:'wait-' + w.id}, el('div', {class:'inner'}, more));
     slide.inert = true;
     return el('li', {class:'wrow', 'data-wait':w.id}, row, slide);
   }));
   for (const id of [...expanded]) setWaitOpen(id, true);
+  if (focused) (list.querySelector(`.wrow[data-wait="${CSS.escape(focused)}"] .wait-toggle`) || $('side-btn')).focus({preventScroll:true});
+}
+
+// ---------- task overview
+function taskCard(t) {
+  const s = latestSession(t.id);
+  const waits = model.waitsBy.get(t.id)?.length || 0;
+  const pr = (model.artsBy.get(t.id) || []).find(a => a.kind === 'pr');
+  const stale = isStale(t);
+  const [, label] = step(t);
+  const codeId = 'task-code-' + t.id;
+  const titleId = 'task-title-' + t.id;
+  const stateId = 'task-state-' + t.id;
+  const button = el('button', {type:'button', class:`task-card st-${t.status}`, 'data-task':t.id,
+    'aria-controls':'detail-wrap', 'aria-labelledby':`${codeId} ${titleId} ${stateId}`},
+    el('span', {class:'task-top'},
+      el('span', {class:'task-code', id:codeId}, t.id),
+      el('span', {class:'task-state', id:stateId}, el('span', {class:'dot', 'aria-hidden':'true'}), L.status[t.status])),
+    el('span', {class:'task-title', id:titleId}, t.title),
+    el('span', {class:'task-meta'},
+      el('span', {}, t.target),
+      waits ? el('span', {class:'alert'}, `${L.waits} ${waits}`) : null,
+      label === L.verify ? el('span', {class:'alert'}, L.verify) : null,
+      pr ? el('span', {}, chipText(pr)) : null,
+      s ? el('span', {class:stale ? 'task-bottom alert' : 'task-bottom'},
+        `${s.name || s.id} · ${stale ? L.stale : ago(reportTime(s)) || L.noReport}`) : null));
+  button.addEventListener('click', () => select(t.id));
+  return el('li', {}, button);
+}
+
+function renderOverview() {
+  const host = $('overview');
+  const focused = host.contains(document.activeElement) ? document.activeElement.dataset.task : null;
+  if (!state?.tasks.length) { host.replaceChildren(el('p', {class:'tasks-empty'}, L.noTasks)); return; }
+  const groups = Object.fromEntries(Object.keys(TASK_GROUPS).map(key => [key, []]));
+  for (const task of state.tasks) {
+    const group = model.waitsBy.has(task.id) ? 'attention'
+      : Object.keys(TASK_GROUPS).find(key => TASK_GROUPS[key].includes(task.status));
+    groups[group].push(task);
+  }
+  host.replaceChildren(...Object.entries(groups).filter(([, tasks]) => tasks.length).map(([key, tasks]) => {
+    const heading = 'group-' + key;
+    return el('section', {class:'group', 'aria-labelledby':heading},
+      el('div', {class:'group-head'}, el('h3', {id:heading}, L.groups[key]), el('span', {class:'count'}, tasks.length)),
+      el('ul', {class:'task-grid'}, tasks.map(taskCard)));
+  }));
+  if (focused) taskControl(focused)?.focus({preventScroll:true});
+}
+
+function renderTaskView() {
+  if (view === 'overview') renderOverview();
+  else { renderGraph(); renderLegend(); }
+  updateSelection();
+}
+
+for (const key of ['overview', 'map']) {
+  $(key + '-btn').addEventListener('click', () => {
+    if (view === key) return;
+    view = key;
+    $('overview').hidden = key !== 'overview';
+    $('map').hidden = key !== 'map';
+    $('overview-btn').setAttribute('aria-pressed', String(key === 'overview'));
+    $('map-btn').setAttribute('aria-pressed', String(key === 'map'));
+    hideTip();
+    renderTaskView();
+  });
 }
 
 // ---------- progress map: swimlane per target, column per dependency depth
-const NW = 188, NH = 62, DH = 26, GX = 44, GY = 8, LW = 112, LP = 8;
+const NW = 272, NH = 128, DH = 104, GX = 44, GY = 10, LW = 136, LP = 10;
 function layout() {
   const tasks = state.tasks;
   const preds = new Map(tasks.map(t => [t.id, []]));
@@ -528,18 +663,16 @@ function layout() {
     laneBoxes.push({target, y, h: laneH, i: li});
     y += laneH;
   });
-  return {pos, laneBoxes, width: LW + (maxDepth + 1) * (NW + GX) - GX + 16, height: y};
+  return {pos, laneBoxes, width: LW + (maxDepth + 1) * (NW + GX) - GX + 54, height: y};
 }
 function renderGraph() {
   const host = $('graph');
   hideTip();  // a removed node never fires mouseleave
   const focused = host.contains(document.activeElement) ? document.activeElement.dataset.task : null;
   $('map').setAttribute('aria-label', L.map);
-  if (!state || !state.tasks.length) { host.replaceChildren(el('p', {class:'graph-empty'}, L.noTasks)); return; }
+  if (!state || !state.tasks.length) { host.replaceChildren(el('p', {class:'tasks-empty'}, L.noTasks)); return; }
   const {pos, laneBoxes, width, height} = layout();
-  // Scale up to the available width (max 1.45x) so the map is the primary, readable view; scroll rather than shrink below 0.85x.
-  const root = sv('svg', {viewBox:`0 0 ${width} ${height}`, role:'group', 'aria-label':L.map,
-    style:`width:100%;height:auto;max-width:${Math.round(width * 1.45)}px;min-width:${Math.round(width * 0.85)}px`});
+  const root = sv('svg', {viewBox:`0 0 ${width} ${height}`, width, height, role:'group', 'aria-label':L.map});
   const defs = sv('defs');
   for (const kind of ['depends_on','spawned_from']) defs.append(sv('marker', {id:'ar-' + kind, viewBox:'0 0 10 10', refX:'9', refY:'5', markerWidth:'7', markerHeight:'7', orient:'auto'}, sv('path', {d:'M0,0 L10,5 L0,10 z', class:'mk-' + kind})));
   root.append(defs);
@@ -568,7 +701,6 @@ function renderGraph() {
   for (const p of pos.values()) root.append(nodeEl(p));
   host.replaceChildren(root);
   if (focused) host.querySelector(`.node[data-task="${CSS.escape(focused)}"]`)?.focus({preventScroll:true});
-  highlight();
 }
 function nodeEl({x, y, h, task: t}) {
   const [cur, label] = step(t);
@@ -576,32 +708,37 @@ function nodeEl({x, y, h, task: t}) {
   const g = sv('g', {class:`node st-${t.status}${selected === t.id ? ' sel' : ''}`, tabindex:'0', role:'button', 'data-task':t.id,
     'aria-label':`${t.id} ${t.title}: ${L.status[t.status] || t.status}`});
   g.append(sv('rect', {x, y, width:NW, height:h, rx:5, class:'card'}), sv('rect', {x, y, width:4, height:h, rx:2, class:'rail'}));
-  g.append(sv('text', {x:x + 11, y:final ? y + 17 : y + 16, class:'t1'}, sv('tspan', {class:'id'}, t.id + ' '), clip(t.title, final ? 23 : 21)));
   const waits = (model.waitsBy.get(t.id) || []).length;
-  if (waits) g.append(sv('circle', {cx:x + NW - 10, cy:y + 11, r:7, class:'badge-n'}), sv('text', {x:x + NW - 10, y:y + 14.5, 'text-anchor':'middle', class:'badge-t'}, String(waits)));
-  if (!final) {
-    const sx = x + 15, sy = y + 31;
+  g.append(
+    sv('text', {x:x + 13, y:y + 17, class:'t3'}, t.id),
+    sv('foreignObject', {x:x + 13, y:y + 24, width:NW - 26, height:54, 'aria-hidden':'true'},
+      el('div', {class:'map-title'}, t.title)));
+  if (waits) g.append(sv('text', {x:x + NW - 12, y:y + 17, 'text-anchor':'end', class:'steplbl'}, `${L.waits} ${waits}`));
+  const sx = x + 16, sy = y + 91;
+  if (cur >= 0) {
     g.append(sv('line', {x1:sx, y1:sy, x2:sx + 4 * 12, y2:sy, class:'stepline'}));
     for (let i = 0; i < 5; i++) {
       const isCur = i === cur;
       g.append(sv('circle', {cx:sx + i * 12, cy:sy, r:isCur ? 4.5 : 3, class:isCur ? 'cur' : (i < cur ? 'step past' : 'step')}));
     }
-    g.append(sv('text', {x:sx + 4 * 12 + 10, y:sy + 4, class:'steplbl'}, label));
+  }
+  g.append(sv('text', {x:cur >= 0 ? sx + 58 : x + 13, y:sy + 4, class:'steplbl'}, label));
+  if (!final) {
     const s = latestSession(t.id);
     const pr = (model.artsBy.get(t.id) || []).find(a => a.kind === 'pr');
     const stale = isStale(t);
-    g.append(sv('text', {x:x + 11, y:y + 52, class:'t3'}, s ? clip(s.name || s.id, pr ? 14 : 22) : ''));
-    const right = s ? (stale ? '⚠ ' : '') + ago(reportTime(s)) : '';
-    g.append(sv('text', {x:x + NW - 8, y:y + 52, 'text-anchor':'end', class:'t3' + (stale ? ' stale' : '')}, right, stale ? sv('title', {}, L.stale) : null));
-    if (pr) g.append(sv('text', {x:x + NW - 8 - Math.max(40, right.length * 6.5) - 6, y:y + 52, 'text-anchor':'end', class:'pr'}, chipText(pr)));
+    const report = s ? (stale ? '⚠ ' : '') + ago(reportTime(s)) : '';
+    g.append(sv('text', {x:x + 13, y:y + 116, class:'t3'}, s ? clip(s.name || s.id, pr ? 19 : 26) : ''));
+    g.append(sv('text', {x:x + NW - 12, y:y + 116, 'text-anchor':'end', class:'t3' + (stale ? ' stale' : '')},
+      report, stale ? sv('title', {}, L.stale) : null));
+    if (pr) g.append(sv('text', {x:x + NW - 94, y:y + 116, 'text-anchor':'end', class:'pr'}, chipText(pr)));
   }
-  g.addEventListener('click', () => select(t.id, false));
-  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(t.id, false); } });
+  g.setAttribute('aria-controls', 'detail-wrap');
+  g.addEventListener('click', () => select(t.id));
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(t.id); } });
   g.addEventListener('mouseenter', e => showTip(t, e.clientX, e.clientY));
   g.addEventListener('mousemove', e => placeTip(e.clientX, e.clientY));
   g.addEventListener('mouseleave', hideTip);
-  g.addEventListener('focus', () => { const r = g.getBoundingClientRect(); showTip(t, r.right, r.top); });
-  g.addEventListener('blur', hideTip);
   return g;
 }
 function highlight() {
@@ -654,21 +791,40 @@ function setSideCollapsed(collapsed, persist) {
   btn.setAttribute('aria-expanded', String(!collapsed));
   btn.title = label; btn.setAttribute('aria-label', label);
   if (!btn.firstChild) btn.append(el('span', {class:'chev'}, icon('chev', 13)));
+  updateSelection();
   if (persist) saveSidePref(collapsed);
 }
 $('side-btn').addEventListener('click', e => { e.stopPropagation(); setSideCollapsed(!sideCollapsed, true); });
 $('side').addEventListener('click', e => { if (sideCollapsed && !e.target.closest('#side-btn')) setSideCollapsed(false, true); });
 
-function select(id, scroll) {
-  if (sideCollapsed) setSideCollapsed(false, false);   // a pinned detail needs the column
+$('wait-link').addEventListener('click', e => {
+  e.preventDefault();
+  setSideCollapsed(false, true);
+  $('side-btn').focus();
+});
+
+function taskControl(id) {
+  const host = view === 'map' ? $('graph') : $('overview');
+  return host.querySelector(`[data-task="${CSS.escape(id)}"]`);
+}
+function updateSelection() {
+  for (const n of document.querySelectorAll('.task-card, #graph .node')) {
+    const current = n.dataset.task === selected;
+    n.classList.toggle('sel', current);
+    n.setAttribute('aria-expanded', String(current && !sideCollapsed));
+  }
+  for (const w of document.querySelectorAll('#waits .wait')) w.classList.toggle('sel', w.dataset.task === selected);
+  highlight();
+}
+function select(id, fromWait = null) {
+  if (sideCollapsed) setSideCollapsed(false, false);
   const changed = selected !== id || !detailOpen();
   selected = id;
+  waitOrigin = fromWait;
   hideTip();
-  for (const n of document.querySelectorAll('#graph .node')) n.classList.toggle('sel', n.dataset.task === id);
-  for (const w of document.querySelectorAll('#waits .wait')) w.classList.toggle('sel', w.dataset.task === id);
-  highlight();
+  updateSelection();
   renderDetail(changed);
-  if (scroll) document.querySelector(`#graph .node[data-task="${CSS.escape(id)}"]`)?.scrollIntoView({block:'nearest', inline:'nearest'});
+  if (!fromWait) $('detail-title')?.focus();
 }
 function detailOpen() { return $('detail-wrap').classList.contains('open'); }
 function setDetailOpen(open) {
@@ -681,9 +837,10 @@ function closeDetail() {
   selected = null;
   setDetailOpen(false);
   detailSig = null;
-  for (const n of document.querySelectorAll('#graph .node.sel, #waits .wait.sel')) n.classList.remove('sel');
-  highlight();
-  if (id) document.querySelector(`#graph .node[data-task="${CSS.escape(id)}"]`)?.focus({preventScroll:true});
+  updateSelection();
+  const origin = waitOrigin && document.querySelector(`#waits .wrow[data-wait="${CSS.escape(waitOrigin)}"] .wait-toggle`);
+  waitOrigin = null;
+  if (id) (origin || taskControl(id) || $(view + '-btn')).focus();
 }
 function renderDetail(force) {
   const box = $('detail');
@@ -698,6 +855,7 @@ function renderDetail(force) {
   if (!force && sig === detailSig && detailOpen()) return;
   if (!force && selectionInside(box)) { detailPending = true; return; }
   const keepScroll = box.dataset.task === t.id ? $('side').scrollTop : null;
+  const focusedTitle = document.activeElement === $('detail-title');
   const [cur, label] = step(t);
   const field = (name, value) => value ? [el('dt', {}, name), el('dd', {}, value)] : null;
   const rel = edges.map(e => {
@@ -706,8 +864,10 @@ function renderDetail(force) {
     return el('li', {title:`${e.from} ${L.edges[e.kind]} ${e.to}`}, sample, ` ${out ? '→' : '←'} `, copyable(other), o ? ` ${o.title}` : '');
   });
   box.replaceChildren(...[
+    el('header', {}, el('div', {class:'detail-meta'}, copyable(t.id),
+      el('span', {class:'pill p-' + t.status}, L.status[t.status] || t.status)),
+      el('h2', {id:'detail-title', tabindex:'-1'}, t.title)),
     closeBtn(closeDetail),
-    el('header', {}, copyable(t.id), el('h2', {}, t.title), el('span', {class:'pill p-' + t.status}, L.status[t.status] || t.status)),
     el('div', {class:'sub'}, el('span', {class:'meta', title:L.target}, t.target),
       cur >= 0 ? el('div', {class:'stepper'}, L.steps.map((name, i) => el('span',
         {class: i === cur ? 'cur p-' + t.status : (i < cur ? 'past' : '')}, i === cur ? label : name))) : null),
@@ -729,7 +889,7 @@ function renderDetail(force) {
   box.dataset.builds = String(Number(box.dataset.builds || 0) + 1);
   setDetailOpen(true);
   if (keepScroll !== null) $('side').scrollTop = keepScroll;
-  else box.scrollIntoView({block:'nearest'});
+  if (focusedTitle) $('detail-title').focus({preventScroll:true});
   detailSig = sig; detailPending = false;
 }
 
@@ -756,6 +916,10 @@ function applyLang(code) {
   document.title = 'HQ';
   $('title').title = L.readonly;
   $('title').setAttribute('aria-label', L.readonly);
+  setText('tasks-h', L.tasks);
+  setText('overview-btn', L.overview);
+  setText('map-btn', L.mapView);
+  $('view-switch').setAttribute('aria-label', L.views);
   setSideCollapsed(sideCollapsed, false);
 }
 function render() {
@@ -764,8 +928,7 @@ function render() {
   if (selected && model && !model.tasks.has(selected)) closeDetail();
   renderHeader();
   renderWaits();
-  renderGraph();
-  renderLegend();
+  renderTaskView();
   renderDetail();
   if (historyOpen) renderHistory();
 }
@@ -774,7 +937,7 @@ function setConn(kind) {
     ? (state ? `${L.offlineData} ${fmtTime(state.generated_at)}` : L.offlineNone) : L.connecting;
   $('conn-dot').className = 'dot ' + (kind === 'live' ? 'live' : kind === 'down' ? 'down' : '');
   $('conn').title = text;
-  setText('conn-text', text);
+  if ($('conn-text').textContent !== text) setText('conn-text', text);
   $('updated').classList.toggle('old', kind === 'down');
 }
 async function refresh() {
@@ -801,7 +964,7 @@ document.addEventListener('keydown', e => {
   if (sideCollapsed) { if (historyOpen) { historyOpen = false; renderHistory(); $('history-btn').focus(); } return; }
   const row = document.activeElement?.closest?.('#waits .wrow');
   if (historyOpen) { historyOpen = false; renderHistory(); $('history-btn').focus(); }
-  else if (row && expanded.has(row.dataset.wait)) { setWaitOpen(row.dataset.wait, false); row.querySelector('.wait').focus(); }
+  else if (row && expanded.has(row.dataset.wait)) { setWaitOpen(row.dataset.wait, false); row.querySelector('.wait-toggle').focus(); }
   else if (detailOpen()) closeDetail();
   else if (expanded.size) setWaitOpen([...expanded].pop(), false);
 });
@@ -810,7 +973,7 @@ try { state = JSON.parse($('hq-initial').textContent); } catch (_) { state = nul
 if (state && state.revision !== undefined) revision = state.revision; else state = null;
 render();
 setConn(state ? 'live' : 'connecting');
-setInterval(() => { if (state) { renderHeader(); renderGraph(); } }, 30000);  // keep ages fresh
+setInterval(() => { if (state) { renderHeader(); renderTaskView(); } }, 30000);  // keep ages fresh
 if (location.protocol === 'http:' || location.protocol === 'https:') refresh(); else setConn('down');
 </script>
 </body>
