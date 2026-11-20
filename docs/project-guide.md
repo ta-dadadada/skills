@@ -32,12 +32,13 @@ Agent Skillsを配布するプロジェクトです。開発の開始、業務�
 
 ## スキル一覧
 
-現在は開発向け24スキル、スキル改善・作業モード向け5スキルの計29スキルを収録しています。
+現在は開発向け28スキル、スキル改善・作業モード向け5スキルの計33スキルを収録しています。
 
 ### 開始・要件整理
 
 | スキル | 簡単な説明 | 主な出力・注意点 |
 | --- | --- | --- |
+| [install-agent-rules](../dev/install-agent-rules/SKILL.md) | 配布ルールをClaude Codeのプロジェクト用・ユーザー用rulesへ導入・更新・削除します。 | スクリプトによる計画・差分・衝突判定。ローカル変更を上書き・削除しません。[利用手順](rules-guide.md)。 |
 | [session-goal](../dev/session-goal/SKILL.md) | 開発セッションの目的と、成功時に何が変わるかを短く整理して保存します。 | `.agent-goal.md`。目的が明確なら再確認せず保存します。実装計画は別の役割です。 |
 | [local-intake](../dev/local-intake/SKILL.md) | 曖昧な依頼を、ローカルブラウザの2〜3回の質問フォームで合意済みの依頼概要にまとめます。 | 一時Markdown文書。同じ端末のPython 3.11以上とブラウザが必要です。小さな質問には使いません。 |
 | [issue-kickoff](../dev/issue-kickoff/SKILL.md) | Issue・チケット・口頭依頼から、実装の完了条件、対象外、作業ブランチ、検証計画を準備します。 | 完了条件と検証を対応づけた計画。実装そのものは行いません。 |
@@ -47,7 +48,7 @@ Agent Skillsを配布するプロジェクトです。開発の開始、業務�
 | スキル | 簡単な説明 | 主な出力・注意点 |
 | --- | --- | --- |
 | [domain-modeling](../dev/domain-modeling/SKILL.md) | 資料やコードから業務用語、振る舞い、ルール、境界を整理します。 | 根拠・推論・仮説・未解決事項を区別したドメインモデルの報告。コード構造の決定は別の役割です。 |
-| [purpose-driven-software-design](../dev/purpose-driven-software-design/SKILL.md) | 目的と既存設計を踏まえ、ルール・責務・依存・抽象化をどこに置くかを判断します。 | 変更しやすさとテストの配置を考えた設計。機械的な変更や既存設計に収まる小変更では不要です。 |
+| [purpose-driven-software-design](../dev/purpose-driven-software-design/SKILL.md) | 共通の判断基準で、責務・抽象化の設計と、差分・指定範囲全体の設計レビューを行います。 | 設計と検証計画、または根拠・効用・代償を示す改善提案。レビューのみの依頼では編集しません。 |
 | [business-ui-design](../dev/business-ui-design/SKILL.md) | 管理画面やCRMなどの業務UIで、作業、レコード、一覧・詳細、ビュー、操作の範囲を整理します。 | 業務画面の情報構造と受入ケース。続けて `frontend-ui-design` に引き継ぎます。 |
 | [frontend-ui-design](../dev/frontend-ui-design/SKILL.md) | 画面構造、フォーム、状態、レスポンシブ、キーボード・フォーカス、アクセシビリティを設計します。 | レビュー済みの設計契約（実装時に守る画面・操作の仕様）。コードを書く場合は実装スキルに引き継ぎます。 |
 

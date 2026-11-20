@@ -18,6 +18,7 @@ dependencies:
   - ta-dadadada/skills/dev/hq-subordinate
   - ta-dadadada/skills/dev/hypothesis-driven-debugging
   - ta-dadadada/skills/dev/implementation-loop
+  - ta-dadadada/skills/dev/install-agent-rules
   - ta-dadadada/skills/dev/issue-kickoff
   - ta-dadadada/skills/dev/local-intake
   - ta-dadadada/skills/dev/nagakute-yomenai

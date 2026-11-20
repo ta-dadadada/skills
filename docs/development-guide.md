@@ -77,6 +77,12 @@
 # 全スキルの形式・相対リンク・実行権限などを検証
 python3 meta/shiranui-hanten/scripts/validate_skill.py dev/* meta/*
 
+# rules原本と設計スキルの生成済み参照を照合
+python3 scripts/sync_software_design_rules.py --check
+
+# ルール導入・更新・削除のテスト
+python3 -m unittest discover -s dev/install-agent-rules/tests -v
+
 # local-intakeのランタイムテスト
 python3 -m unittest discover -s dev/local-intake/tests -v
 
@@ -101,14 +107,14 @@ python3 meta/shiranui-hanten/scripts/validate_skill.py dev/pr-handoff
 文書のリンクとコマンドは、実行・参照するディレクトリを基準に確認します。
 
 [CI](../.github/workflows/ci.yml)では、Python 3.11・3.12・3.13・3.14で
-全スキルのvalidatorを常に実行します。`local-intake`・`session-dashboard`・`hq-dashboard` のテストとCLIのヘルプ確認は、
+全スキルのvalidatorを常に実行します。`install-agent-rules`・`local-intake`・`session-dashboard`・`hq-dashboard` のテストとCLIのヘルプ確認は、
 次のPython関連ファイルに差分がある場合のみ実行します。
 
 - Pythonソース: `*.py`・`*.pyi`。
 - 設定・依存関係: `pyproject.toml`、`setup.cfg`、`tox.ini`、`pytest.ini`、`.python-version`、
   `requirements*.txt`・`requirements*.in`、`Pipfile`・`Pipfile.lock`、`poetry.lock`、`uv.lock`、`pdm.lock`。配置先は問いません。
 - CI設定: `.github/workflows/ci.yml`。
-- テストが検証する資産: `dev/hq-dashboard/assets/` 配下（ダッシュボードのHTML）。
+- テストが検証する資産: `dev/hq-dashboard/assets/` 配下（ダッシュボードのHTML）、`dev/install-agent-rules/assets/` 配下（ルールとマニフェスト）。
 
 PRはベースブランチとの分岐点から、pushは前回コミットからの差分で判定します。
 削除・名称変更も対象とし、比較元がない初回pushではテストを実行します。
@@ -168,3 +174,22 @@ Codex desktopの実機スモーク確認は、読み取りだけの小さな作�
 各確認では、実行日、ホスト、実行した分岐、receipt、未実行の分岐を記録します。
 単体テストの成功は、実ホストでの権限や通知動作の確認にはなりません。
 Claudeの通知経路は維持し、Codex用のcursor収集をClaudeに要求しません。
+
+## 配布ルールを追加・更新する
+
+`dev/install-agent-rules/assets/manifest.json` にルールID、原本ファイル名、配置先ファイル名、説明を追加します。
+原本は同じ `assets/` 内のUTF-8 Markdownとし、配置先ファイル名は他のルールと重複させません。
+導入スクリプトを個別ルールごとに変更する必要はありません。詳細は[導入契約](../dev/install-agent-rules/references/installer-contract.md)を参照してください。
+
+設計ルールの原本は `dev/install-agent-rules/assets/software-design.md` です。
+設計スキルの参照資料は単体配布できるよう、次のコマンドで生成します。生成先は直接編集しません。
+
+```bash
+python3 scripts/sync_software_design_rules.py
+```
+
+CIは原本と生成物の一致を毎回検査します。新しい配布物の実装時は、既存ファイルとの衝突、
+ローカル変更、計画後の変更、更新、アンインストール、別ルールへの非干渉を確認してください。
+配布後のルールID・配置先名は維持し、変更が必要な場合は移行方法を別途設計します。
+
+Lefthook がコミット前にステージ済みの原本と生成物を照合します。リポジトリ直下で `mise install` を実行し、各クローンで一度 `mise exec -- lefthook install` を実行してください。
