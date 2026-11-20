@@ -18,6 +18,7 @@ This overlay maps the skill's capabilities to Claude Desktop tools. Tool names m
 | Read a session's latest report | `list_events` (recent transcript, e.g. `limit: 4`) | take its last assistant message; only for unlinked sessions, on a user turn |
 | Archive a session | `archive_session` | only after the user's yes in chat |
 | Session report arrives | a `<side-sessions-event>` turn | carries the note text |
+| Record turn timing | Unavailable in this workflow | Record notes with `report`. Leave agent turn time unmeasured. Do not infer a start/end pair from notification or `list_events` timestamps or pass `--turn-*` to `ingest`. |
 | End-of-turn box | `wrap_up` (recap, ask, actions); `update_plan` | see "Reply box" |
 | Run the CLI and the server | Bash; `serve` with background execution | keep the process handle |
 

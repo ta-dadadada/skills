@@ -449,6 +449,80 @@ class ReviewRegressionTest(LedgerCase):
                                  sorted(expected), r)
 
 
+class TimingStatsTest(LedgerCase):
+    def at(self, minute, action, *args, **kwargs):
+        ts = f"2026-11-20T{minute // 60:02d}:{minute % 60:02d}:00Z"
+        with unittest.mock.patch.object(hq, "now", return_value=ts):
+            return action(*args, **kwargs)
+
+    def test_completion_uses_transition_and_merges_overlapping_waits(self):
+        task = self.at(0, self.task)
+        self.at(1, self.task, "Imported completed task", status="done")
+        approval = self.at(10, self.op, "wait.add", task=task, kind="approval", summary="approve")["id"]
+        review = self.at(25, self.op, "wait.add", task=task, kind="review", summary="review")["id"]
+        self.at(40, self.op, "wait.resolve", id=approval)
+        self.at(50, self.op, "wait.resolve", id=review)
+        self.at(60, self.op, "wait.add", task=task, kind="decision", summary="decide")
+        self.at(70, self.op, "task.update", id=task, status="done")
+        launch = self.at(80, self.op, "wait.add", task=task, kind="launch", summary="launch")["id"]
+        self.at(90, self.op, "wait.resolve", id=launch)
+        self.at(100, self.op, "task.update", id=task, title="Edited after completion")
+
+        state = self.ledger.read(lambda c: hq.snapshot(c, events_limit=0))
+        self.assertEqual(state["events"], [])
+        self.assertEqual(state["timings"]["completion"],
+                         {"count": 1, "total_seconds": 4200, "wait_seconds": 3000,
+                          "agent_seconds": 0, "agent_tasks": 0})
+        self.assertEqual(state["timings"]["resolved_waits"]["decision"],
+                         {"count": 1, "median_seconds": 600})
+        self.at(120, self.op, "task.update", id=task, status="active")
+        self.assertEqual(self.ledger.read(hq.timing_stats)["completion"]["count"], 0)
+        self.at(130, self.op, "task.update", id=task, status="done")
+        self.assertEqual(self.ledger.read(hq.timing_stats)["completion"],
+                         {"count": 1, "total_seconds": 7800, "wait_seconds": 3600,
+                          "agent_seconds": 0, "agent_tasks": 0})
+
+    def test_completed_turns_are_clipped_and_waits_take_precedence(self):
+        task = self.at(0, self.task)
+        for session in ("a", "b"):
+            self.at(0, self.op, "session.upsert", id=session, task=task, provider="codex")
+        wait = self.at(15, self.op, "wait.add", task=task, kind="approval", summary="approve")["id"]
+        self.at(25, self.op, "wait.resolve", id=wait)
+        self.at(35, self.op, "task.update", id=task, status="done")
+        base = int(hq.datetime(2026, 11, 20, tzinfo=hq.timezone.utc).timestamp())
+
+        def ingest(session, cursor, previous, turn, start, end):
+            return self.at(40, self.op, "ingest", session=session, cursor=cursor, after_cursor=previous,
+                           turn_id=turn, turn_started_at=str(base + start * 60),
+                           turn_completed_at=str(base + end * 60))
+
+        ingest("a", "1", "", "turn-a", -5, 20)
+        ingest("a", "2", "1", "turn-a", -5, 50)
+        self.assertFalse(ingest("a", "stale", "1", "turn-stale", 0, 35)["accepted"])
+        ingest("b", "1", "", "turn-b", 10, 30)
+        with self.assertRaisesRegex(hq.HQError, "completion must be"):
+            ingest("b", "bad", "1", "turn-bad", 50, 40)
+        self.assertEqual(self.session_row("b")["receive_cursor"], "1")
+        state = self.ledger.read(hq.snapshot)
+        self.assertEqual(state["timings"]["completion"],
+                         {"count": 1, "total_seconds": 2100, "wait_seconds": 600,
+                          "agent_seconds": 1200, "agent_tasks": 1})
+        ingests = [event["text"] for event in state["events"] if event["type"] == "ingest"]
+        self.assertEqual(ingests, ["snapshot received; report absent"] * 3)
+        ledger_md = self.ledger.md.read_text(encoding="utf-8")
+        self.assertIn("snapshot received; report absent", ledger_md)
+        self.assertNotIn(hq.TURN_TIMING_MARKER, ledger_md)
+
+    def test_resolved_waits_use_full_history(self):
+        for i in range(hq.API_RESOLVED_WAITS + 1):
+            wait = self.at(0, self.op, "wait.add", kind="approval", summary=f"request {i}")["id"]
+            self.at(i, self.op, "wait.resolve", id=wait)
+        state = self.ledger.read(hq.snapshot)
+        self.assertEqual(len(state["waits"]), hq.API_RESOLVED_WAITS)
+        self.assertEqual(state["timings"]["resolved_waits"]["approval"],
+                         {"count": 51, "median_seconds": 1500})
+
+
 class ServerTest(LedgerCase):
     def start(self):
         proc = subprocess.Popen([sys.executable, str(SCRIPT), "--hq", str(self.dir), "serve", "--port", "0"],
@@ -465,7 +539,7 @@ class ServerTest(LedgerCase):
             self.assertEqual(response.headers["Cache-Control"], "no-store")
             state = json.loads(response.read())
         self.assertEqual((state["lang"], len(state["tasks"])), ("ja", 1))
-        for key in ("revision", "sessions", "edges", "waits", "artifacts", "events", "events_total"):
+        for key in ("revision", "sessions", "edges", "waits", "artifacts", "events", "events_total", "timings"):
             self.assertIn(key, state)
         with urlopen(f"{url}api/state?since={state['revision']}", timeout=5) as response:
             self.assertEqual(json.loads(response.read()), {"revision": state["revision"], "unchanged": True})

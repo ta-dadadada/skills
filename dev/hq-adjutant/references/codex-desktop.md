@@ -99,6 +99,12 @@ id if available, otherwise say it is unavailable in the brief; never invent it.
    snapshots separate from
    reports: a progress summary or host status alone is not a fabricated HQ line.
    If final text is omitted by an up-to-date cursor, there is nothing to ingest.
+   For a newly collected final report, include the completed turn's `id`,
+   `startedAt`, and `completedAt` as `--turn-id`, `--turn-started-at`, and
+   `--turn-completed-at` when available. If timing is missing in the snapshot,
+   one bounded `read_thread` may supply it. Match the same turn id before
+   using the read's timestamps and keep the original wait cursor. Omit the
+   timing flags if the turn cannot be matched or either timestamp is missing.
 5. If a snapshot lacks a usable report needed for a decision, do one bounded
    `read_thread` read before committing that snapshot's cursor. When an exact
    final is recovered, ingest it with that still-uncommitted wait cursor and a

@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import re
 import sqlite3
+from statistics import median
 import sys
 
 ASSET = Path(__file__).resolve().parent.parent / "assets" / "dashboard.html"
@@ -36,6 +37,8 @@ API_EVENTS = 200
 API_RESOLVED_WAITS = 50
 SCHEMA_VERSION = "3"  # 3: 接続情報と受信位置を原子的に保存
 TRANSPORT_FIELDS = ("provider", "host_id", "thread_id", "client_thread_id", "native_status")
+TURN_TIMING_FIELDS = ("turn_id", "turn_started_at", "turn_completed_at")
+TURN_TIMING_MARKER = "; turn timing "
 MD_MARK_RE = re.compile(rb"<!-- hq-ledger revision (\d+) -->")
 LANG_RE = re.compile(r"^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$")
 
@@ -796,6 +799,19 @@ def op_report(c, p):
     return receipt
 
 
+def ingest_turn_timing(p):
+    turn, start, end = (text_param(p, key) for key in TURN_TIMING_FIELDS)
+    if all(value is None for value in (turn, start, end)):
+        return None
+    if (not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", turn or "")
+            or not all(re.fullmatch(r"[0-9]{1,12}", value or "") for value in (start, end))):
+        raise HQError("turn timing requires a turn id and start/end Unix timestamps in seconds")
+    start, end = int(start), int(end)
+    if start > end:
+        raise HQError("turn completion must be at or after its start")
+    return [turn, start, end]
+
+
 def op_ingest(c, p):
     """Atomically accept one ordered transport snapshot and its optional report."""
     sid = text_param(p, "session", True)
@@ -814,6 +830,7 @@ def op_ingest(c, p):
         raise HQError("a report requires non-empty text and report_id")
     if report_id and raw is None:
         raise HQError("report_id requires text")
+    timing = ingest_turn_timing(p)
     receipt = None
     duplicate = False
     if raw is not None:
@@ -833,8 +850,11 @@ def op_ingest(c, p):
         changes["native_status"] = native
     c.execute(f"UPDATE sessions SET {', '.join(f'{k}=?' for k in changes)} WHERE id=?",
               (*changes.values(), sid))
-    add_event(c, "ingest", f"snapshot received; report {'duplicate' if duplicate else 'received' if receipt else 'absent'}",
-              session["task_id"], sid)
+    event = f"snapshot received; report {'duplicate' if duplicate else 'received' if receipt else 'absent'}"
+    if timing:
+        event += TURN_TIMING_MARKER + json.dumps(timing, separators=(",", ":"))
+    task_id = receipt["task"] if timing and receipt and not duplicate else session["task_id"]
+    add_event(c, "ingest", event, task_id, sid)
     return {"ok": True, "session": sid, "accepted": True, "cursor": cursor,
             "report_duplicate": duplicate, "report": receipt}
 
@@ -853,7 +873,7 @@ OPS = {
     "note": (op_note, {"text"}, {"task", "session"}),
     "report": (op_report, {"session", "text"}, {"task"}),
     "launch": (op_launch, {"id", "session"}, {"name", "cwd", "branch", "title"} | set(TRANSPORT_FIELDS)),
-    "ingest": (op_ingest, {"session", "cursor", "after_cursor"}, {"native_status", "report_id", "text"}),
+    "ingest": (op_ingest, {"session", "cursor", "after_cursor"}, {"native_status", "report_id", "text", *TURN_TIMING_FIELDS}),
     "lang": (op_lang, {"code"}, set()),
 }
 
@@ -897,6 +917,96 @@ def session_rows(c):
     return result
 
 
+def history_rows(c, limit):
+    events = rows(c, "SELECT * FROM events ORDER BY id DESC LIMIT ?", (limit,))
+    for event in events:
+        if event["type"] == "ingest":
+            event["text"] = event["text"].partition(TURN_TIMING_MARKER)[0]
+    return events
+
+
+def merged_wait_seconds(intervals):
+    total = 0
+    right = float("-inf")
+    for start, end in sorted(intervals):
+        total += max(0, end - max(start, right))
+        right = max(right, end)
+    return total
+
+
+def completed_turn_intervals(c, completed):
+    intervals = {task: [] for task in completed}
+    seen = set()
+    if not completed:
+        return intervals
+    for row in c.execute("""
+        SELECT e.task_id, e.session_id, e.text FROM events e JOIN tasks t ON t.id=e.task_id
+        WHERE t.status='done' AND e.type='ingest' AND instr(e.text, ?) > 0
+        ORDER BY e.id
+    """, (TURN_TIMING_MARKER,)):
+        task = row["task_id"]
+        if task not in completed:
+            continue
+        turn, start, end = json.loads(row["text"].split(TURN_TIMING_MARKER, 1)[1])
+        key = (row["session_id"], turn)
+        if key in seen:
+            continue
+        seen.add(key)
+        task_start, task_end = completed[task]
+        if start <= task_end and end >= task_start:
+            intervals[task].append((max(start, task_start), min(end, task_end)))
+    return intervals
+
+
+def timing_stats(c):
+    completed = {}
+    # Task fields can be edited after completion. Use the latest completion event
+    # for tasks that are still done, including events outside the dashboard history window.
+    for row in c.execute("""
+        SELECT t.id, CAST(strftime('%s', t.created_at) AS INTEGER) AS started,
+               CAST(strftime('%s', e.ts) AS INTEGER) AS finished
+        FROM events e JOIN tasks t ON t.id=e.task_id
+        WHERE t.status='done' AND e.type='task.update'
+          AND e.text GLOB t.id || ' status *→done*'
+        ORDER BY e.id
+    """):
+        completed[row["id"]] = (row["started"], row["finished"])
+    completed = {task: (start, end) for task, (start, end) in completed.items()
+                 if start is not None and end is not None and start <= end}
+
+    intervals = {task: [] for task in completed}
+    resolved = {kind: [] for kind in WAIT_KINDS}
+    for row in c.execute("""
+        SELECT task_id, kind, CAST(strftime('%s', created_at) AS INTEGER) AS started,
+               CAST(strftime('%s', resolved_at) AS INTEGER) AS finished
+        FROM waits WHERE status='resolved'
+    """):
+        start, end = row["started"], row["finished"]
+        if start is None or end is None or start > end:
+            continue
+        resolved[row["kind"]].append(end - start)
+        task = row["task_id"]
+        if task in completed:
+            task_start, task_end = completed[task]
+            start, end = max(start, task_start), min(end, task_end)
+            if start < end:
+                intervals[task].append((start, end))
+    turns = completed_turn_intervals(c, completed)
+    wait_seconds = sum(merged_wait_seconds(spans) for spans in intervals.values())
+    covered = sum(merged_wait_seconds(intervals[task] + turns[task]) for task in completed)
+    return {
+        "completion": {
+            "count": len(completed),
+            "total_seconds": sum(end - start for start, end in completed.values()),
+            "wait_seconds": wait_seconds,
+            "agent_seconds": covered - wait_seconds,
+            "agent_tasks": sum(bool(spans) for spans in turns.values()),
+        },
+        "resolved_waits": {kind: {"count": len(times), "median_seconds": median(times)}
+                           for kind, times in resolved.items() if times},
+    }
+
+
 def snapshot(c, events_limit=API_EVENTS):
     events_total = c.execute("SELECT COUNT(*) FROM events").fetchone()[0]
     return {
@@ -911,8 +1021,9 @@ def snapshot(c, events_limit=API_EVENTS):
         + rows(c, "SELECT * FROM waits WHERE status='resolved' ORDER BY resolved_at DESC, num DESC LIMIT ?",
                (API_RESOLVED_WAITS,)),
         "artifacts": rows(c, "SELECT * FROM artifacts ORDER BY num"),
-        "events": rows(c, "SELECT * FROM events ORDER BY id DESC LIMIT ?", (events_limit,)),
+        "events": history_rows(c, events_limit),
         "events_total": events_total,
+        "timings": timing_stats(c),
     }
 
 
@@ -1057,7 +1168,7 @@ def render_md(c, hq_dir):
         out.append(f"- {t['id']} [{t['status']}] {one_line(t['title'])} · {t['target']} · {t['updated_at']}")
     if not finished:
         out.append("- none")
-    events = rows(c, "SELECT * FROM events ORDER BY id DESC LIMIT ?", (MD_EVENTS,))
+    events = history_rows(c, MD_EVENTS)
     out += ["", f"## Recent events (latest {len(events)})", ""]
     for e in events:
         where = " ".join(x for x in (e["task_id"], e["session_id"]) if x)
@@ -1216,7 +1327,7 @@ def build_parser():
     p = cmd(sub, "ingest", "atomically receive an ordered transport snapshot and optional report")
     for flag in ("--session", "--cursor", "--after-cursor"):
         p.add_argument(flag, required=True)
-    for flag in ("--native-status", "--report-id", "--text"):
+    for flag in ("--native-status", "--report-id", "--text") + tuple("--" + key.replace("_", "-") for key in TURN_TIMING_FIELDS):
         p.add_argument(flag)
     p = cmd(sub, "launch", "record a started session: task active, session starting, criteria/launch waits resolved")
     p.add_argument("id")
@@ -1323,7 +1434,7 @@ def run(args):
             raise HQError(f"invalid JSON: {exc}") from None
         return {"ok": True, "results": ledger.mutate(batch_ops(data))}
     if command == "ingest":
-        keys = ("session", "cursor", "after_cursor", "native_status", "report_id", "text")
+        keys = ("session", "cursor", "after_cursor", "native_status", "report_id", "text") + TURN_TIMING_FIELDS
         params, name = params_from(args, {k: k for k in keys}), "ingest"
         if args.report_id is not None and args.text is None:
             params["text"] = read_stdin()

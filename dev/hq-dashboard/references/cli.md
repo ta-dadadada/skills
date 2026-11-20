@@ -97,6 +97,11 @@ identity when supplied by the host; otherwise use an exact raw-text hash or a
 stable assistant-final identity. A wait cursor is not a report identity. Do not invent host turn ids or re-ingest older finals just because a new
 read used a different retrieval cursor. See the host overlay for collection.
 
+If the host supplies a completed turn's identity and both boundaries, pass
+`--turn-id ID --turn-started-at UNIX_SECONDS --turn-completed-at UNIX_SECONDS`
+together. The accepted snapshot records the timing atomically. Repeated turn
+ids for the same session contribute once to statistics.
+
 Receipt examples (the nested report uses the `report` receipt above):
 
 ```json
@@ -136,7 +141,7 @@ A JSON array of objects, from `--file` or stdin. Each object has `"op"` plus key
 | `note` | `text` | `task, session` |
 | `report` | `session, text` | `task` |
 | `launch` | `id, session` | `name, cwd, branch, title, provider, host_id, thread_id, client_thread_id, native_status` |
-| `ingest` | `session, cursor, after_cursor` | `native_status, report_id, text` |
+| `ingest` | `session, cursor, after_cursor` | `native_status, report_id, text, turn_id, turn_started_at, turn_completed_at` |
 | `lang` | `code` | |
 
 ## `ledger.md`
@@ -154,7 +159,7 @@ Treat it as read-only. The SQLite file is the state of record.
 ## HTTP (read-only, 127.0.0.1 only)
 
 - `GET /`: the dashboard page, with the current state embedded so it renders before the first poll.
-- `GET /api/state[?since=REV]`: the full snapshot: `revision, lang, generated_at, server_url, tasks, sessions, edges`, `waits` (open, plus the latest 50 resolved), `artifacts`, and `events` (the latest 200) with `events_total`. When `since` equals the current revision, it returns `{"revision":N,"unchanged":true}`.
+- `GET /api/state[?since=REV]`: the full snapshot: `revision, lang, generated_at, server_url, tasks, sessions, edges`, `waits` (open, plus the latest 50 resolved), `artifacts`, `events` (the latest 200) with `events_total`, and `timings` (aggregates in seconds). When `since` equals the current revision, it returns `{"revision":N,"unchanged":true}`.
 - Other paths return 404. Other methods return 405 with `Allow: GET`. A `Host` other than `127.0.0.1:<port>` or `localhost:<port>` returns 403.
 
 The page supports English and Japanese labels.
@@ -162,6 +167,11 @@ The page supports English and Japanese labels.
 - **Header:** active sessions out of 8, a shortcut to open waits, a bar with labeled counts by task status, the last-update time, connection status, and history.
 - **Overview:** the default view groups tasks into needs attention, in progress, queued, and closed. A task with an open wait appears under needs attention even if its ledger status is active or queued. Cards show the full title, target, status, and available wait, PR, verification, and last-report information. Reports older than 30 minutes are flagged while the session is starting or working.
 - **Relationships:** one swimlane per target; columns follow `depends_on` and `spawned_from` order. Nodes show a wrapped title preview and the lifecycle step. Selecting a task in either view pins its full details. Switching views keeps the selection.
+  - Drag the map with a mouse, swipe on touch, or use the direction buttons. The zoom buttons change the scale from 50% to 200%. Reset returns to the top left at 100%.
+  - With the map area focused, use arrow keys to move, `+` or `-` to zoom, and `0` to reset. The map keeps its position and scale across ledger updates and when switching views.
+- **Statistics:** the current task total, the completion rate among tasks excluding dropped tasks, and the number of tasks in the overview's attention group. Each target has a status distribution bar and labeled counts.
+  - Completion time uses registration and the latest recorded transition to done for tasks currently done. Tasks created as done without a subsequent completion are excluded. The breakdown counts overlapping waits or parallel recorded turns once per task, with user waits taking precedence when they overlap turns. Recorded turns measure elapsed time between host timestamps and may include unrecorded pauses. The coverage count shows how many completed tasks had turn timing. Other time includes time spent queued and unmeasured periods.
+  - By request type, see the longest current wait and the median time to resolution. The median includes automatic closures and uses the full ledger.
 - **Waiting-on-you column:** summaries wrap. Each item expands to show task and session context with copyable ids. At most two items are expanded at once.
 - **Detail panel:** a sliding drawer under the waits with an × button. Native session metadata adds separate copyable provider, host, and operational chat id fields; a client id is labeled pending setup and appears only without an operational chat id. Ledger session ids remain distinct, and legacy sessions keep their original display. It holds copyable ids, branches, cwd, URLs, wait operations, and summaries. It stays open until × or Esc closes it, or another node is clicked. Polling never rebuilds it while its data is unchanged, and defers a rebuild while text is selected inside it.
 
