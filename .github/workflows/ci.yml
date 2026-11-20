@@ -50,7 +50,7 @@ jobs:
           python_changed=false
           while IFS= read -r -d '' changed_path; do
             case "$changed_path" in
-              *.py|*.pyi|.github/workflows/ci.yml|dev/hq-dashboard/assets/*)
+              *.py|*.pyi|.github/workflows/ci.yml|dev/install-agent-rules/assets/*|dev/hq-dashboard/assets/*)
                 python_changed=true
                 ;;
             esac
@@ -91,6 +91,16 @@ jobs:
 
       - name: Validate skill packages
         run: python3 meta/shiranui-hanten/scripts/validate_skill.py dev/* meta/*
+
+      - name: Check shared design rules
+        run: python3 scripts/sync_software_design_rules.py --check
+
+      - name: Test rules installer
+        if: needs.changes.outputs.python == 'true'
+        run: |
+          python3 -m unittest discover -s dev/install-agent-rules/tests -v
+          python3 dev/install-agent-rules/scripts/install_rules.py --help
+          python3 dev/install-agent-rules/scripts/install_rules.py list
 
       - name: Test local-intake
         if: needs.changes.outputs.python == 'true'

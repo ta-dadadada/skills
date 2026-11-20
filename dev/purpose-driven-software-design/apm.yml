@@ -1,17 +1,15 @@
 name: purpose-driven-software-design
-description: 'Purpose-first design workflow for software changes that involve a design
-  decision — introducing or relocating a rule, responsibility, state transition, dependency,
-  abstraction, or axis of variation — not for every behaviour change: clarify whose
-  problem the change solves, pin ambiguous domain terms, discover the existing design
-  and the evidenced axes of change (Follow / Adapt / Avoid), give every rule an authoritative
-  owner, choose the smallest sound extensible structure — open along evidenced axes,
-  closed against hypothetical ones — map each behaviour to the cheapest test level,
-  review changeability. Applies to APIs, event handlers, batch jobs, CLIs, frontend,
-  and domain logic alike. Use when deciding where data and logic belong, when a new
-  variation keeps forcing edits to the same core code, when introducing or resisting
-  an abstraction or commonization, or when reviewing a change for changeability. Not
-  for purely mechanical changes, nor required for small local changes that fit the
-  existing design as is.'
+description: >-
+  Design software changes and review software structure using shared criteria
+  for responsibility, change locality, information hiding, simplicity, and
+  verification. Use when deciding where rules or logic belong, introducing or
+  evaluating abstractions and commonization, adding variations, or reviewing
+  a diff or an explicitly named whole scope for design and maintainability.
+  Design produces a reasoned structure and verification plan; review produces
+  evidence-backed proposals without editing. Applies to APIs, events, batches,
+  CLIs, frontend, and domain logic. Not a comprehensive bug, security, or
+  performance audit. Routine mechanical or locally conventional changes do not
+  need this workflow unless design review is explicitly requested.
 license: MIT
 type: skill
 version: '0.1.0'

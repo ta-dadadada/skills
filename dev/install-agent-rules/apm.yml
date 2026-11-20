@@ -1,0 +1,12 @@
+name: install-agent-rules
+description: >-
+  Install, update, preview, or uninstall bundled Claude Code rules when
+  explicitly requested. Select a rule from the manifest and run the script
+  for diffing, conflict detection, planning, and applying the unchanged plan.
+  All destination and installation-record operations belong to the script;
+  never edit them directly. Not for routine coding, design review, arbitrary
+  file installation, or semantic merging of project instructions. Local edits
+  and unmanaged files are preserved on conflicting updates or removals.
+license: MIT
+type: skill
+version: '0.1.0'

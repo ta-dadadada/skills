@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "rules": {
+    "software-design": {
+      "asset": "software-design.md",
+      "filename": "ta-dadadada-software-design.md",
+      "description": "Software design criteria for change locality, responsibility, simplicity, and verification."
+    },
+    "project-documentation": {
+      "asset": "project-documentation.md",
+      "filename": "ta-dadadada-project-documentation.md",
+      "description": "Project documentation guidance for placing, updating, and verifying information readers depend on."
+    }
+  }
+}

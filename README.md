@@ -121,6 +121,20 @@ npx degit ta-dadadada/skills/dev/pr-handoff .cursor/skills/pr-handoff
 プロジェクト用スキルは、コピー後に `.agents/skills/` などの対象ディレクトリを
 コミットしてください。チーム全員がリポジトリを取得すると同じスキルを利用できます。
 
+## 常用するルールを導入する
+
+Claude Code 向けに、設計の判断基準とプロジェクト文書の書き方を配布しています。
+
+**エージェントから導入する場合**は、`install-agent-rules` スキルを起動し、表示された候補から導入・更新したいルールを選びます。ルール名を指定して「このプロジェクトに `software-design` を導入して」と依頼することもできます。
+
+**ターミナルから直接導入する場合**は、対象プロジェクトのルートで次を実行し、表示されたルール ID を入力します。macOS または Linux で Git、curl、Python 3.11 以上が必要です。
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ta-dadadada/skills/HEAD/scripts/install-agent-rules.sh | sh
+```
+
+配置したルールは Claude Code が自動で読み込みます。Codex でも同じインストーラーで配置できますが、利用するには `AGENTS.md` にルールを読む指示を追加してください。記載例と、[ルールの導入手順](docs/rules-guide.md)を参照してください。
+
 ## 利用時の注意
 
 - 導入前に `SKILL.md`、同梱スクリプト、参照ファイルを確認する。スキルはエージェントの行動やコマンド実行に影響する。
