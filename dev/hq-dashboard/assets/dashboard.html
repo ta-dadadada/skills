@@ -69,8 +69,31 @@ button { font:inherit; color:inherit; }
 .view-switch button { border:1px solid transparent; border-radius:5px; background:transparent; color:var(--muted); padding:5px 10px; cursor:pointer; font-size:12px; font-weight:650; }
 .view-switch button:hover { color:var(--ink); }
 .view-switch button[aria-pressed="true"] { background:var(--panel); color:var(--ink); border-color:var(--line); }
-.overview,.map { overflow:auto; min-width:0; flex:1; }
-.overview { padding:4px 20px 24px; }
+.overview { overflow:auto; min-width:0; flex:1; padding:4px 20px 24px; }
+.stats { overflow:auto; min-width:0; flex:1; padding:4px 20px 24px; }
+.stats:focus-visible { outline-offset:-2px; }
+.stats h3 { font-size:15px; margin:0 0 4px; }
+.stats-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%, 155px),1fr)); gap:8px; margin:0 0 18px; }
+.stats-summary > div,.stats-target { background:var(--panel); border:1px solid var(--line); border-radius:7px; padding:10px 12px; }
+.stats-summary dt { color:var(--muted); font-weight:650; }
+.stats-summary dd { margin:2px 0 0; }
+.stats-value { display:block; font-size:24px; font-weight:700; font-variant-numeric:tabular-nums; }
+.stats-targets { display:grid; gap:8px; list-style:none; padding:0; margin:8px 0 0; }
+.stats-target { display:grid; gap:6px; }
+.stats-target h4 { margin:0; font-size:14px; overflow-wrap:anywhere; }
+.stats-target header { display:flex; align-items:baseline; flex-wrap:wrap; justify-content:space-between; gap:4px 9px; }
+.stats-target .progress { height:12px; }
+.timing-section { margin:0 0 18px; }
+.timing-card { display:grid; gap:6px; padding:10px 12px; margin:8px 0; border:1px solid var(--line); border-radius:7px; background:var(--panel); }
+.timing-card h4 { margin:0; font-size:14px; }
+.timing-card .progress { height:12px; }
+.timing-wait { --tone:var(--waiting); }
+.timing-agent { --tone:var(--active); }
+.timing-other { --tone:var(--queued); }
+.wait-stats { width:100%; border-collapse:collapse; margin-top:6px; font-size:12px; }
+.wait-stats th,.wait-stats td { padding:5px 7px; border-bottom:1px solid var(--line); text-align:start; vertical-align:top; }
+.wait-stats thead th { color:var(--muted); }
+.wait-stats td { font-variant-numeric:tabular-nums; }
 .group { margin-bottom:20px; }
 .group-head { display:flex; gap:8px; align-items:center; padding:8px 0; margin-bottom:8px; border-bottom:1px solid var(--line); }
 .group-head h3 { font-size:14px; margin:0; }
@@ -90,7 +113,19 @@ button { font:inherit; color:inherit; }
 .task-meta { margin-top:auto; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
 .task-meta .alert { color:var(--ink); font-weight:650; }
 .task-bottom { flex-basis:100%; }
-.map { padding:4px 20px 16px; }
+.map { display:flex; flex:1; flex-direction:column; min-height:0; min-width:0; padding:4px 20px 16px; }
+.map[hidden] { display:none; }
+.map-controls { display:flex; align-items:center; flex-wrap:wrap; gap:6px 12px; }
+.map-control-group { display:flex; align-items:center; flex-wrap:wrap; gap:3px; }
+.map-controls button { min-width:32px; min-height:32px; padding:2px 7px; border:1px solid var(--line); border-radius:5px; background:var(--panel); cursor:pointer; }
+.map-controls button:hover:not([aria-disabled="true"]) { border-color:var(--active); }
+.map-controls button[aria-disabled="true"] { color:var(--muted); background:var(--soft); cursor:default; }
+#map-scale { min-width:4em; text-align:center; font-variant-numeric:tabular-nums; }
+.map-help { flex-basis:100%; margin:0; }
+.map-viewport { flex:1; min-height:0; overflow:auto; overflow-anchor:none; border:1px solid var(--line); border-radius:7px; background:var(--panel); }
+.map-viewport:focus-visible { outline-offset:1px; }
+.map-viewport.can-pan { cursor:grab; }
+.map-viewport.dragging,.map-viewport.dragging .node { cursor:grabbing; }
 #graph svg { display:block; }
 .legend { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:11px; color:var(--muted); padding:6px 2px; align-items:center; }
 .legend svg { vertical-align:middle; margin-right:3px; }
@@ -149,6 +184,7 @@ ul.waits { list-style:none; margin:0 12px 8px; padding:0; display:grid; gap:6px;
 .node .rail { fill:var(--queued); }
 .node:hover .card { stroke:var(--muted); }
 .node:focus-visible .card,.node.sel .card { stroke:var(--active); stroke-width:2.5; }
+.node:focus-visible .card { stroke-dasharray:5 2; }
 .node .map-title { color:var(--ink); font-size:14px; font-weight:650; line-height:18px; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 .node .t3 { fill:var(--muted); font-size:11px; }
 .node .stale { fill:var(--waiting); font-weight:600; }
@@ -213,7 +249,9 @@ a { color:var(--active); }
   .side-collapsed #side-btn .chev { transform:rotate(-90deg); }
   .masthead { padding:12px 14px; }
   .view-bar { padding-inline:14px; }
-  .overview,.map { padding-inline:14px; }
+  .overview,.map,.stats { padding-inline:14px; }
+  .map-viewport { flex:auto; max-height:62dvh; }
+  .map-controls button { min-height:40px; min-width:40px; }
   .drawer { left:8px; right:8px; width:auto; top:auto; bottom:8px; max-height:70vh; }
 }
 @media (max-width:440px) {
@@ -250,13 +288,34 @@ a { color:var(--active); }
         <div class="view-switch" role="group" id="view-switch">
           <button type="button" id="overview-btn" aria-pressed="true" aria-controls="overview"></button>
           <button type="button" id="map-btn" aria-pressed="false" aria-controls="map"></button>
+          <button type="button" id="stats-btn" aria-pressed="false" aria-controls="stats"></button>
         </div>
       </div>
       <div class="overview" id="overview"></div>
       <section class="map" id="map" hidden>
+        <div id="map-tools" hidden>
+          <div class="map-controls">
+            <div class="map-control-group" id="map-zoom-controls" role="group">
+              <button type="button" id="map-smaller" aria-controls="map-viewport">−</button>
+              <output id="map-scale"></output>
+              <button type="button" id="map-larger" aria-controls="map-viewport">+</button>
+              <button type="button" id="map-reset" aria-controls="map-viewport"></button>
+            </div>
+            <div class="map-control-group" id="map-pan-controls" role="group">
+              <button type="button" data-pan="ArrowLeft" aria-controls="map-viewport">←</button>
+              <button type="button" data-pan="ArrowUp" aria-controls="map-viewport">↑</button>
+              <button type="button" data-pan="ArrowDown" aria-controls="map-viewport">↓</button>
+              <button type="button" data-pan="ArrowRight" aria-controls="map-viewport">→</button>
+            </div>
+            <p class="map-help meta" id="map-help"></p>
+          </div>
+        </div>
         <div class="legend" id="legend"></div>
-        <div id="graph"></div>
+        <div class="map-viewport" id="map-viewport" role="region" tabindex="-1">
+          <div id="graph"></div>
+        </div>
       </section>
+      <section class="stats" id="stats" aria-labelledby="stats-btn" tabindex="0" hidden></section>
     </section>
     <aside class="side" id="side" aria-labelledby="waits-h">
       <div class="side-head"><button type="button" class="iconbtn" id="side-btn" aria-controls="side-body" aria-expanded="true"></button><h2 id="waits-h"></h2></div>
@@ -275,9 +334,22 @@ a { color:var(--active); }
 // Read-only view. Ledger text reaches the DOM only through textContent / createTextNode.
 const LABELS = {
   en: {
-    tasks:'Tasks', overview:'Overview', mapView:'Relationships', views:'Task view',
+    tasks:'Tasks', overview:'Overview', mapView:'Relationships', statsView:'Statistics', views:'Task view',
+    stats:{total:'Total tasks', completion:'Completion rate', attention:'Tasks needing attention', targets:'Status by target',
+      completionBasis:'done out of tasks excluding dropped', noEligible:'No tasks eligible for completion',
+      targetHelp:'Each bar shows the mix of statuses for one target. The total and counts are listed beside the bar.'},
+    timing:{heading:'Time metrics', lead:'Average time to completion', wait:'Waiting on the user', agent:'Recorded agent turns', other:'Other / unmeasured',
+      sample:'Tasks with a recorded completion', agentSample:'Tasks with recorded turn timing',
+      leadHelp:'Elapsed time from registration to completion. Agent time uses recorded turn boundaries and can include unrecorded pauses. Overlap counts once, as user waiting. Other time includes time spent queued and periods without turn records.',
+      emptyLead:'No completion times have been recorded yet.', waitHeading:'Waiting times by request type',
+      waitHelp:'From opening to resolution. Resolved requests include automatic closures.',
+      kind:'Request type', open:'Open · longest', resolved:'Resolved · median', requests:n => `${n} ${n === 1 ? 'request' : 'requests'}`,
+      noWaits:'No waiting times recorded yet.', unavailable:'Time metrics are unavailable.'},
     groups:{attention:'Needs attention', active:'In progress', queued:'Queued', closed:'Closed'},
     map:'Relationship map: rows are targets, columns follow dependencies', waits:'Waiting on you', none:'none', noTasks:'No tasks yet.',
+    mapNav:{canvas:'Scrollable relationships',zoom:'Map zoom', pan:'Map movement', smaller:'Zoom out', larger:'Zoom in', reset:'Reset view',
+      ArrowLeft:'Move left', ArrowUp:'Move up', ArrowDown:'Move down', ArrowRight:'Move right',
+      help:'Labels on the left show task targets. Drag or swipe to move. With the map focused, use arrow keys to move, + / − to zoom, or 0 to reset.'},
     readonly:'HQ dashboard (read-only; answer in the adjutant chat)', history:'History', noEvents:'No events yet.',
     updated:'Last update', live:'Live', offlineData:'Server unreachable; showing data from', offlineNone:'Cannot reach the HQ server',
     connecting:'Connecting', close:'Close', sideClose:'Collapse the waiting column', sideOpen:'Expand the waiting column', copy:'Copy', copied:'Copied', copyFail:'Copy failed; select the text instead',
@@ -293,9 +365,22 @@ const LABELS = {
     edgeHelp:{depends_on:'B → A: A depends on B', spawned_from:'B ⇢ A: A spawned from B', related:'related tasks'}
   },
   ja: {
-    tasks:'タスク', overview:'状況一覧', mapView:'関係マップ', views:'タスクの表示',
+    tasks:'タスク', overview:'状況一覧', mapView:'関係マップ', statsView:'統計', views:'タスクの表示',
+    stats:{total:'タスク総数', completion:'完了率', attention:'要対応タスク', targets:'対象別のステータス内訳',
+      completionBasis:'取りやめを除いたタスクのうち完了した件数', noEligible:'集計対象のタスクなし',
+      targetHelp:'各バーは1つの対象のステータス構成を表します。総数と内訳の件数も表示しています。'},
+    timing:{heading:'所要時間と待ち時間', lead:'完了までの平均', wait:'ユーザーの対応待ち', agent:'エージェントのターン経過', other:'その他・未計測',
+      sample:'完了時刻を記録したタスク', agentSample:'ターン時刻を記録したタスク',
+      leadHelp:'登録から直近の完了まで。エージェントの時間はターンの開始・終了から計算し、未記録の中断を含むことがあります。重なった時間はユーザーの対応待ちに計上します。「その他」には着手前やターンの記録がない時間を含みます。',
+      emptyLead:'完了時刻を記録したタスクはまだありません。', waitHeading:'依頼の種類別の待ち時間',
+      waitHelp:'依頼を登録してから解消するまでの時間です。解消済みには自動解消を含みます。',
+      kind:'依頼の種類', open:'未解消 · 最長', resolved:'解消済み · 中央値', requests:n => `${n}件`,
+      noWaits:'対応待ちの記録はまだありません。', unavailable:'時間の統計を取得できません。'},
     groups:{attention:'要対応', active:'進行中', queued:'待機中', closed:'終了'},
     map:'関係マップ：行は対象、列は依存の順', waits:'あなたの対応待ち', none:'なし', noTasks:'タスクはまだありません。',
+    mapNav:{canvas:'関係マップの表示領域', zoom:'マップの拡大・縮小', pan:'マップの移動', smaller:'縮小', larger:'拡大', reset:'表示をリセット',
+      ArrowLeft:'左へ移動', ArrowUp:'上へ移動', ArrowDown:'下へ移動', ArrowRight:'右へ移動',
+      help:'左端のラベルはタスクの対象です。ドラッグやスワイプで移動できます。マップにフォーカスすると、矢印キーで移動、+ / − で拡大・縮小、0 でリセットできます。'},
     readonly:'HQ ダッシュボード（閲覧専用。返答は副官のチャットで）', history:'履歴', noEvents:'イベントはまだありません。',
     updated:'最終更新', live:'自動更新中', offlineData:'サーバーに接続できません。表示は次の時点のもの：', offlineNone:'HQ サーバーに接続できません',
     connecting:'接続中', close:'閉じる', sideClose:'対応待ちの列を閉じる', sideOpen:'対応待ちの列を開く', copy:'コピー', copied:'コピーしました', copyFail:'コピーできませんでした。選択してコピーしてください',
@@ -469,10 +554,26 @@ function isStale(t) {
   return !isNaN(ts) && Date.now() - ts > STALE_MS;
 }
 
+function taskStatusCounts(tasks) {
+  const counts = Object.fromEntries(BAR_ORDER.map(k => [k, 0]));
+  for (const task of tasks) counts[task.status]++;
+  return counts;
+}
+function statusSegments(counts) {
+  return BAR_ORDER.filter(k => counts[k]).map(k => el('span',
+    {class:'st-' + k, style:`flex:${counts[k]};background:var(--tone)`, title:`${L.status[k]} ${counts[k]}`}));
+}
+function statusLabels(keys, counts) {
+  return keys.map(k => el('span', {class:'status-count st-' + k},
+    el('span', {class:'dot', 'aria-hidden':'true'}), L.status[k], el('b', {}, counts[k])));
+}
+function taskNeedsAttention(task) {
+  return TASK_GROUPS.attention.includes(task.status) || model.waitsBy.has(task.id);
+}
+
 // ---------- header
 function renderHeader() {
-  const counts = Object.fromEntries(BAR_ORDER.map(k => [k, 0]));
-  for (const t of state?.tasks || []) counts[t.status]++;
+  const counts = taskStatusCounts(state?.tasks || []);
   const active = state ? state.sessions.filter(x => ACTIVE_SESSION.has(x.state)).length : 0;
   const waiting = model ? model.open.length : 0;
   const sessions = $('sessions-count');
@@ -481,10 +582,8 @@ function renderHeader() {
   const link = $('wait-link');
   link.classList.toggle('warn', waiting > 0);
   link.replaceChildren(icon('flag', 12), L.waits, el('strong', {}, waiting));
-  $('progress').replaceChildren(...BAR_ORDER.filter(k => counts[k]).map(k => el('span',
-    {class:'st-' + k, style:`flex:${counts[k]};background:var(--tone)`, title:`${L.status[k]} ${counts[k]}`})));
-  $('status-counts').replaceChildren(...BAR_ORDER.map(k => el('span', {class:'status-count st-' + k},
-    el('span', {class:'dot', 'aria-hidden':'true'}), L.status[k], el('b', {}, counts[k]))));
+  $('progress').replaceChildren(...statusSegments(counts));
+  $('status-counts').replaceChildren(...statusLabels(BAR_ORDER, counts));
   const up = $('updated');
   up.textContent = state ? fmtTime(state.generated_at) : '';
   up.title = L.updated;
@@ -589,7 +688,7 @@ function renderOverview() {
   if (!state?.tasks.length) { host.replaceChildren(el('p', {class:'tasks-empty'}, L.noTasks)); return; }
   const groups = Object.fromEntries(Object.keys(TASK_GROUPS).map(key => [key, []]));
   for (const task of state.tasks) {
-    const group = model.waitsBy.has(task.id) ? 'attention'
+    const group = taskNeedsAttention(task) ? 'attention'
       : Object.keys(TASK_GROUPS).find(key => TASK_GROUPS[key].includes(task.status));
     groups[group].push(task);
   }
@@ -602,24 +701,218 @@ function renderOverview() {
   if (focused) taskControl(focused)?.focus({preventScroll:true});
 }
 
+function formatDuration(seconds) {
+  if (seconds == null) return '—';
+  let remaining = Math.round(seconds);
+  const parts = [];
+  for (const [unit, size] of [['day',86400],['hour',3600],['minute',60],['second',1]]) {
+    const quantity = Math.floor(remaining / size);
+    if (quantity || (unit === 'second' && !parts.length)) {
+      parts.push(new Intl.NumberFormat(lang, {style:'unit', unit, unitDisplay:'short'}).format(quantity));
+      remaining %= size;
+      if (parts.length === 2) break;
+    }
+  }
+  return parts.join(lang === 'ja' ? '' : ' ');
+}
+
+function completionTimes(completion) {
+  const T = L.timing;
+  const {count, total_seconds:total, wait_seconds:wait, agent_seconds:agent = 0, agent_tasks:observed = 0} = completion;
+  if (!count) return el('p', {class:'meta'}, T.emptyLead);
+  const parts = [['timing-agent', T.agent, agent], ['timing-wait', T.wait, wait], ['timing-other', T.other, total - wait - agent]];
+  return el('div', {class:'timing-card'},
+    el('h4', {}, T.lead),
+    el('strong', {class:'stats-value'}, formatDuration(total / count)),
+    el('div', {class:'progress', 'aria-hidden':'true'}, parts.filter(([, , seconds]) => seconds > 0).map(([cls, , seconds]) =>
+      el('span', {class:cls, style:`flex:${seconds};background:var(--tone)`}))),
+    el('div', {class:'status-counts'}, parts.map(([cls, label, seconds]) =>
+      el('span', {class:'status-count ' + cls}, el('span', {class:'dot', 'aria-hidden':'true'}), label,
+        el('b', {}, formatDuration(cls === 'timing-agent' && !observed ? null : seconds / count))))),
+    el('div', {class:'meta'}, `${T.sample} · ${count}`),
+    el('div', {class:'meta'}, `${T.agentSample} · ${observed} / ${count}`),
+    el('div', {class:'meta'}, T.leadHelp));
+}
+
+function waitTimes(resolved) {
+  const T = L.timing;
+  const open = Object.fromEntries(WAIT_ORDER.map(kind => [kind, {count:0, oldest:null}]));
+  const now = Date.now();
+  for (const wait of model.open) {
+    const item = open[wait.kind];
+    const seconds = (now - Date.parse(wait.created_at)) / 1000;
+    item.count++;
+    if (Number.isFinite(seconds)) item.oldest = Math.max(item.oldest ?? 0, seconds);
+  }
+  const kinds = WAIT_ORDER.filter(kind => open[kind].count || resolved[kind]);
+  if (!kinds.length) return el('p', {class:'meta'}, T.noWaits);
+  const cell = (count, seconds) => el('td', {}, el('div', {}, formatDuration(seconds)),
+    el('div', {class:'meta'}, T.requests(count)));
+  return el('div', {class:'timing-card'},
+    el('h4', {id:'wait-stats-heading'}, T.waitHeading),
+    el('div', {class:'meta'}, T.waitHelp),
+    el('table', {class:'wait-stats', 'aria-labelledby':'wait-stats-heading'},
+      el('thead', {}, el('tr', {}, [T.kind, T.open, T.resolved].map(label => el('th', {scope:'col'}, label)))),
+      el('tbody', {}, kinds.map(kind => el('tr', {}, el('th', {scope:'row'}, L.kinds[kind]),
+        cell(open[kind].count, open[kind].oldest), cell(resolved[kind]?.count || 0, resolved[kind]?.median_seconds))))));
+}
+
+function renderStats() {
+  const tasks = state?.tasks || [];
+  const counts = taskStatusCounts(tasks);
+  const eligible = tasks.length - counts.dropped;
+  const number = new Intl.NumberFormat(lang);
+  const percent = new Intl.NumberFormat(lang, {style:'percent', maximumFractionDigits:1});
+  const metric = (caption, value, detail) => el('div', {}, el('dt', {}, caption),
+    el('dd', {}, el('strong', {class:'stats-value'}, value), detail ? el('span', {class:'meta'}, detail) : null));
+  const summary = el('dl', {class:'stats-summary'},
+    metric(L.stats.total, number.format(tasks.length)),
+    metric(L.stats.completion, eligible ? percent.format(counts.done / eligible) : '—',
+      eligible ? `${number.format(counts.done)} / ${number.format(eligible)} · ${L.stats.completionBasis}` : L.stats.noEligible),
+    metric(L.stats.attention, number.format(tasks.filter(taskNeedsAttention).length)));
+  const targets = new Map();
+  for (const task of tasks) {
+    if (!targets.has(task.target)) targets.set(task.target, []);
+    targets.get(task.target).push(task);
+  }
+  const rows = [...targets].sort(([a, left], [b, right]) => right.length - left.length || a.localeCompare(b, lang));
+  const timings = state?.timings;
+  $('stats').replaceChildren(summary,
+    el('section', {class:'timing-section', 'aria-labelledby':'timing-heading'},
+      el('h3', {id:'timing-heading'}, L.timing.heading),
+      timings ? [completionTimes(timings.completion), waitTimes(timings.resolved_waits)]
+        : el('p', {class:'meta'}, state ? L.timing.unavailable : L.connecting)),
+    rows.length ? el('div', {},
+      el('h3', {}, L.stats.targets),
+      el('div', {class:'meta'}, L.stats.targetHelp),
+      el('ul', {class:'stats-targets'}, rows.map(([target, members]) => {
+        const targetCounts = taskStatusCounts(members);
+        return el('li', {class:'stats-target'},
+          el('header', {}, el('h4', {}, target), el('span', {class:'meta'}, `${L.stats.total} ${number.format(members.length)}`)),
+          el('div', {class:'progress', 'aria-hidden':'true'}, statusSegments(targetCounts)),
+          el('div', {class:'status-counts'}, statusLabels(BAR_ORDER.filter(k => targetCounts[k]), targetCounts)));
+      }))) : el('p', {class:'empty'}, L.noTasks));
+}
+
+const TASK_VIEWS = ['overview', 'map', 'stats'];
 function renderTaskView() {
   if (view === 'overview') renderOverview();
+  else if (view === 'stats') renderStats();
   else { renderGraph(); renderLegend(); }
   updateSelection();
 }
 
-for (const key of ['overview', 'map']) {
+for (const key of TASK_VIEWS) {
   $(key + '-btn').addEventListener('click', () => {
     if (view === key) return;
+    if (view === 'map') savedMapScroll = [mapViewport.scrollLeft, mapViewport.scrollTop];
     view = key;
-    $('overview').hidden = key !== 'overview';
-    $('map').hidden = key !== 'map';
-    $('overview-btn').setAttribute('aria-pressed', String(key === 'overview'));
-    $('map-btn').setAttribute('aria-pressed', String(key === 'map'));
+    for (const name of TASK_VIEWS) {
+      $(name).hidden = name !== key;
+      $(name + '-btn').setAttribute('aria-pressed', String(name === key));
+    }
     hideTip();
     renderTaskView();
+    if (view === 'map') mapViewport.scrollTo(...savedMapScroll);
   });
 }
+
+// ---------- map viewport
+const mapViewport = $('map-viewport');
+const MAP_SCALES = [.5, .67, .8, 1, 1.25, 1.5, 2];
+const MAP_DEFAULT_SCALE = MAP_SCALES.indexOf(1);
+const PAN_DISTANCE = 120;
+const MAP_DIRECTIONS = {
+  ArrowLeft:[-PAN_DISTANCE, 0], ArrowUp:[0, -PAN_DISTANCE],
+  ArrowDown:[0, PAN_DISTANCE], ArrowRight:[PAN_DISTANCE, 0]
+};
+let mapScale = MAP_DEFAULT_SCALE, savedMapScroll = [0, 0], mapDrag = null, suppressMapClick = false;
+
+function mapCanPan() {
+  return mapViewport.scrollWidth > mapViewport.clientWidth || mapViewport.scrollHeight > mapViewport.clientHeight;
+}
+function updateMapCursor() { mapViewport.classList.toggle('can-pan', mapCanPan()); }
+new ResizeObserver(updateMapCursor).observe(mapViewport);
+
+function sizeMap(svg) {
+  const {width, height} = svg.viewBox.baseVal;
+  svg.setAttribute('width', Math.round(width * MAP_SCALES[mapScale]));
+  svg.setAttribute('height', Math.round(height * MAP_SCALES[mapScale]));
+}
+function renderMapControls() {
+  const percentage = new Intl.NumberFormat(lang, {style:'percent'}).format(MAP_SCALES[mapScale]);
+  if ($('map-scale').value !== percentage) $('map-scale').value = percentage;
+  $('map-smaller').setAttribute('aria-disabled', String(mapScale === 0));
+  $('map-larger').setAttribute('aria-disabled', String(mapScale === MAP_SCALES.length - 1));
+  updateMapCursor();
+}
+function changeMapScale(next, reset = false) {
+  const svg = $('graph').firstElementChild;
+  if (svg?.localName !== 'svg' || next < 0 || next >= MAP_SCALES.length || (next === mapScale && !reset)) return;
+  const ratio = MAP_SCALES[next] / MAP_SCALES[mapScale];
+  const {scrollLeft, scrollTop, clientWidth, clientHeight} = mapViewport;
+  const x = Math.min(svg.width.baseVal.value, scrollLeft + clientWidth / 2) * ratio;
+  const y = Math.min(svg.height.baseVal.value, scrollTop + clientHeight / 2) * ratio;
+  mapScale = next;
+  sizeMap(svg);
+  mapViewport.scrollTo(reset ? 0 : x - mapViewport.clientWidth / 2, reset ? 0 : y - mapViewport.clientHeight / 2);
+  hideTip();
+  renderMapControls();
+}
+function panMap(key) {
+  mapViewport.scrollBy(...MAP_DIRECTIONS[key]);
+  hideTip();
+}
+$('map-smaller').addEventListener('click', () => changeMapScale(mapScale - 1));
+$('map-larger').addEventListener('click', () => changeMapScale(mapScale + 1));
+$('map-reset').addEventListener('click', () => changeMapScale(MAP_DEFAULT_SCALE, true));
+for (const button of $('map-pan-controls').querySelectorAll('button')) {
+  button.addEventListener('click', () => panMap(button.dataset.pan));
+}
+mapViewport.addEventListener('keydown', e => {
+  if (e.target !== mapViewport || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (Object.hasOwn(MAP_DIRECTIONS, e.key)) panMap(e.key);
+  else if (e.key === '+' || e.key === '=') changeMapScale(mapScale + 1);
+  else if (e.key === '-' || e.key === '−') changeMapScale(mapScale - 1);
+  else if (e.key === '0') changeMapScale(MAP_DEFAULT_SCALE, true);
+  else return;
+  e.preventDefault();
+});
+mapViewport.addEventListener('scroll', hideTip, {passive:true});
+mapViewport.addEventListener('pointerdown', e => {
+  if (e.button !== 0 || !e.isPrimary) return;
+  suppressMapClick = false;
+  // Touch uses native scroll and browser pinch zoom. Leave native scrollbars operable.
+  if (e.pointerType === 'touch' || !mapCanPan() || !e.target.closest('#graph svg')) return;
+  mapDrag = {id:e.pointerId, x:e.clientX, y:e.clientY,
+    left:mapViewport.scrollLeft, top:mapViewport.scrollTop, moved:false};
+  e.preventDefault();
+});
+mapViewport.addEventListener('pointermove', e => {
+  if (!mapDrag || e.pointerId !== mapDrag.id) return;
+  const dx = e.clientX - mapDrag.x, dy = e.clientY - mapDrag.y;
+  if (!mapDrag.moved) {
+    if (Math.hypot(dx, dy) < 5) return;
+    mapDrag.moved = true;
+    suppressMapClick = true;
+    mapViewport.setPointerCapture(e.pointerId);
+    mapViewport.classList.add('dragging');
+    hideTip();
+  }
+  mapViewport.scrollTo(mapDrag.left - dx, mapDrag.top - dy);
+});
+function endMapDrag(e) {
+  if (e.pointerId !== mapDrag?.id) return;
+  mapDrag = null;
+  mapViewport.classList.remove('dragging');
+}
+for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  mapViewport.addEventListener(type, endMapDrag);
+}
+mapViewport.addEventListener('pointerleave', e => { if (!mapDrag?.moved) endMapDrag(e); });
+mapViewport.addEventListener('click', e => {
+  if (suppressMapClick && e.detail) e.stopPropagation();
+}, {capture:true});
 
 // ---------- progress map: swimlane per target, column per dependency depth
 const NW = 272, NH = 128, DH = 104, GX = 44, GY = 10, LW = 136, LP = 10;
@@ -669,10 +962,19 @@ function renderGraph() {
   const host = $('graph');
   hideTip();  // a removed node never fires mouseleave
   const focused = host.contains(document.activeElement) ? document.activeElement.dataset.task : null;
-  $('map').setAttribute('aria-label', L.map);
-  if (!state || !state.tasks.length) { host.replaceChildren(el('p', {class:'tasks-empty'}, L.noTasks)); return; }
+  const hasTasks = Boolean(state?.tasks.length);
+  $('map-tools').hidden = !hasTasks;
+  $('legend').hidden = !hasTasks;
+  mapViewport.tabIndex = hasTasks ? 0 : -1;
+  if (!hasTasks) {
+    host.replaceChildren(el('p', {class:'tasks-empty'}, L.noTasks));
+    updateMapCursor();
+    return;
+  }
+  const scroll = [mapViewport.scrollLeft, mapViewport.scrollTop];
   const {pos, laneBoxes, width, height} = layout();
-  const root = sv('svg', {viewBox:`0 0 ${width} ${height}`, width, height, role:'group', 'aria-label':L.map});
+  const root = sv('svg', {viewBox:`0 0 ${width} ${height}`, role:'group', 'aria-label':L.map});
+  sizeMap(root);
   const defs = sv('defs');
   for (const kind of ['depends_on','spawned_from']) defs.append(sv('marker', {id:'ar-' + kind, viewBox:'0 0 10 10', refX:'9', refY:'5', markerWidth:'7', markerHeight:'7', orient:'auto'}, sv('path', {d:'M0,0 L10,5 L0,10 z', class:'mk-' + kind})));
   root.append(defs);
@@ -701,6 +1003,8 @@ function renderGraph() {
   for (const p of pos.values()) root.append(nodeEl(p));
   host.replaceChildren(root);
   if (focused) host.querySelector(`.node[data-task="${CSS.escape(focused)}"]`)?.focus({preventScroll:true});
+  mapViewport.scrollTo(...scroll);
+  renderMapControls();
 }
 function nodeEl({x, y, h, task: t}) {
   const [cur, label] = step(t);
@@ -736,7 +1040,7 @@ function nodeEl({x, y, h, task: t}) {
   g.setAttribute('aria-controls', 'detail-wrap');
   g.addEventListener('click', () => select(t.id));
   g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(t.id); } });
-  g.addEventListener('mouseenter', e => showTip(t, e.clientX, e.clientY));
+  g.addEventListener('mouseenter', e => { if (!mapDrag?.moved) showTip(t, e.clientX, e.clientY); });
   g.addEventListener('mousemove', e => placeTip(e.clientX, e.clientY));
   g.addEventListener('mouseleave', hideTip);
   return g;
@@ -804,6 +1108,7 @@ $('wait-link').addEventListener('click', e => {
 });
 
 function taskControl(id) {
+  if (view === 'stats') return null;
   const host = view === 'map' ? $('graph') : $('overview');
   return host.querySelector(`[data-task="${CSS.escape(id)}"]`);
 }
@@ -919,7 +1224,18 @@ function applyLang(code) {
   setText('tasks-h', L.tasks);
   setText('overview-btn', L.overview);
   setText('map-btn', L.mapView);
+  setText('stats-btn', L.statsView);
   $('view-switch').setAttribute('aria-label', L.views);
+  $('map').setAttribute('aria-label', L.mapView);
+  mapViewport.setAttribute('aria-label', L.mapNav.canvas);
+  mapViewport.setAttribute('aria-describedby', 'map-help');
+  $('map-zoom-controls').setAttribute('aria-label', L.mapNav.zoom);
+  $('map-scale').setAttribute('aria-label', L.mapNav.zoom);
+  $('map-pan-controls').setAttribute('aria-label', L.mapNav.pan);
+  for (const key of ['smaller', 'larger', 'reset']) $('map-' + key).setAttribute('aria-label', L.mapNav[key]);
+  for (const button of $('map-pan-controls').querySelectorAll('button')) button.setAttribute('aria-label', L.mapNav[button.dataset.pan]);
+  setText('map-reset', L.mapNav.reset);
+  setText('map-help', L.mapNav.help);
   setSideCollapsed(sideCollapsed, false);
 }
 function render() {
@@ -973,7 +1289,7 @@ try { state = JSON.parse($('hq-initial').textContent); } catch (_) { state = nul
 if (state && state.revision !== undefined) revision = state.revision; else state = null;
 render();
 setConn(state ? 'live' : 'connecting');
-setInterval(() => { if (state) { renderHeader(); renderTaskView(); } }, 30000);  // keep ages fresh
+setInterval(() => { if (state && (view !== 'stats' || !selectionInside($('stats')))) renderTaskView(); }, 30000);
 if (location.protocol === 'http:' || location.protocol === 'https:') refresh(); else setConn('down');
 </script>
 </body>
