@@ -1,0 +1,8 @@
+name: kono-hen
+description: Turn a rough remark and its conversational context into one ready-to-use
+  prompt that gives another agent direction and room for judgment. Use when the user
+  asks for a prompt or instructions to give an agent. A vague request to perform the
+  work itself does not trigger this skill.
+license: MIT
+type: skill
+version: '0.1.0'
