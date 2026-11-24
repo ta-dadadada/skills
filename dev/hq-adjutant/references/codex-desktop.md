@@ -67,7 +67,7 @@ id if available, otherwise say it is unavailable in the brief; never invent it.
    `wait_threads` call accepts at most eight targets. Include each target's
    recorded `hostId` and last returned cursor as `afterCursor`.
 2. Use `timeoutMs:0` for an immediate snapshot on activation, resumption, or a
-   user status request. During explicitly requested monitoring, one bounded
+   user status request. A request to keep directing sessions, checking progress, and adjusting instructions as work proceeds includes monitoring for that scope. During requested monitoring, one bounded
    call with `timeoutMs` at most `60000` may wait for progress. Continue only
    while that monitoring request is active and the host keeps this turn alive;
    communicate meaningful changes and do not run a tight snapshot loop.
@@ -114,7 +114,7 @@ id if available, otherwise say it is unavailable in the brief; never invent it.
    next snapshot before ingestion, or retain a review wait if the host cannot
    supply recoverable final evidence. Do not ingest the same final on resume.
 6. A final reply from this HQ ends its active collection. Do not promise a later
-   wake, automatic continuous monitoring, or a reply from the subordinate.
+   wake, automatic continuous monitoring, or a reply from the subordinate. While requested monitoring is active and a ready target can still advance, take the next bounded wait in this turn. A timeout alone is not a reason to ask the user to restart collection.
    Tell the user how to resume collection (for example, request HQ status).
    Scheduling an automation is not part of this procedure.
 
